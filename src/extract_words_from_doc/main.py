@@ -1,6 +1,7 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image
 from scipy.signal import argrelextrema
 from scipy.signal import savgol_filter
 from statistics import median
@@ -116,13 +117,7 @@ def detect_Lines(original, thresh, out_folder):
         return lines, 1
     return lines, 0
 
-def main():
-    if(len(sys.argv) < 2):
-        print("Usage: python ./main <file_name>")
-        sys.exit(1)
-    
-    # reading the image (gray)
-    img_name = "data/" + str(sys.argv[1])
+def createOutputDirs(img_name):
     out_main_folder = "detected_lines"
     if not os.path.exists(out_main_folder):    # create folder to contain the line's img
         os.mkdir(out_main_folder)
@@ -130,8 +125,39 @@ def main():
     out_path = "{}/{}".format(out_main_folder, inner_folder)
     if not os.path.exists(out_path):   
         os.mkdir(out_path)
-    # img_name = "collection/15.jpg"
-    img = cv2.imread(img_name, 0)
+
+def processTiff(tiff):
+    page_count = 0
+    if not os.path.exists('temp'):
+        os.mkdir('temp')
+    while 1:
+        try:
+            save_name = 'page' + str(page_count) + ".jpeg"
+            tiff.save('temp/'+save_name)
+            tiff.seek(page_count+1)
+            page_count = page_count+1
+        except EOFError:
+            return page_count+1
+
+def main():
+    if(len(sys.argv) < 2):
+        print("Usage: python ./main <file_name>")
+        sys.exit(1)
+    
+    # reading the image (gray)
+    img_name = "data/" + str(sys.argv[1])
+
+    tiff = Image.open(img_name)
+    page_count = processTiff(tiff)
+    sys.exit(0)
+    createOutputDirs(img_name)
+    
+    # image.show()  
+    # img = cv2.cvtColor(np.asarray(image),cv2.COLOR_RGB2BGR)  
+    # cv2.imshow("OpenCV",img)  
+    # cv2.waitKey()
+
+    # img = cv2.imread(img_name, 0)
     original = cv2.imread(img_name)  # without gray color
     # binary
     ret, thresh = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY_INV)
