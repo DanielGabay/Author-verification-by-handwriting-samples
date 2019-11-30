@@ -81,7 +81,7 @@ def create_table():
     document.save(RESULTS_PATH)
     print(RESULTS_PATH , "saved successfully!")
 
-def create_graph():
+def get_words_freq_list(num_of_words=K_TOP_WORDS):
     all_words = []
     # go through each file in DATA_PATH
     for root, dirs, files in os.walk(DATA_PATH):
@@ -105,8 +105,48 @@ def create_graph():
 
     # sort in descending order
     words_freq_list = sorted(words_freq_list, key = lambda x: x[0], reverse=True)
-    # remaing only the most freq words
-    words_freq_list = words_freq_list[:20]
+    # remain only the most freq words
+    words_freq_list = words_freq_list[:num_of_words]
+    return words_freq_list
+
+def rever(strings):
+    return [x[::-1] for x in strings]
+
+def check_most_common_words_intersection(print_intesection=True ):
+    common_words_to_compare = ['של', 'לא' ,'את', 'על', 'לסיכום', 'כי', 'זה', 'זו', 'גם', 'לדעתי']
+    all_words = []
+    # go through each file in DATA_PATH
+    for root, dirs, files in os.walk(DATA_PATH):
+        for file in files:
+            filepath = DATA_PATH + file
+            words_freq_list = get_k_common_words(filepath)
+            # sort in descending order
+            words_freq_list = sorted(words_freq_list, key = lambda x: x[0], reverse=True)
+            # remain only the most freq words
+            words_freq_list = words_freq_list[:K_TOP_WORDS]
+            words, freq = zip(*words_freq_list)
+            words = [x for x in words if x in common_words_to_compare]
+
+            # all words is a matrix that each row contains a set (unique) words
+            # from each file
+            all_words.append(rever(set(words)))
+    
+    all_intersect = True
+    for i in range(len(all_words)):
+        for j in range(i+1, len(all_words)):
+            intersection = set(all_words[i]).intersection(set(all_words[j]))
+            if(len(intersection) == 0):
+                print("files: " + str(i+1) + ".docx " + str(j+1) + ".docx not intersect!")
+                all_intersect = False
+            if(print_intesection):
+                print("Check files: " + str(i+1) + ".docx " + str(j+1) +".docx")
+                print(intersection)
+                print("--------------------")
+    if(all_intersect):
+        print("All files have intersect of common words!")
+
+def create_graph():
+    words_freq_list = get_words_freq_list()
     # split into words array and freq array
     freq, words = zip(*words_freq_list)
 
@@ -116,11 +156,6 @@ def create_graph():
     plt.tight_layout()
     plt.show()
 
-    # document = docx.Document()
-    # for word in unique_words:
-    #     document.add_paragraph(str(word[0]) + " " + str(word[1]), style='List Bullet')
-    # document.save('demo.docx')
-
 
 def count_in_files(row,all_words, word):
     count = 1
@@ -129,9 +164,9 @@ def count_in_files(row,all_words, word):
             count +=1
     return count
             
-def main():
+def main(): 
     if(len(sys.argv) < 2):
-        print("Usage: python words.py [-t] [-g]")
+        print("Usage: python words.py [-t] [-g] [-i <t/f>]")
         return
     flag = sys.argv[1]
     if(flag == "-t"):
@@ -139,7 +174,20 @@ def main():
 
     elif(flag == "-g"):
         create_graph()
-    
+
+    elif(flag == "-i"):
+        if len(sys.argv) < 3:
+            print("Usage: python words.py [-t] [-g] [-i <t/f>]")
+            return
+        if sys.argv[2] == 't':
+            check_most_common_words_intersection(True)
+        elif sys.argv != 'f':
+            check_most_common_words_intersection(False)
+        else:
+            print("Usage: python words.py [-t] [-g] [-i <t/f>]")
+            return
+
+
 
 if __name__ == "__main__":
     main()
