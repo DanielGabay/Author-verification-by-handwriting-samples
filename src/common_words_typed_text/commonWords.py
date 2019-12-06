@@ -132,6 +132,9 @@ def common_words_intersection_histogram():
     list_for_histogram = [0]*150
     for i in range(len(all_words)):
         for j in range(i+1, len(all_words)):
+            if len(all_words[i]) == 0 or len(all_words[j]) == 0:
+                list_for_histogram[0] += 1
+                continue
             words_i, freq_i = zip(*all_words[i])
             words_j, freq_j = zip(*all_words[j])
             intersection = set(words_i).intersection(set(words_j))
