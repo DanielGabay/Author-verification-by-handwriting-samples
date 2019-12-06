@@ -112,6 +112,51 @@ def get_words_freq_list(num_of_words=K_TOP_WORDS):
 def rever(strings):
     return [x[::-1] for x in strings]
 
+def common_words_intersection_histogram():
+    common_words_to_compare = ['של', 'לא' ,'את', 'על', 'לסיכום', 'כי', 'זה', 'זו', 'גם', 'לדעתי']
+    all_words = []
+    # go through each file in DATA_PATH
+    for root, dirs, files in os.walk(DATA_PATH):
+        for file in files:
+            filepath = DATA_PATH + file
+            words_freq_list = get_k_common_words(filepath)
+            # sort in descending order
+            words_freq_list = sorted(words_freq_list, key = lambda x: x[0], reverse=True)
+            # remain only the most freq words
+            words_freq_list = words_freq_list[:K_TOP_WORDS]
+            words_freq_list = [(word[::-1],freq) for (word,freq) in words_freq_list if word in common_words_to_compare]
+            # all words is a matrix that each row contains a set (unique) words
+            # from each file
+            all_words.append(words_freq_list)
+
+    list_for_histogram = [0]*150
+    for i in range(len(all_words)):
+        for j in range(i+1, len(all_words)):
+            words_i, freq_i = zip(*all_words[i])
+            words_j, freq_j = zip(*all_words[j])
+            intersection = set(words_i).intersection(set(words_j))
+            print(intersection)
+            sum = getSumOfIntesection(all_words[i], all_words[j], intersection)
+            list_for_histogram[sum] += 1
+    indices = np.arange(len(list_for_histogram))
+    plt.bar(indices, list_for_histogram, color='b')
+    # plt.xticks(indices, , rotation='vertical')
+    # plt.tight_layout()
+    plt.show()
+
+def getSumOfIntesection(a, b, intersection):
+    sum = 0
+    for words_freq in a:
+        word, freq = words_freq
+        if word in intersection:
+            sum += freq
+    
+    for words_freq in b:
+        word, freq = words_freq
+        if word in intersection:
+            sum += freq
+    return sum
+
 def check_most_common_words_intersection(print_intesection=True ):
     common_words_to_compare = ['של', 'לא' ,'את', 'על', 'לסיכום', 'כי', 'זה', 'זו', 'גם', 'לדעתי']
     all_words = []
@@ -166,7 +211,7 @@ def count_in_files(row,all_words, word):
             
 def main(): 
     if(len(sys.argv) < 2):
-        print("Usage: python words.py [-t] [-g] [-i <t/f>]")
+        print("Usage: python words.py [-t] [-g] [-h] [-i <t/f>]")
         return
     flag = sys.argv[1]
     if(flag == "-t"):
@@ -174,6 +219,9 @@ def main():
 
     elif(flag == "-g"):
         create_graph()
+    
+    elif(flag == "-h"):
+        common_words_intersection_histogram()
 
     elif(flag == "-i"):
         if len(sys.argv) < 3:
