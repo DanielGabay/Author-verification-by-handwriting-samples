@@ -29,6 +29,7 @@ def arrange(image,file_name):
 
    # sort the contours to get the first line of the letter "א" and so on
    sorted_ctrs = sorted(ctrs, key=lambda ctr: cv2.boundingRect(ctr)[1])
+   #cv2.drawContours(image,sorted_ctrs,-1,(0,255,0),3) 
    # print(len(sorted_ctrs))
    
    if DATA_PATH == 'data2/':
@@ -36,36 +37,53 @@ def arrange(image,file_name):
    else:
       folder_counter = 1
    word_counter = 1
+   y_first = 0
    name_num = 0
+   print(len(sorted_ctrs))
    for ctr in sorted_ctrs:
       # Get bounding box
-
-      x, y, w, h = cv2.boundingRect(ctr)
-      if h>=60 and w>=60:
-         # Getting ROI--each word image
-         roi = gray[y:y+h, x:x+w]
-         # creating a rectangle for each word
-         cv2.rectangle(gray,(x,y),( x + w, y + h ),(90,255,0),2)
-
-         H = int(h*0.1)   # remove each frame
-         W = int(w*0.05)
-
-         word = roi[H:h - H , W:w - W]
-         # word = cv2.erode(word, kernel, iterations=1)
-
-         #we want each image to be 28x28 size so we use resize
-         word = cv2.resize(word, (150,150))  # was 100X100
-
-         #write each image to the right folder
-         path = os.getcwd() + "\\out\\" + str(folder_counter)+ "\\"
-         if not os.path.exists(path):
-            os.makedirs(path)
+      # print(ctr)
+      area = cv2.contourArea(ctr)
+      #print(area)
+      # return
+      #print(area)
+      if area < 35000 or area > 70000:
+         continue
       
-         cv2.imwrite(path+str(file_name)+'_'+str(word_counter)+'.png', word)
-         word_counter += 1
-         if(word_counter == NUM_OF_SQUARS+1):
-            folder_counter += 1
-            word_counter = 1
+      x, y, w, h = cv2.boundingRect(ctr)
+      
+
+      if word_counter == 1:
+         y_first = y
+      #if h>=60 and w>=60:
+      # Getting ROI--each word image
+      roi = gray[y:y+h, x:x+w]
+      # creating a rectangle for each word
+      cv2.rectangle(gray,(x,y),( x + w, y + h ),(90,255,0),2)
+      H = int(h*0.1)   # remove each frame
+      W = int(w*0.05)
+
+      word = roi[H:h - H , W:w - W]
+      # word = cv2.erode(word, kernel, iterations=1)
+
+      word = cv2.resize(word, (100,100))  # was 100X100
+      # cv2.imshow('',word)
+      # cv2.waitKey(0)
+      #write each image to the right folder
+
+      # to know when we move to the next folder --> mean the next word to in the page
+      if(y - y_first > 300):
+         y_first = y
+         folder_counter += 1
+         word_counter = 1
+
+      path = os.getcwd() + "\\out\\" + str(folder_counter)+ "\\"
+      if not os.path.exists(path):
+         os.makedirs(path)
+
+      cv2.imwrite(path+str(file_name)+'_'+str(word_counter)+'.png', word)
+      print(word_counter)
+      word_counter += 1
 
    cv2.imwrite("out/page.png", image)
 
