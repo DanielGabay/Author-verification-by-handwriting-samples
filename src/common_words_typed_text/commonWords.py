@@ -10,13 +10,13 @@ import matplotlib.pyplot as plt
 # constatns
 DATA_PATH = "data/"
 RESULTS_PATH = "results.docx"
-K_TOP_WORDS = 15
+K_TOP_WORDS = 30
 
 def get_text_as_list(filename):
     '''
     returns file text as a list, after removing all punctuations
     '''
-    print("reading file:", filename)
+    # print("reading file:", filename)
     doc = docx.Document(filename)
     fullText = []
     for para in doc.paragraphs:
@@ -26,20 +26,22 @@ def get_text_as_list(filename):
     s = ''.join(ch for ch in s if ch not in exclude)
     return s.split()
 
-def get_k_common_words(filepath):
+def get_k_common_words(filepath,getAllWords=False):
     text_list = get_text_as_list(filepath)
     # Pass the split_it list to instance of Counter class. 
     counter = Counter(text_list) 
     
     # most_common() produces k frequently encountered 
     # input values and their respective counts. 
+    if(getAllWords):
+        return counter.most_common(len(text_list))
     return counter.most_common(K_TOP_WORDS)
 
 def fill_row_data(row_cells, top_words):
     '''
     fills top_words in a row cells
     '''
-    print("filling row data")
+    #print("filling row data")
     cell_num = 1
     for word in top_words:
         res = str(word[0]) + "\n" + str(word[1])
@@ -67,7 +69,7 @@ def create_table():
     # go through each file in DATA_PATH
     for root, dirs, files in os.walk(DATA_PATH):
         for file in files:
-            print("-------------------------")
+            #print("-------------------------")
             filepath = DATA_PATH + file
             # extract file top words
             top_words = get_k_common_words(filepath)
@@ -81,12 +83,12 @@ def create_table():
     document.save(RESULTS_PATH)
     print(RESULTS_PATH , "saved successfully!")
 
-def get_words_freq_list(num_of_words=K_TOP_WORDS):
+def get_words_freq_list(num_of_words=K_TOP_WORDS,getAllWords=False):
     all_words = []
     # go through each file in DATA_PATH
     for root, dirs, files in os.walk(DATA_PATH):
         for file in files:
-            print("-------------------------")
+            #print("-------------------------")
             filepath = DATA_PATH + file
             text_list = get_text_as_list(filepath)
             # all words is a matrix that each row contains a set (unique) words
@@ -106,30 +108,32 @@ def get_words_freq_list(num_of_words=K_TOP_WORDS):
     # sort in descending order
     words_freq_list = sorted(words_freq_list, key = lambda x: x[0], reverse=True)
     # remain only the most freq words
-    words_freq_list = words_freq_list[:num_of_words]
+    if not getAllWords:
+        words_freq_list = words_freq_list[:num_of_words]
     return words_freq_list
 
 def rever(strings):
     return [x[::-1] for x in strings]
 
-def common_words_intersection_histogram():
+def common_words_intersection_histogram(getAllWords=False):
     common_words_to_compare = ['של', 'לא' ,'את', 'על', 'לסיכום', 'כי', 'זה', 'זו', 'גם', 'לדעתי']
     all_words = []
     # go through each file in DATA_PATH
     for root, dirs, files in os.walk(DATA_PATH):
         for file in files:
             filepath = DATA_PATH + file
-            words_freq_list = get_k_common_words(filepath)
+            words_freq_list = get_k_common_words(filepath,getAllWords)
             # sort in descending order
             words_freq_list = sorted(words_freq_list, key = lambda x: x[0], reverse=True)
             # remain only the most freq words
-            words_freq_list = words_freq_list[:K_TOP_WORDS]
+            if not getAllWords:
+                words_freq_list = words_freq_list[:K_TOP_WORDS]
             words_freq_list = [(word[::-1],freq) for (word,freq) in words_freq_list if word in common_words_to_compare]
             # all words is a matrix that each row contains a set (unique) words
             # from each file
             all_words.append(words_freq_list)
 
-    list_for_histogram = [0]*150
+    list_for_histogram = [0]*130
     for i in range(len(all_words)):
         for j in range(i+1, len(all_words)):
             if len(all_words[i]) == 0 or len(all_words[j]) == 0:
@@ -138,13 +142,12 @@ def common_words_intersection_histogram():
             words_i, freq_i = zip(*all_words[i])
             words_j, freq_j = zip(*all_words[j])
             intersection = set(words_i).intersection(set(words_j))
-            print(intersection)
             sum = getSumOfIntesection(all_words[i], all_words[j], intersection)
             list_for_histogram[sum] += 1
     indices = np.arange(len(list_for_histogram))
     plt.bar(indices, list_for_histogram, color='b')
-    # plt.xticks(indices, , rotation='vertical')
-    # plt.tight_layout()
+    plt.xlabel('Sum of intersection')
+    plt.ylabel('Num of pairs')
     plt.show()
 
 def getSumOfIntesection(a, b, intersection):
@@ -224,7 +227,16 @@ def main():
         create_graph()
     
     elif(flag == "-h"):
-        common_words_intersection_histogram()
+        if len(sys.argv) < 3:
+            print("Usage: python words.py [-h] [<t/f>]")
+            return
+        elif sys.argv[2] == 't':
+            common_words_intersection_histogram(getAllWords=True)
+        elif sys.argv[2] == 'f':  
+            common_words_intersection_histogram(getAllWords=False)
+        else:
+            print("Usage: python words.py [-h] [<t/f>]")
+            return
 
     elif(flag == "-i"):
         if len(sys.argv) < 3:
