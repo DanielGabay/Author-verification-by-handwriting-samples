@@ -120,7 +120,7 @@ def createOutputDirs(img_name):
         os.mkdir(out_path)
     return out_path
 
-def get_detected_lines(img, img_name):
+def get_lines(img, img_name):
     out_path = createOutputDirs(img_name)
     ret, thresh = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY_INV)
     return detect_Lines(img, thresh, out_path)
