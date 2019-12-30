@@ -6,6 +6,8 @@ import sys
 from keras.models import model_from_json
 from keras.preprocessing import image
 import numpy as np
+import os
+import matplotlib.pyplot as plt
 
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -37,14 +39,36 @@ def main():
     classifier.load_weights("model99.h5")
     print("Loaded model from disk")
     classifier.compile(optimizer='adam',  loss='categorical_crossentropy', metrics=['accuracy'])
+    text = ""
+    count_good = 0
+    count_all = 0
     for letter in letters:
-        test_letter = image.img_to_array(letter.image_letter)
-        test_image = np.expand_dims(test_image, axis=0)
-        result = classifier.predict((test_image/255)*0.1)
-        for i, v in enumerate(result[0]):
-            print(str(i)+" " + hebrew_letters[i]+": "+str(float("{0:.2f}".format(v))))
-        # cv2.imshow('letter', letter.image_letter)
-        # cv2.waitKey(0)
+        letter = cv2.resize(letter.image_letter, (28, 28)) ######## this we addedddddddddddddddddd
+        letter = letter.reshape((28, 28,1))######## this we addedddddddddddddddddd
+
+        test_letter = image.img_to_array(letter)
+        test_image = np.expand_dims(test_letter, axis=0)
+        result = classifier.predict((test_image/255))
+        # for i, v in enumerate(result[0]):
+        #     print(str(i)+" " + hebrew_letters[i]+": "+str(float("{0:.2f}".format(v))))
+        # print("______")
+        if max(result[0]) > 0.995:
+            selected_letter = hebrew_letters[result[0].tolist().index(max(result[0]))]
+            if selected_letter == "ץ": 
+                continue
+            count_all += 1
+            print(selected_letter)
+            cv2.imshow('',letter)
+            k = cv2.waitKey(0)
+            if k == 27:
+                cv2.destroyAllWindows()
+            else:
+                count_good +=1
+                cv2.destroyAllWindows()
+            if count_all == 100:
+                break
+            plt.close('all')
+    print("{} {} {}".format(count_good, count_all, count_good/count_all))
 
     # print(lines)
     # for line in lines:
