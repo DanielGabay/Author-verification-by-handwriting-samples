@@ -70,8 +70,6 @@ def find_letters(word_image):
    #sort contours
    sorted_ctrs = sorted(ctrs, key=lambda ctr: cv2.boundingRect(ctr)[0], reverse=True)
 
-
-
 #creating objects - so we coult hold a few arguments that connected together in the same variable
 
    class contur:
