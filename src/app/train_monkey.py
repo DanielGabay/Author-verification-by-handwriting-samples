@@ -7,9 +7,12 @@ import numpy as np
 import os
 import cv2
 import sys
+import pandas as pd
 
 
 DATA_PATH = "data/"
+
+
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 hebrew_letters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י'\
@@ -26,6 +29,7 @@ def calculate_diff(list_1,list_2):
 	for i in range (0,len(list_1)):
 		count+= abs(list_1[i] - list_2[i])
 	return count
+
 
 def sum_diff(list_of_pairs):
 	sumEqual = []
@@ -46,7 +50,7 @@ def sum_diff(list_of_pairs):
 	print("Diff mean: {}".format(np.mean(np.asarray(sumDiff))))
 	print("Diff std: {}".format(np.std(np.asarray(sumDiff))))
 
-	
+
 
 def create_diff_vector(list_1,list_2):
 	diff_vector = [0] * len(list_1)
@@ -62,7 +66,6 @@ def counter_list(found_letters):
 		count_list[(letter['letter_index'])]+=1
 	precent = [i * (100/len(found_letters)) for i in count_list]
 	return precent
-
 
 def get_identified_letters(letters, classifier):
 	found_letters = []
@@ -102,6 +105,12 @@ def main():
 		for file in files:
 			doc_name = file.split('.')[0]
 			print(doc_name)
+
+			df = pd.read_csv('equal.csv')
+
+			if doc_name in df['Vector'].values.tolist():
+				print('Element exists in Dataframe')
+				continue
 			
 			img_name = DATA_PATH + file
 			img = get_prepared_doc(img_name)
@@ -109,13 +118,31 @@ def main():
 		
 			letters_1,letters_2 = get_pair_letters(lines,classifier)
 			
-			count_list_1 = counter_list(letters_1)  # return the Percent of each letter
+			count_list_1 = counter_list(letters_1)  
 			count_list_2 = counter_list(letters_2)
 
-			divided_docs.append(DividedDoc(count_list_1,count_list_2))
+			diff_vec = create_diff_vector(count_list_1,count_list_2)
+			write_to_csv("equal.csv",doc_name,diff_vec)
+			write_to_csv("count_vectors.csv",doc_name+'_1',count_list_1)
+			write_to_csv("count_vectors.csv",doc_name+'_2',count_list_2)
 
-	sum_diff(divided_docs)
+			# divided_docs.append(DividedDoc(count_list_1,count_list_2))
 
+	#sum_diff(divided_docs)
 
+def write_to_csv(dfName,vecName,vector):
+	
+	df = pd.read_csv(dfName)
+	# df.rename(columns=df.iloc[0])
+	if vecName in df['Vector'].values.tolist():
+		print('Element exists in Dataframe')
+		return
+	vector.insert(0,vecName)  # add the vecName 
+	modDfObj = df.append(pd.Series(vector, index=df.columns ), ignore_index=True)
+	modDfObj.to_csv(dfName, mode='w',index = False)
+	
 if __name__ == "__main__":
+
 	main()
+
+

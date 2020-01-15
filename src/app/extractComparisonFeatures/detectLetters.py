@@ -44,8 +44,6 @@ def draw_white_cells(roiriginal, roi):
             roi_temp[k][j] = 255
    return roi_temp
 
-
-
 def find_letters(word_image):
    """
       this function is the main function in this algorithm,
