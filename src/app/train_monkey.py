@@ -107,9 +107,9 @@ def main():
 			print(doc_name)
 
 			df = pd.read_csv('equal.csv')
-
-			if doc_name in df['Vector'].values.tolist():
-				print('Element exists in Dataframe')
+			
+			if int(doc_name) in df['Vector'].values.tolist():
+				print('Element exists in Dataframe!')
 				continue
 			
 			img_name = DATA_PATH + file
