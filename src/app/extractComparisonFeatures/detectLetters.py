@@ -53,7 +53,7 @@ def find_letters(word_image):
    :param word_image: the word image
    :return: a list of objects , each object contain the letter image and info about the image
    """
-
+   
    if word_image.shape[0] < 40:
       word_image = cv2.resize(word_image, (word_image.shape[1] * 2, word_image.shape[0] * 2))
 

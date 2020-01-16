@@ -120,11 +120,11 @@ def main():
 			
 			count_list_1 = counter_list(letters_1)  
 			count_list_2 = counter_list(letters_2)
-
 			diff_vec = create_diff_vector(count_list_1,count_list_2)
 			write_to_csv("equal.csv",doc_name,diff_vec)
 			write_to_csv("count_vectors.csv",doc_name+'_1',count_list_1)
 			write_to_csv("count_vectors.csv",doc_name+'_2',count_list_2)
+			
 
 			# divided_docs.append(DividedDoc(count_list_1,count_list_2))
 
@@ -141,8 +141,23 @@ def write_to_csv(dfName,vecName,vector):
 	modDfObj = df.append(pd.Series(vector, index=df.columns ), ignore_index=True)
 	modDfObj.to_csv(dfName, mode='w',index = False)
 	
-if __name__ == "__main__":
 
+def create_diff_csv(dfName):
+	
+	df = pd.read_csv(dfName)
+
+	for i ,row in enumerate(np.asarray(df)):
+		row =list(row)
+		doc_name = row.pop(0)
+		print(row)
+		print(len(row))
+		print(i)
+		break
+		
+	
+if __name__ == "__main__":
+	# create_diff_csv('equal.csv')
+	# sys.exit(1)
 	main()
 
 
