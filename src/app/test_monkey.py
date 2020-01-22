@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import confusion_matrix
 from sklearn.linear_model import LogisticRegression
 import joblib
-
+from main import save_letters
 from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.our_utils.prepare_document import \
@@ -23,10 +23,10 @@ MODEL = 'model99'
 MODEL_LOAD_FROM = "monkey_model.sav"
 
 #TEST:
-TEST_FILE_1 = '1.tiff'
-TEST_FILE_2 = '2.tiff'
+TEST_FILE_1 = '310.tiff'
+TEST_FILE_2 = '11.tiff'
 BY_VECTORS = False
-BY_HALF = True
+BY_HALF = False
 #
 
 hebrew_letters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י'\
@@ -35,10 +35,7 @@ hebrew_letters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י'\
 
 
 
-
-
 #create the 'diffrent auther' X samples --> sub the counter_vec of diffrent authers
-
 
 
 ###
@@ -80,7 +77,7 @@ def rescale(data):
 	return scaler.fit_transform(data)
 
 
-def append_to_vectors(vectors, lines, classifier):
+def append_to_vectors(vectors, lines, classifier,doc_name):
 	if BY_HALF:
 		letters_1,letters_2 = get_pair_letters(lines,classifier)
 		count_list_1 = counter_list(letters_1)  
@@ -90,7 +87,9 @@ def append_to_vectors(vectors, lines, classifier):
 		vectors.append(count_list_2)
 	else:
 		letters = get_letters(lines)
-		identified_letters = get_identified_letters(letters,classifier)
+		print("	>>> Identify Detected Letters")
+		identified_letters = get_identified_letters(letters,classifier)  
+		#identified_letters = save_letters(letters,classifier,doc_name)    # save letter
 		count_list = counter_list(identified_letters)
 		vectors.append(count_list)
 
@@ -104,55 +103,37 @@ def test_model():
 			if file != TEST_FILE_1 and  file != TEST_FILE_2:
 				continue
 			doc_name = file.split('.')[0]
-			print(doc_name)
+			print("> Prepare Document {}".format(file))
 			img_name = DATA_PATH + file
 			img = get_prepared_doc(img_name)
+			print("	>>> Detecting Lines")
 			lines = get_lines(img, img_name)
-			letters = get_letters(lines)
-			append_to_vectors(vectors, lines, classifier) 
-	
+			print("	>>> Detecting Letters")
+			append_to_vectors(vectors, lines, classifier,doc_name) 
+	print("> Comparing Documents by Monkey Algoritem")
+	get_result(vectors,loaded_model)
+
+def get_result(vectors,loaded_model):
 	diff_vec1 = sum(create_diff_vector(vectors[0],vectors[1]))
-	diff_vec2 = sum(create_diff_vector(vectors[0],vectors[2]))
-	diff_vec3 = sum(create_diff_vector(vectors[0],vectors[3]))
-	diff_vec4 = sum(create_diff_vector(vectors[1],vectors[2]))
-	diff_vec5 = sum(create_diff_vector(vectors[1],vectors[3]))
-	diff_vec6 = sum(create_diff_vector(vectors[2],vectors[3]))
-	# print(diff_vec1)
-	# print(diff_vec6)
-	# print(diff_vec2)
-	# print(diff_vec3)
-	# print(diff_vec4)
-	# print(diff_vec5)
-	# diff_vec1 = create_diff_vector(vectors[0],vectors[1])
-	# diff_vec2 = create_diff_vector(vectors[0],vectors[2])
-	# diff_vec3 = create_diff_vector(vectors[0],vectors[3])
-	# diff_vec4 = create_diff_vector(vectors[1],vectors[2])
-	# diff_vec5 = create_diff_vector(vectors[1],vectors[3])
-	# diff_vec6 = create_diff_vector(vectors[2],vectors[3])
-	# print(sum(diff_vec1))
-	# print(sum(diff_vec6))
-	# print(sum(diff_vec2))
-	# print(sum(diff_vec3))
-	# print(sum(diff_vec4))
-	# print(sum(diff_vec5))
-	prediction_monkey(loaded_model,diff_vec1) # '1')
-	prediction_monkey(loaded_model,diff_vec6) # '1')
-	prediction_monkey(loaded_model,diff_vec2) # '0')
-	prediction_monkey(loaded_model,diff_vec3) # '0')
-	prediction_monkey(loaded_model,diff_vec4) # '0')
-	prediction_monkey(loaded_model,diff_vec5) # '0')
+	prediction_monkey(loaded_model,diff_vec1) 
+
 		
 def prediction_monkey(loaded_model, diff_vec):
 	diff_vec = np.asarray(diff_vec)
-	# diff_vec = rescale(diff_vec.reshape(-1,1))
-	print('{} {}'.format(loaded_model.predict_proba(diff_vec.reshape(1,-1)),loaded_model.predict(diff_vec.reshape(1,-1))))
+	result = loaded_model.predict_proba(diff_vec.reshape(1,-1))
+	print("\nMonkey Result:")
+	if result[0][0] > 0.5:
+		print("<The documents was written by *diffrent* authors [confident: {0:.2f}%]>".format(result[0][0]*100))
+	else:
+		print("<The documents was written by the *same* author [confident: {0:.2f}%]>".format(result[0][1]*100))
+	
+	#print('{} {}'.format(loaded_model.predict_proba(diff_vec.reshape(1,-1)),loaded_model.predict(diff_vec.reshape(1,-1))))
 
 if __name__ == "__main__":
-	if(len(sys.argv) > 3 and sys.argv[1] == 'by_vectors'):
-		BY_VECTORS = True
+	# if(len(sys.argv) > 3 and sys.argv[1] == 'by_vectors'):
+	# 	BY_VECTORS = True
 	
-	if len(sys.argv) > 4:
-		TEST_FILE_1 = sys.argv[2]
-		TEST_FILE_2 = sys.argv[3]
-	
+	if len(sys.argv) > 2:
+		TEST_FILE_1 = sys.argv[1]
+		TEST_FILE_2 = sys.argv[2]
 	test_model()
