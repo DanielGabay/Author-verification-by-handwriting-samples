@@ -34,13 +34,6 @@ hebrew_letters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י'\
 		   'ך', 'ם', 'ן', 'ף', 'ץ']
 
 
-
-#create the 'diffrent auther' X samples --> sub the counter_vec of diffrent authers
-
-
-###
-
-
 def get_identified_letters(letters, classifier):
 	found_letters = []
 	count = 0
@@ -59,7 +52,7 @@ def get_identified_letters(letters, classifier):
 			found_letters.append({'image_letter': letter , 'letter_index': letter_index, 'letter_name': selected_letter})
 	return found_letters
 
-# divide every file to 2 diffrent 'persons'.
+# divide every file to 2 different 'persons'.
 def get_pair_letters(lines,classifier):
 	letters = get_letters(lines)
 	size = len(letters)//2
@@ -89,7 +82,7 @@ def append_to_vectors(vectors, lines, classifier,doc_name):
 		letters = get_letters(lines)
 		print("	>>> Identify Detected Letters")
 		identified_letters = get_identified_letters(letters,classifier)  
-		#identified_letters = save_letters(letters,classifier,doc_name)    # save letter
+		# identified_letters = save_letters(letters,classifier,doc_name) # save letter
 		count_list = counter_list(identified_letters)
 		vectors.append(count_list)
 
@@ -123,9 +116,9 @@ def prediction_monkey(loaded_model, diff_vec):
 	result = loaded_model.predict_proba(diff_vec.reshape(1,-1))
 	print("\nMonkey Result:")
 	if result[0][0] > 0.5:
-		print("<The documents was written by *diffrent* authors [confident: {0:.2f}%]>".format(result[0][0]*100))
+		print("<Different Authors> [Confident: {0:.2f}%]".format(result[0][0]*100))
 	else:
-		print("<The documents was written by the *same* author [confident: {0:.2f}%]>".format(result[0][1]*100))
+		print("<Same Author> [confident: {0:.2f}%]".format(result[0][1]*100))
 	
 	#print('{} {}'.format(loaded_model.predict_proba(diff_vec.reshape(1,-1)),loaded_model.predict(diff_vec.reshape(1,-1))))
 

@@ -26,6 +26,84 @@ hebrew_letters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י'\
 			,'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת',\
 		   'ך', 'ם', 'ן', 'ף', 'ץ']
 
+def split_train_test(X, y, train_percent=0.75):
+	size = int(len(X) * train_percent)
+	X_train = X[:size]
+	X_test = X[size:]
+	y_train = y[:size]
+	y_test = y[size:]
+	return (X_train, X_test, y_train, y_test)
+
+def get_xy_by_vectors(equal_file, count_vec_file):
+	df_euqal = pd.read_csv(equal_file)
+	X_equal = np.asarray(df_euqal.drop('Vector',1))
+	X_diff = get_diff_x(count_vec_file)
+	X = np.concatenate((X_equal, X_diff), axis=0)
+	np.random.shuffle(X)
+	y = X[:,-1]
+	X = np.delete(X, -1, 1)
+	# X = rescale(X)
+	return (X, y)
+
+def get_x_by_sums(X, y_val):
+	x_sums = []
+	for x in X:
+		# sum all vector without the last element (the y={0,1})
+		element = [sum(x[:-1]), y_val]
+		x_sums.append(element)
+	return np.asarray(x_sums)
+
+
+def get_xy_by_sums(equal_file, count_vec_file):
+	df_euqal = pd.read_csv(equal_file)
+	X_equal = get_x_by_sums(np.asarray(df_euqal.drop('Vector',1)), 1)
+	X_diff = get_x_by_sums(get_diff_x(count_vec_file), 0)
+	data = np.concatenate((X_equal, X_diff), axis=0)
+	np.random.shuffle(data)
+	y = data[:,-1]
+	X = np.delete(data, -1, 1)
+	# X = rescale(X)
+	return (X, y)
+
+def get_x_by_sums(X, y_val):
+	x_sums = []
+	for x in X:
+		# sum all vector without the last element (the y={0,1})
+		element = [sum(x[:-1]), y_val]
+		x_sums.append(element)
+	return np.asarray(x_sums)
+
+def get_diff_x(filename):
+	df_diff = pd.read_csv(filename)
+	df_diff = df_diff.drop('Vector',1)
+	data_len = len(df_diff)
+	rand1 ,rand2 = -1, -1
+	rows = []
+	for i in range(500):
+		# check that the random numbers are not equal and not successors
+		while rand1 == rand2 or rand1 + 1 == rand2 or rand2 + 1 == rand1:
+			rand1, rand2 = np.random.randint(data_len), np.random.randint(data_len)
+		diff_vector = create_diff_vector(list(df_diff.iloc[rand1]), list(df_diff.iloc[rand2]))
+		diff_vector.append(0) # for the y vector (sign that this vector is diff vectors)
+		rows.append(diff_vector)
+		rand1 ,rand2 = -1, -1
+	return np.asarray(rows)
+
+def train_model(by_vectors):
+	if by_vectors:
+		X, y = get_xy_by_vectors('equal2.csv', 'count_vectors2.csv')
+	else:
+		X, y = get_xy_by_sums('equal2.csv', 'count_vectors2.csv')
+	X_train, X_test, y_train, y_test = split_train_test(X,y,0.85)
+	clf = LogisticRegression(random_state=0).fit(X_train, y_train)
+	# save train model
+	joblib.dump(clf, "monkey_model.sav")
+	# print(y_test[0])
+	# print(clf.predict(X_test[0].reshape(1,-1)))
+	print(clf.score(X_test, y_test))
+	print(clf.score(X_train, y_train))
+	print(confusion_matrix(y_test, clf.predict(X_test)))
+	# print(clf.coef_)
 
 def get_identified_letters(letters, classifier):
 	found_letters = []
@@ -63,7 +141,6 @@ def rescale(data):
 	return scaler.fit_transform(data)
 
 
-
 def append_to_vectors(vectors, lines, classifier, half_lines=False):
 	if half_lines:
 		letters_1,letters_2 = get_pair_letters(lines,classifier)
@@ -79,7 +156,6 @@ def append_to_vectors(vectors, lines, classifier, half_lines=False):
 
 
 if __name__ == "__main__":
-
 	if(len(sys.argv) < 2):
 		print("Usage: python train_monkey.py by_vectors / by_sum")
 		sys.exit(1)

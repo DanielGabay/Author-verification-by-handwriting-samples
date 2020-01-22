@@ -34,13 +34,18 @@ def tiff_to_jpeg(tiff):
             tiff.seek(page_count+1)
             page_count = page_count+1
         except EOFError:
+           
             page1 = Image.open('temp/page0.jpeg')
             page1 = cut_width(page1, 1)
-            page2 = Image.open('temp/page1.jpeg')
-            page2 = cut_width(page2, 2)
-            
-            concat = get_concat_vertical(page1, page2)
-            concat.save('tiff_as_one_img.jpeg')
+            if page_count > 1:
+                # doc has 2 pages
+                page2 = Image.open('temp/page1.jpeg')
+                page2 = cut_width(page2, 2)
+                concat = get_concat_vertical(page1, page2)
+                concat.save('tiff_as_one_img.jpeg')
+            else:
+                # doc has 1 page
+                page1.save('tiff_as_one_img.jpeg')
             return
 
 
