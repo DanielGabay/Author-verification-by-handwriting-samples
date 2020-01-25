@@ -11,7 +11,7 @@ from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.our_utils.prepare_document import \
     get_prepared_doc
-from models.letterClassifier import load_and_compile_model
+from models.letterClassifier import load_and_compile_letters_model
 
 """
 the main goal of this file is to collect data in order to train a logistic regression _global.LETTERS_MODEL.
@@ -71,7 +71,7 @@ def counter_list(found_letters):
 	precent = [i * (100/len(found_letters)) for i in count_list]
 	return precent
 
-def get_identified_letters(letters, classifier):
+def get_identified_letters(letters):
 	found_letters = []
 	count = 0
 	for letter in letters:
@@ -79,7 +79,7 @@ def get_identified_letters(letters, classifier):
 		letter = letter.reshape((28, 28, 1))
 		test_letter = image.img_to_array(letter)
 		test_image = np.expand_dims(test_letter, axis=0)
-		result = classifier.predict((test_image/255))
+		result = _global.lettersClassifier.predict((test_image/255))
 		if max(result[0]) > 0.995:
 			letter_index = result[0].tolist().index(max(result[0]))
 			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
@@ -90,13 +90,13 @@ def get_identified_letters(letters, classifier):
 	return found_letters
 
 # divide every file to 2 diffrent 'persons'.
-def get_pair_letters(lines,classifier):
+def get_pair_letters(lines):
 	letters = get_letters(lines)
 	size = len(letters)//2
 	letters_1 = letters[:size]
 	letters_2 = letters[size:]
-	identified_letters_1 = get_identified_letters(letters_1,classifier)
-	identified_letters_2 = get_identified_letters(letters_2,classifier)
+	identified_letters_1 = get_identified_letters(letters_1)
+	identified_letters_2 = get_identified_letters(letters_2)
 
 	return identified_letters_1,identified_letters_2
 
@@ -117,7 +117,7 @@ def already_done(doc_name):
 	return False
 
 def main():
-	classifier = load_and_compile_model(_global.LETTERS_MODEL)
+	load_and_compile_letters_model(_global.LETTERS_MODEL)
 	divided_docs = []
 	for root, dirs, files in os.walk(_global.DATA_PATH):
 		for file in files:
@@ -130,7 +130,7 @@ def main():
 			img_name = _global.DATA_PATH + file
 			img = get_prepared_doc(img_name)
 			lines = get_lines(img, img_name)
-			letters_1,letters_2 = get_pair_letters(lines,classifier)
+			letters_1,letters_2 = get_pair_letters(lines)
 			
 			count_list_1 = counter_list(letters_1)  
 			count_list_2 = counter_list(letters_2)

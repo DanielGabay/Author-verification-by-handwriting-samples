@@ -10,15 +10,14 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import StandardScaler
 
+import _global
 from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.our_utils.prepare_document import \
     get_prepared_doc
-from monkey_collect_data import counter_list, create_diff_vector
 from main import save_letters
-from models.letterClassifier import load_and_compile_model
-
-import _global
+from models.letterClassifier import load_and_compile_letters_model
+from monkey_collect_data import counter_list, create_diff_vector
 
 #TEST:
 TEST_FILE_1 = '310.tiff'
@@ -27,7 +26,7 @@ BY_VECTORS = False
 BY_HALF = False
 #
 
-def get_identified_letters(letters, classifier):
+def get_identified_letters(letters):
 	found_letters = []
 	count = 0
 	for letter in letters:
@@ -35,7 +34,7 @@ def get_identified_letters(letters, classifier):
 		letter = letter.reshape((28, 28, 1))
 		test_letter = image.img_to_array(letter)
 		test_image = np.expand_dims(test_letter, axis=0)
-		result = classifier.predict((test_image/255))
+		result = _global.lettersClassifier.predict((test_image/255))
 		if max(result[0]) > 0.995:
 			letter_index = result[0].tolist().index(max(result[0]))
 			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
@@ -46,13 +45,13 @@ def get_identified_letters(letters, classifier):
 	return found_letters
 
 # divide every file to 2 different 'persons'.
-def get_pair_letters(lines,classifier):
+def get_pair_letters(lines):
 	letters = get_letters(lines)
 	size = len(letters)//2
 	letters_1 = letters[:size]
 	letters_2 = letters[size:]
-	identified_letters_1 = get_identified_letters(letters_1,classifier)
-	identified_letters_2 = get_identified_letters(letters_2,classifier)
+	identified_letters_1 = get_identified_letters(letters_1)
+	identified_letters_2 = get_identified_letters(letters_2)
 	return identified_letters_1,identified_letters_2
 
 def rescale(data):
@@ -60,9 +59,9 @@ def rescale(data):
 	scaler = StandardScaler()
 	return scaler.fit_transform(data)
 
-def append_to_vectors(vectors, lines, classifier,doc_name):
+def append_to_vectors(vectors, lines, doc_name):
 	if BY_HALF:
-		letters_1,letters_2 = get_pair_letters(lines,classifier)
+		letters_1,letters_2 = get_pair_letters(lines)
 		count_list_1 = counter_list(letters_1)  
 		count_list_2 = counter_list(letters_2)
 		vectors.append(count_list_1)
@@ -70,14 +69,14 @@ def append_to_vectors(vectors, lines, classifier,doc_name):
 	else:
 		letters = get_letters(lines)
 		print("	>>> Identify Detected Letters")
-		identified_letters = get_identified_letters(letters,classifier)  
-		# identified_letters = save_letters(letters,classifier,doc_name) # save letter
+		identified_letters = get_identified_letters(letters)  
+		# identified_letters = save_letters(letters, doc_name) # save letter
 		count_list = counter_list(identified_letters)
 		vectors.append(count_list)
 
 def test_model():
 	loaded_model = joblib.load(_global.MONKEY_MODEL)
-	classifier = load_and_compile_model(_global.LETTERS_MODEL)
+	load_and_compile_letters_model(_global.LETTERS_MODEL)
 	vectors = []
 
 	# TODO: Change to read only TEST_FILE1 and TEST_FILE2
@@ -92,7 +91,7 @@ def test_model():
 			print("	>>> Detecting Lines")
 			lines = get_lines(img, img_name)
 			print("	>>> Detecting Letters")
-			append_to_vectors(vectors, lines, classifier, doc_name) 
+			append_to_vectors(vectors, lines, doc_name) 
 	print("> Comparing Documents by Monkey Algoritem")
 	get_result(vectors, loaded_model)
 
@@ -124,5 +123,7 @@ if __name__ == "__main__":
 			BY_VECTORS = True
 	else:
 		print('usgae: python test_monkey <file1> <file2> [by_sum/by_vectors]')
+		print('Running default files: {} {}, by_sum', TEST_FILE_1, TEST_FILE_2)
+
 	_global.init('hebrew', monkey_by_vectors=BY_VECTORS)
 	test_model()

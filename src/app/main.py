@@ -11,10 +11,10 @@ from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.our_utils.prepare_document import \
     get_prepared_doc
-from models.letterClassifier import load_and_compile_model
+from models.letterClassifier import load_and_compile_letters_model
 
 
-def save_letters(letters, classifier, doc_name):
+def save_letters(letters, doc_name):
 	found_letters = []
 	out_path = createOutputDirs(doc_name)
 	count = 0
@@ -24,7 +24,7 @@ def save_letters(letters, classifier, doc_name):
 
 		test_letter = image.img_to_array(letter)
 		test_image = np.expand_dims(test_letter, axis=0)
-		result = classifier.predict((test_image/255))
+		result = _global.lettersClassifier.predict((test_image/255))
 		if max(result[0]) > 0.995:
 			letter_index = result[0].tolist().index(max(result[0]))
 			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
@@ -54,7 +54,7 @@ def createOutputDirs(doc_name):
 		os.mkdir(out_path)
 	return out_path
 
-def show_letters(letters, classifier):
+def show_letters(letters):
 	count_good = 0
 	count_all = 0
 	for letter in letters:
@@ -63,7 +63,7 @@ def show_letters(letters, classifier):
 
 		test_letter = image.img_to_array(letter)
 		test_image = np.expand_dims(test_letter, axis=0)
-		result = classifier.predict((test_image/255))
+		result = _global.lettersClassifier.predict((test_image/255))
 		# print_predictions(result[0])
 		if max(result[0]) > 0.995:
 			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
@@ -83,16 +83,16 @@ def show_letters(letters, classifier):
 			plt.close('all')
 	print("{} {} {}".format(count_good, count_all, count_good/count_all))
 
-def main(classifier,doc_name):
+def main(doc_name):
 	img_name = _global.DATA_PATH + doc_name
 	img = get_prepared_doc(img_name)
 	lines = get_lines(img, img_name)
 	letters = get_letters(lines)
 
-	# show_letters(letters, classifier)
+	# show_letters(letters)
 
 
-def main_save_all(classifier):
+def main_save_all():
 	print("###")
 	for root, dirs, files in os.walk(_global.DATA_PATH):
 		print("###")
@@ -106,7 +106,7 @@ def main_save_all(classifier):
 			img = get_prepared_doc(img_name)
 			lines = get_lines(img, img_name)
 			letters = get_letters(lines)
-			found_letters = save_letters(letters, classifier, doc_name)
+			found_letters = save_letters(letters, doc_name)
 
 
 if __name__ == "__main__":
@@ -114,9 +114,9 @@ if __name__ == "__main__":
 		print("Usage: python main.py <[save_all]/[file_name]> ")
 		sys.exit(1)
 	_global.init('hebrew')
-	classifier = load_and_compile_model(_global.LETTERS_MODEL)
+	load_and_compile_letters_model(_global.LETTERS_MODEL)
 	if(sys.argv[1] == 'save_all'):
-		main_save_all(classifier)
+		main_save_all()
 	else: 
 		doc_name = str(sys.argv[1])
-		main(classifier, doc_name)
+		main(doc_name)
