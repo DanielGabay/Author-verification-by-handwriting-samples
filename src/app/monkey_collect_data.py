@@ -6,29 +6,22 @@ import numpy as np
 import pandas as pd
 from keras.preprocessing import image
 
+import _global
 from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.our_utils.prepare_document import \
-	get_prepared_doc
+    get_prepared_doc
 from models.letterClassifier import load_and_compile_model
 
 """
-the main goal of this file is to collect data in order to train a logistic regression model.
+the main goal of this file is to collect data in order to train a logistic regression _global.LETTERS_MODEL.
 every file of essay , we divide to two.To each part we calculate the counter_vector.
 1.equal.csv - each line is an subtraction of the counter_vectors of an equal author.
 2.count_vectors.csv - each line is the counter_vector of a part.
 """
 
-DATA_PATH = "data/"
-MODEL = 'model99'
 EQUAL_FILE = 'equal.csv'
 COUNT_VEC_FILE = "count_vectors.csv"
-
-
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-hebrew_letters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י'\
-			,'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת',\
-		   'ך', 'ם', 'ן', 'ף', 'ץ']
 
 class DividedDoc:
 	def __init__(self,letter_vec1, letter_vec2):
@@ -89,7 +82,7 @@ def get_identified_letters(letters, classifier):
 		result = classifier.predict((test_image/255))
 		if max(result[0]) > 0.995:
 			letter_index = result[0].tolist().index(max(result[0]))
-			selected_letter = hebrew_letters[result[0].tolist().index(max(result[0]))]
+			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
 			if selected_letter == "ץ": 
 				continue
 			count += 1
@@ -124,9 +117,9 @@ def already_done(doc_name):
 	return False
 
 def main():
-	classifier = load_and_compile_model(MODEL)  # load the letter model
+	classifier = load_and_compile_model(_global.LETTERS_MODEL)
 	divided_docs = []
-	for root, dirs, files in os.walk(DATA_PATH):
+	for root, dirs, files in os.walk(_global.DATA_PATH):
 		for file in files:
 			doc_name = file.split('.')[0]
 			print(doc_name)
@@ -134,7 +127,7 @@ def main():
 			if already_done(doc_name):
 				continue
 			
-			img_name = DATA_PATH + file
+			img_name = _global.DATA_PATH + file
 			img = get_prepared_doc(img_name)
 			lines = get_lines(img, img_name)
 			letters_1,letters_2 = get_pair_letters(lines,classifier)
@@ -151,5 +144,5 @@ def main():
 
 
 if __name__ == "__main__":
+	_global.init()
 	main()
-

@@ -1,23 +1,20 @@
-from extractComparisonFeatures.detectLines import get_lines
-from extractComparisonFeatures.detectLetters import get_letters
-from extractComparisonFeatures.our_utils.prepare_document import get_prepared_doc
-from models.letterClassifier import load_and_compile_model
-import cv2
-import sys
-from keras.preprocessing import image
-import numpy as np
 import os
+import sys
+
+import cv2
 import matplotlib.pyplot as plt
+import numpy as np
+from keras.preprocessing import image
 
-DATA_PATH = "data/"
+import _global
+from extractComparisonFeatures.detectLetters import get_letters
+from extractComparisonFeatures.detectLines import get_lines
+from extractComparisonFeatures.our_utils.prepare_document import \
+    get_prepared_doc
+from models.letterClassifier import load_and_compile_model
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-hebrew_letters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י'\
-			,'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת',\
-		   'ך', 'ם', 'ן', 'ף', 'ץ']
 
-
-def save_letters(letters, classifier,doc_name):
+def save_letters(letters, classifier, doc_name):
 	found_letters = []
 	out_path = createOutputDirs(doc_name)
 	count = 0
@@ -30,7 +27,7 @@ def save_letters(letters, classifier,doc_name):
 		result = classifier.predict((test_image/255))
 		if max(result[0]) > 0.995:
 			letter_index = result[0].tolist().index(max(result[0]))
-			selected_letter = hebrew_letters[result[0].tolist().index(max(result[0]))]
+			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
 			if selected_letter == "ץ": 
 				continue
 			inner_folder = "{}/{}".format(out_path,letter_index+1)
@@ -45,7 +42,7 @@ def save_letters(letters, classifier,doc_name):
 
 def print_predictions(preidction):
 		for i, v in enumerate(preidction):
-			print(str(i)+" " + hebrew_letters[i]+": "+str(float("{0:.2f}".format(v))))
+			print(str(i)+" " + _global.lang_letters[i]+": "+str(float("{0:.2f}".format(v))))
 		print("______")
 
 def createOutputDirs(doc_name):
@@ -69,7 +66,7 @@ def show_letters(letters, classifier):
 		result = classifier.predict((test_image/255))
 		# print_predictions(result[0])
 		if max(result[0]) > 0.995:
-			selected_letter = hebrew_letters[result[0].tolist().index(max(result[0]))]
+			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
 			if selected_letter == "ץ": 
 				continue
 			count_all += 1
@@ -87,7 +84,7 @@ def show_letters(letters, classifier):
 	print("{} {} {}".format(count_good, count_all, count_good/count_all))
 
 def main(classifier,doc_name):
-	img_name = DATA_PATH + doc_name
+	img_name = _global.DATA_PATH + doc_name
 	img = get_prepared_doc(img_name)
 	lines = get_lines(img, img_name)
 	letters = get_letters(lines)
@@ -96,14 +93,16 @@ def main(classifier,doc_name):
 
 
 def main_save_all(classifier):
-	for root, dirs, files in os.walk(DATA_PATH):
+	print("###")
+	for root, dirs, files in os.walk(_global.DATA_PATH):
+		print("###")
 		for file in files:
 			doc_name = file.split('.')[0]
 			check_path_exist = "out/{}".format(doc_name)
 			if os.path.exists(check_path_exist):   
 				print("{}.tiff already done".format(file))
 				continue
-			img_name = DATA_PATH + file
+			img_name = _global.DATA_PATH + file
 			img = get_prepared_doc(img_name)
 			lines = get_lines(img, img_name)
 			letters = get_letters(lines)
@@ -112,9 +111,10 @@ def main_save_all(classifier):
 
 if __name__ == "__main__":
 	if(len(sys.argv) < 2):
-		print("Usage: python main.py <file_name>")
+		print("Usage: python main.py <[save_all]/[file_name]> ")
 		sys.exit(1)
-	classifier = load_and_compile_model('model99')
+	_global.init('hebrew')
+	classifier = load_and_compile_model(_global.LETTERS_MODEL)
 	if(sys.argv[1] == 'save_all'):
 		main_save_all(classifier)
 	else: 

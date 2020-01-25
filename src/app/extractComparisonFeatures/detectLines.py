@@ -1,14 +1,16 @@
+import os
+import sys
+from statistics import median
+
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
-from scipy.signal import argrelextrema
-from scipy.signal import savgol_filter
-from statistics import median
-import sys
-import os
+from scipy.signal import argrelextrema, savgol_filter
+
 # import detectWords
 from .our_utils.prepare_document import get_prepared_doc
+import _global
 
 """
 sumPixles algoritem is taken from https://github.com/moranzargari/Handwriting-detection-recognition
@@ -132,7 +134,7 @@ def main():
         sys.exit(1)
     
     # reading the image (gray)
-    img_name = "data/" + str(sys.argv[1])
+    img_name = _global.DATA_PATH + str(sys.argv[1])
     # TODO: get the image from the main app
     img = get_prepared_doc(img_name)
     # TODO: return img from the function correctly..

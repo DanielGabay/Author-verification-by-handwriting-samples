@@ -2,29 +2,25 @@ import os
 import sys
 
 import cv2
+import joblib
 import numpy as np
 import pandas as pd
 from keras.preprocessing import image
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import confusion_matrix
 from sklearn.linear_model import LogisticRegression
-import joblib
+from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import StandardScaler
 
+import _global
+from monkey_collect_data import create_diff_vector
 from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.our_utils.prepare_document import \
-	get_prepared_doc
+    get_prepared_doc
 from models.letterClassifier import load_and_compile_model
-from getData_monkey import create_diff_vector
-
-DATA_PATH = "data/"
 
 MODEL_SAVE_AS = "monkey_model.sav"
-
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-hebrew_letters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י'\
-			,'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת',\
-		   'ך', 'ם', 'ן', 'ף', 'ץ']
+
 
 def split_train_test(X, y, train_percent=0.75):
 	size = int(len(X) * train_percent)
@@ -97,7 +93,7 @@ def train_model(by_vectors):
 	X_train, X_test, y_train, y_test = split_train_test(X,y,0.85)
 	clf = LogisticRegression(random_state=0).fit(X_train, y_train)
 	# save train model
-	joblib.dump(clf, "monkey_model.sav")
+	joblib.dump(clf, _global.MONKEY_MODEL)
 	# print(y_test[0])
 	# print(clf.predict(X_test[0].reshape(1,-1)))
 	print(clf.score(X_test, y_test))
@@ -116,7 +112,7 @@ def get_identified_letters(letters, classifier):
 		result = classifier.predict((test_image/255))
 		if max(result[0]) > 0.995:
 			letter_index = result[0].tolist().index(max(result[0]))
-			selected_letter = hebrew_letters[result[0].tolist().index(max(result[0]))]
+			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
 			if selected_letter == "ץ": 
 				continue
 			count += 1
@@ -157,10 +153,12 @@ def append_to_vectors(vectors, lines, classifier, half_lines=False):
 
 if __name__ == "__main__":
 	if(len(sys.argv) < 2):
-		print("Usage: python train_monkey.py by_vectors / by_sum")
+		print("Usage: python train_monkey.py <by_vectors/by_sum>")
 		sys.exit(1)
 	if(sys.argv[1] == 'by_vectors'):
+		_global.init(monkey_by_vectors=True)
 		train_model(True)
 	else: 
+		# by_sum
+		_global.init(monkey_by_vectors=False)
 		train_model(False)
-

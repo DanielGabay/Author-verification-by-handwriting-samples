@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 
-
-
 def union_left_ctr(cur_ctr, next_ctr,canvas):
    """
       the method main job is to combine 2 conturs to 1.
