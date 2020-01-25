@@ -141,8 +141,6 @@ def main():
 			write_to_csv(COUNT_VEC_FILE,doc_name+'_2',count_list_2)
 			
 
-
-
 if __name__ == "__main__":
 	_global.init()
 	main()

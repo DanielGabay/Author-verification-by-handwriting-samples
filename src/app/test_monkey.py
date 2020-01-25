@@ -55,12 +55,10 @@ def get_pair_letters(lines,classifier):
 	identified_letters_2 = get_identified_letters(letters_2,classifier)
 	return identified_letters_1,identified_letters_2
 
-
 def rescale(data):
 	# built in function to rescale data
 	scaler = StandardScaler()
 	return scaler.fit_transform(data)
-
 
 def append_to_vectors(vectors, lines, classifier,doc_name):
 	if BY_HALF:

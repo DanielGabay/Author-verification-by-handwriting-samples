@@ -3,7 +3,7 @@ import _global
 
 def load_and_compile_model(model):
 	'''
-	Load the model .h5 and .json files and  compile it
+	Load the model .h5 and .json files and compile it
 	'''
 	json_file = open('{}{}.json'.format(_global.MODELS_PATH, model), 'r')
 	loaded_model_json = json_file.read()
