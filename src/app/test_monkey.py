@@ -122,8 +122,8 @@ if __name__ == "__main__":
 		if len(sys.argv) == 4 and sys.argv[3] == 'by_vectors':
 			BY_VECTORS = True
 	else:
-		print('usgae: python test_monkey <file1> <file2> [by_sum/by_vectors]')
-		print('Running default files: {} {}, by_sum', TEST_FILE_1, TEST_FILE_2)
+		print('Usgae: python test_monkey <file1> <file2> [by_sum/by_vectors]')
+		print('Running default files: {} {}, by_sum'.format(TEST_FILE_1, TEST_FILE_2))
 
 	_global.init('hebrew', monkey_by_vectors=BY_VECTORS)
 	test_model()
