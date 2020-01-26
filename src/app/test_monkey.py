@@ -1,6 +1,5 @@
 import os
 import sys
-
 import cv2
 import joblib
 import numpy as np
@@ -20,8 +19,10 @@ from models.letterClassifier import load_and_compile_letters_model
 from monkey_collect_data import counter_list, create_diff_vector
 
 #TEST:
-TEST_FILE_1 = '310.tiff'
-TEST_FILE_2 = '11.tiff'
+TEST_FILE_1 = '12.tiff'
+TEST_FILE_2 = '15.tiff'
+
+
 BY_VECTORS = False
 BY_HALF = False
 #
@@ -75,25 +76,23 @@ def append_to_vectors(vectors, lines, doc_name):
 		vectors.append(count_list)
 
 def test_model():
+	files = [TEST_FILE_1,TEST_FILE_2]
 	loaded_model = joblib.load(_global.MONKEY_MODEL)
 	load_and_compile_letters_model(_global.LETTERS_MODEL)
 	vectors = []
 
-	# TODO: Change to read only TEST_FILE1 and TEST_FILE2
-	for root, dirs, files in os.walk(_global.DATA_PATH):
-		for file in files:
-			if file != TEST_FILE_1 and file != TEST_FILE_2:
-				continue
-			doc_name = file.split('.')[0]
-			print("> Prepare Document {}".format(file))
-			img_name = _global.DATA_PATH + file
-			img = get_prepared_doc(img_name)
-			print("	>>> Detecting Lines")
-			lines = get_lines(img, img_name)
-			print("	>>> Detecting Letters")
-			append_to_vectors(vectors, lines, doc_name) 
+	for file in files:
+		doc_name = file.split('.')[0]
+		print("> Prepare Document {}".format(file))
+		img_name = _global.DATA_PATH + file
+		img = get_prepared_doc(img_name)
+		print("	>>> Detecting Lines")
+		lines = get_lines(img, img_name)
+		print("	>>> Detecting Letters")
+		append_to_vectors(vectors, lines, doc_name) 
 	print("> Comparing Documents by Monkey Algoritem")
 	get_result(vectors, loaded_model)
+
 
 def get_result(vectors, loaded_model):
 	diff_vec1 = None
@@ -116,7 +115,7 @@ def prediction_monkey(loaded_model, diff_vec):
 	#print('{} {}'.format(loaded_model.predict_proba(diff_vec.reshape(1,-1)),loaded_model.predict(diff_vec.reshape(1,-1))))
 
 if __name__ == "__main__":
-	if len(sys.argv) > 3:
+	if len(sys.argv) > 2:
 		TEST_FILE_1 = sys.argv[1]
 		TEST_FILE_2 = sys.argv[2]
 		if len(sys.argv) == 4 and sys.argv[3] == 'by_vectors':
