@@ -93,9 +93,7 @@ def main(doc_name):
 
 
 def main_save_all():
-	print("###")
 	for root, dirs, files in os.walk(_global.DATA_PATH):
-		print("###")
 		for file in files:
 			doc_name = file.split('.')[0]
 			check_path_exist = "out/{}".format(doc_name)

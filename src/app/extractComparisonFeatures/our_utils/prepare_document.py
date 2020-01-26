@@ -31,10 +31,9 @@ def tiff_to_jpeg(tiff):
         try:
             save_name = 'page' + str(page_count) + ".jpeg"
             tiff.save('temp/'+save_name)
-            tiff.seek(page_count+1)
             page_count = page_count+1
+            tiff.seek(page_count)
         except EOFError:
-           
             page1 = Image.open('temp/page0.jpeg')
             page1 = cut_width(page1, 1)
             if page_count > 1:

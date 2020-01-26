@@ -20,8 +20,8 @@ every file of essay , we divide to two.To each part we calculate the counter_vec
 2.count_vectors.csv - each line is the counter_vector of a part.
 """
 
-EQUAL_FILE = 'equal.csv'
-COUNT_VEC_FILE = "count_vectors.csv"
+EQUAL_FILE = 'equal2.csv'
+COUNT_VEC_FILE = "count_vectors2.csv"
 
 class DividedDoc:
 	def __init__(self,letter_vec1, letter_vec2):
@@ -136,6 +136,7 @@ def main():
 			count_list_2 = counter_list(letters_2)
 
 			diff_vec = create_diff_vector(count_list_1,count_list_2)
+			diff_vec.append(1) # append 1 as the y value of equal author
 			write_to_csv(EQUAL_FILE,doc_name,diff_vec)
 			write_to_csv(COUNT_VEC_FILE,doc_name+'_1',count_list_1)
 			write_to_csv(COUNT_VEC_FILE,doc_name+'_2',count_list_2)
