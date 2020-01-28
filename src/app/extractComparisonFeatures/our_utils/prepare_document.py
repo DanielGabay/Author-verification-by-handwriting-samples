@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 import os
 import shutil
+import sys
 
 def cut_width(page, page_nume):
     '''
@@ -55,7 +56,11 @@ def get_concat_vertical(im1,im2):
     return dst
 
 def get_prepared_doc(tiff_name='data/500.tiff'):
-    tiff = Image.open(tiff_name)
+    try:
+        tiff = Image.open(tiff_name)
+    except FileNotFoundError:
+            print("ERROR: {}: file not found".format(tiff_name))
+            sys.exit(1)
     tiff_to_jpeg(tiff)
     shutil.rmtree('./temp/')
     return cv2.imread('tiff_as_one_img.jpeg',0)
