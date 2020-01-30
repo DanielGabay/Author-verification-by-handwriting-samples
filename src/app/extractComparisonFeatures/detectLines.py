@@ -110,7 +110,7 @@ def detect_Lines(original, thresh, out_folder):
         roi = original[lines_upper[v]:lines_lower[v + 1], 0:width]
         if roi.shape[0] > 0:    
             lines.append(roi)
-            cv2.imwrite(out_folder + "/" + str(v) + ".png", roi)
+            #cv2.imwrite(out_folder + "/" + str(v) + ".png", roi)
     return lines
 
 def createOutputDirs(img_name):
