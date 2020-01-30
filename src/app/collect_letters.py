@@ -28,10 +28,10 @@ def save_letters(letters, doc_name):
 			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
 			if selected_letter == "ץ": 
 				continue
-			inner_folder = "{}/{}/{}".format("letter_collection",letter_index+1,doc_name)
+			inner_folder = "{}/{}/".format("letter_collection",letter_index+1)
 			if not os.path.exists(inner_folder):   # create folder to contain the line's img
 				os.mkdir(inner_folder)
-			save_name = "{}/{}.jpeg".format(inner_folder,count)
+			save_name = "{}/{}_{}.jpeg".format(inner_folder,doc_name,count)
 			# print(save_name)
 			cv2.imwrite(save_name,letter)
 			count += 1
@@ -86,6 +86,7 @@ def main_save_all():
 			letters = get_letters(lines)
 			found_letters = save_letters(letters, doc_name)
 			write_done_file(done_list,doc_name)
+			
 	print("done")
 
 
