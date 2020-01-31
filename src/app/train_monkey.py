@@ -12,6 +12,7 @@ from sklearn.preprocessing import StandardScaler
 import _global
 from extractComparisonFeatures.detectLetters import get_letters
 from monkey_collect_data import create_diff_vector
+import matplotlib.pyplot as plt
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -42,12 +43,25 @@ def get_x_by_sums(X, y_val):
 		x_sums.append(element)
 	return np.asarray(x_sums)
 
+def plot_sums_data(data):
+	fig, ax = plt.subplots()
+	colors = ['r', 'g']
+	for i in range(2):
+		points = np.array([data[j] for j in range(len(data)) if data[j][1] == i])
+		ax.scatter(points[:, 0], points[:, 1], s=1, c=colors[i])
+	plt.show()
+
+def print_mean_std(X_equal, X_diff):
+    print("Equal-> mean: {} std: {}".format(np.mean(X_equal[:,0]), np.std(X_equal[:,0])))
+    print("Diff-> mean: {} std: {}".format(np.mean(X_diff[:,0]), np.std(X_diff[:,0])))
 
 def get_xy_by_sums(equal_file, count_vec_file):
 	df_euqal = pd.read_csv(equal_file)
 	X_equal = get_x_by_sums(np.asarray(df_euqal.drop('Vector',1)), 1)
 	X_diff = get_x_by_sums(get_diff_x(count_vec_file), 0)
 	data = np.concatenate((X_equal, X_diff), axis=0)
+	# print_mean_std(X_equal, X_diff)
+	# plot_sums_data(data)
 	np.random.shuffle(data)
 	y = data[:,-1]
 	X = np.delete(data, -1, 1)
@@ -83,8 +97,8 @@ def train_model(by_vectors):
 		X, y = get_xy_by_vectors('equal2.csv', 'count_vectors2.csv')
 	else:
 		X, y = get_xy_by_sums('equal2.csv', 'count_vectors2.csv')
-	X_train, X_test, y_train, y_test = split_train_test(X,y,0.85)
-	clf = LogisticRegression(random_state=0).fit(X_train, y_train)
+	X_train, X_test, y_train, y_test = split_train_test(X,y,0.70)
+	clf = LogisticRegression(random_state=0,max_iter=1000).fit(X_train, y_train)
 	joblib.dump(clf, _global.MONKEY_MODEL) 	# save trained model
 	# print(y_test[0])
 	# print(clf.predict(X_test[0].reshape(1,-1)))
@@ -106,7 +120,7 @@ if __name__ == "__main__":
 		# by_vectors
 		_global.init(monkey_by_vectors=True)
 		train_model(True)
-	else: 
+	else:
 		# by_sum
 		_global.init(monkey_by_vectors=False)
 		train_model(False)

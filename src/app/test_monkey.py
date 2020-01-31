@@ -100,6 +100,7 @@ def get_result(vectors, loaded_model):
 		diff_vec1 = create_diff_vector(vectors[0],vectors[1])
 	else:
 		diff_vec1 = sum(create_diff_vector(vectors[0],vectors[1]))
+		print(diff_vec1)
 	prediction_monkey(loaded_model, diff_vec1) 
 
 		
