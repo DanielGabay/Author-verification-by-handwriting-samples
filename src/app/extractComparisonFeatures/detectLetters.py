@@ -114,10 +114,9 @@ def find_letters(word_image):
          else:
             roi = canvas[y:y + h, x:x + w]
             roiriginal = word_image[y:y + h, x:x + w]
-         roi = draw_white_cells(roiriginal, roi)
 
-         img_b = np.pad(roi, pad_width=10, mode='constant', constant_values=255)
-         letterInfo = charInfo(img_b, roi.shape[0])
+         img_b = np.pad(roiriginal, pad_width=10, mode='constant', constant_values=255)
+         letterInfo = charInfo(img_b, roiriginal.shape[0])
 
          # cv2.imshow(str(i), img_b)
          # cv2.waitKey(0)

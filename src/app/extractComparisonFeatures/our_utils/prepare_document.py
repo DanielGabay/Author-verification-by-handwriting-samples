@@ -12,14 +12,15 @@ def cut_width(page, page_nume):
     Note: there is a difference between pages
     '''
     width, height = page.size
+    bottom = height
     if page_nume == 1:
         left = 104
         right = width
     else:
         left = 0
         right = width-104
+        bottom = bottom - 622
     top = 0
-    bottom = height
     cropped = page.crop((left, top, right, bottom))
     # cropped.show()
     return cropped

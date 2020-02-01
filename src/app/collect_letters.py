@@ -12,7 +12,9 @@ from extractComparisonFeatures.our_utils.prepare_document import \
 from models.letterClassifier import load_and_compile_letters_model
 
 done_path = "{}/{}".format("letter_collection","done_with.txt")
-threshold = 0.6
+max_threshold = 0.995
+min_threshold = 0.9
+
 
 def save_letters(letters, doc_name):
 	count = 0
@@ -23,16 +25,21 @@ def save_letters(letters, doc_name):
 		test_letter = image.img_to_array(letter)
 		test_image = np.expand_dims(test_letter, axis=0)
 		result = _global.lettersClassifier.predict((test_image/255))
-		if max(result[0]) > threshold:
-			letter_index = result[0].tolist().index(max(result[0]))
-			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
+		max_result = max(result[0])
+		threshold = -1
+		if max_result >= max_threshold:
+			threshold = max_threshold
+		elif max_result >= min_threshold:
+			threshold = min_threshold
+		if threshold != -1:
+			letter_index = result[0].tolist().index(max_result)
+			inner_folder = "{}/{}/{}/".format("letter_collection",letter_index+1, threshold*100)
+			selected_letter = _global.lang_letters[result[0].tolist().index(max_result)]
 			if selected_letter == "ץ": 
 				continue
-			inner_folder = "{}/{}/".format("letter_collection",letter_index+1)
 			if not os.path.exists(inner_folder):   # create folder to contain the line's img
 				os.mkdir(inner_folder)
 			save_name = "{}/{}_{}.jpeg".format(inner_folder,doc_name,count)
-			# print(save_name)
 			cv2.imwrite(save_name,letter)
 			count += 1
 
