@@ -11,6 +11,7 @@ from keras.callbacks import TensorBoard
 from keras.layers import Conv2D, Dense, Input, MaxPooling2D, UpSampling2D
 from keras.models import Model
 
+
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]="1" #model will be trained on GPU 1
 
@@ -58,8 +59,8 @@ class AutoEncoder:
 	def encoder_decoder(self):
 		ec = self._encoder()
 		dc = self._decoder()
-
-		inputs = Input(shape=self.X[0].shape)
+		print(self.X[0].shape)
+		inputs = Input(shape=(28, 28, 784))
 		ec_out = ec(inputs)
 		dc_out = dc(ec_out)
 		model = Model(inputs, dc_out)
@@ -83,6 +84,7 @@ class AutoEncoder:
 				img = cv2.imread(path + "/" + file, 0)
 				data.append(np.array(img))
 		self.X = np.asarray(data)
+		print(len(self.X))
 		# self.X = np.reshape(self.X, (len(self.X), 28, 28, 1))
 
 	def save(self, name=""):
@@ -113,7 +115,7 @@ class AutoEncoder:
 
 if __name__ == '__main__':
 	path = os.path.dirname(os.path.abspath(__file__))
-	path += '/dataset/4'
+	path += '/dataset/5'
 	ae = AutoEncoder()
 	ae.read_dataset(path)
 	ae.encoder_decoder()
