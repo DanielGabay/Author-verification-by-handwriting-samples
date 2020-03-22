@@ -8,6 +8,22 @@ from keras.datasets import mnist
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+
+def save_model(model, name=""):
+		path = os.path.dirname(os.path.abspath(__file__))
+		path += "/weights/"
+		if not os.path.exists(path):
+			os.mkdir(path)
+
+		# save train to Json
+		encoder_json = model.to_json()
+		with open(path + "encoder_" + name +".json" ,"w") as json_file:
+			json_file.write(encoder_json)
+		# serialize weights to HDF5
+		model.save_weights(path + "encoder_" + name + ".h5")
+
+
 def read_dataset(path):
 	data = []
 	path = os.path.dirname(os.path.abspath(__file__)) + path
@@ -18,30 +34,6 @@ def read_dataset(path):
 	print (len(data))
 	return np.asarray(data) , np.asarray(data)
 
-def save(encoder,decoder,model, name=""):
-		path = os.path.dirname(os.path.abspath(__file__))
-		path += "/weights/"
-		if not os.path.exists(path):
-			os.mkdir(path)
-
-		# save train to Json
-		encoder_json = encoder.to_json()
-		with open(path + "encoder_" + name +".json" ,"w") as json_file:
-			json_file.write(encoder_json)
-		# serialize weights to HDF5
-		encoder.save_weights(path + "encoder_" + name + ".h5")
-
-		decoder_json = decoder.to_json()
-		with open(path + "decoder_" + name +".json" ,"w") as json_file:
-			json_file.write(decoder_json)
-		# serialize weights to HDF5
-		decoder.save_weights(path + "decoder_" + name + ".h5")
-
-		ae_json = model.to_json()
-		with open(path + "ae_" + name + ".json" ,"w") as json_file:
-			json_file.write(decoder_json)
-		# serialize weights to HDF5
-		model.save_weights(path + "ae_" + name + ".h5")
 
 input_img = Input(shape=(28, 28, 1))  # adapt this if using `channels_first` image data format
 
@@ -74,11 +66,12 @@ x_test = x_test.astype('float32') / 255.
 x_train = np.reshape(x_train, (len(x_train), 28, 28, 1))  # adapt this if using `channels_first` image data format
 x_test = np.reshape(x_test, (len(x_test), 28, 28, 1))  # adapt this if using `channels_first` image data format
 
-autoencoder.fit(x_train, x_train,
-				epochs=5,
-				batch_size=128,
+autoencoder.fit(x_train, x_train,epochs=5,batch_size=128,
 				shuffle=True,
 				validation_data=(x_test, x_test))
+
+
+save_model(autoencoder)
 
 decoded_imgs = autoencoder.predict(x_test)
 
