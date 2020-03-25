@@ -18,14 +18,14 @@ from main import save_letters
 from models.letterClassifier import load_and_compile_letters_model
 from monkey_collect_data import counter_list, create_diff_vector
 
-#TEST:
-TEST_FILE_1 = '12.tiff'
-TEST_FILE_2 = '15.tiff'
-
 
 BY_VECTORS = False
 BY_HALF = False
-#
+PRINT_VERBOSE = False
+
+def print_verbose(str):
+	if PRINT_VERBOSE:
+		print(str)
 
 def get_identified_letters(letters):
 	found_letters = []
@@ -69,28 +69,31 @@ def append_to_vectors(vectors, lines, doc_name):
 		vectors.append(count_list_2)
 	else:
 		letters = get_letters(lines)
-		print("	>>> Identify Detected Letters")
+		print_verbose("	>>> Identify Detected Letters")
 		identified_letters = get_identified_letters(letters)  
 		# identified_letters = save_letters(letters, doc_name) # save letter
 		count_list = counter_list(identified_letters)
 		vectors.append(count_list)
 
-def test_model():
-	files = [TEST_FILE_1,TEST_FILE_2]
+def load_models():
 	loaded_model = joblib.load(_global.MONKEY_MODEL)
 	load_and_compile_letters_model(_global.LETTERS_MODEL)
+	return loaded_model
+
+def test_model(TEST_FILE_1, TEST_FILE_2, loaded_model):
+	files = [TEST_FILE_1,TEST_FILE_2]
 	vectors = []
 
 	for file in files:
 		doc_name = file.split('.')[0]
-		print("> Prepare Document {}".format(file))
+		print_verbose("> Prepare Document {}".format(file))
 		img_name = _global.DATA_PATH + file
 		img = get_prepared_doc(img_name)
-		print("	>>> Detecting Lines")
+		print_verbose("	>>> Detecting Lines")
 		lines = get_lines(img, img_name)
-		print("	>>> Detecting Letters")
+		print_verbose("	>>> Detecting Letters")
 		append_to_vectors(vectors, lines, doc_name) 
-	print("> Comparing Documents by Monkey Algoritem")
+	print_verbose("> Comparing Documents by Monkey Algoritem")
 	get_result(vectors, loaded_model)
 
 
@@ -100,7 +103,7 @@ def get_result(vectors, loaded_model):
 		diff_vec1 = create_diff_vector(vectors[0],vectors[1])
 	else:
 		diff_vec1 = sum(create_diff_vector(vectors[0],vectors[1]))
-		print(diff_vec1)
+		print("Sum: {}".format(diff_vec1))
 	prediction_monkey(loaded_model, diff_vec1) 
 
 		
@@ -113,17 +116,34 @@ def prediction_monkey(loaded_model, diff_vec):
 	else:
 		print("<Same Author> [confident: {0:.2f}%]".format(result[0][1]*100))
 	
-	#print('{} {}'.format(loaded_model.predict_proba(diff_vec.reshape(1,-1)),loaded_model.predict(diff_vec.reshape(1,-1))))
+	#print_verbose('{} {}'.format(loaded_model.predict_proba(diff_vec.reshape(1,-1)),loaded_model.predict(diff_vec.reshape(1,-1))))
+
+def test_all_same(loaded_model):
+	b_files = []
+	for root, dirs, files in os.walk(_global.DATA_PATH):
+		b_files = [x for x in files if 'b' in x]	
+	for i in range(len(b_files)):
+		TEST_FILE_1 = b_files[i]
+		TEST_FILE_2 = b_files[i].replace('b','').replace('png','tiff')
+		print("\n---------------------")
+		print("Test: {} {}".format(TEST_FILE_1, TEST_FILE_2))
+		test_model(TEST_FILE_1, TEST_FILE_2, loaded_model)
 
 if __name__ == "__main__":
-	if len(sys.argv) > 2:
+	if len(sys.argv) > 1:
+		if 'by_vectors' in sys.argv:
+			BY_VECTORS = True
+		_global.init('hebrew', monkey_by_vectors=BY_VECTORS)
+		loaded_model = load_models()
+		print_verbose(sys.argv[1])
+		if sys.argv[1] == 'all_same':
+			test_all_same(loaded_model)
+			sys.exit(0)
 		TEST_FILE_1 = sys.argv[1]
 		TEST_FILE_2 = sys.argv[2]
-		if len(sys.argv) == 4 and sys.argv[3] == 'by_vectors':
-			BY_VECTORS = True
-	else:
-		print('Usgae: python test_monkey <file1> <file2> [by_sum/by_vectors]')
-		print('Running default files: {} {}, by_sum'.format(TEST_FILE_1, TEST_FILE_2))
+		test_model(TEST_FILE_1, TEST_FILE_2, loaded_model)
 
-	_global.init('hebrew', monkey_by_vectors=BY_VECTORS)
-	test_model()
+	else:
+		print('Usgae Option1: python test_monkey <file1> <file2> [by_sum/by_vectors]')
+		print('Usage Option2: python test_monkey all_same [by_sum/by_vectors]')
+	

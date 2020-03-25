@@ -6,24 +6,33 @@ import os
 import shutil
 import sys
 
-def cut_width(page, page_nume):
+def cut_width(page, page_num, is_png=False):
     '''
     Cut uncessery scanned page from left and right
     Note: there is a difference between pages
     '''
     width, height = page.size
     bottom = height
-    if page_nume == 1:
-        left = 104
-        right = width
-    else:
-        left = 0
-        right = width-104
-        bottom = bottom - 622
     top = 0
+    right = width
+    left = 0
+    if is_png:
+        left = 95
+        bottom = bottom - 300
+    elif page_num == 1:
+        left = 104
+    else:
+        right = width - 104
+        bottom = bottom - 622
     cropped = page.crop((left, top, right, bottom))
     # cropped.show()
     return cropped
+
+def png_to_jpeg(png):
+    cropped = cut_width(png, 0, True)
+    # cropped.show()
+    png.save('tiff_as_one_img.jpeg')
+    
 
 def tiff_to_jpeg(tiff):
     page_count = 0
@@ -56,12 +65,16 @@ def get_concat_vertical(im1,im2):
     dst.paste(im2, (0, im1.height))
     return dst
 
-def get_prepared_doc(tiff_name='data/500.tiff'):
+def get_prepared_doc(name='data/500.tiff'):
+    extantion = name.split('.')[1]
     try:
-        tiff = Image.open(tiff_name)
+        img = Image.open(name)
     except FileNotFoundError:
-            print("ERROR: {}: file not found".format(tiff_name))
+            print("ERROR: {}: file not found".format(name))
             sys.exit(1)
-    tiff_to_jpeg(tiff)
-    shutil.rmtree('./temp/')
+    if extantion == 'tiff':
+        tiff_to_jpeg(img)
+        shutil.rmtree('./temp/')
+    if extantion == 'png':
+        png_to_jpeg(img)
     return cv2.imread('tiff_as_one_img.jpeg',0)
