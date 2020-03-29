@@ -103,7 +103,7 @@ def get_result(vectors, loaded_model):
 	else:
 		diff_vec1 = sum(create_diff_vector(vectors[0],vectors[1]))
 		print("Sum: {}".format(diff_vec1))
-	prediction_monkey(loaded_model, diff_vec1) 
+	return prediction_monkey(loaded_model, diff_vec1) 
 
 def prediction_monkey(loaded_model, diff_vec):
 	diff_vec = np.asarray(diff_vec)
@@ -111,8 +111,11 @@ def prediction_monkey(loaded_model, diff_vec):
 	print("\nMonkey Result:")
 	if result[0][0] > 0.5:
 		print("<Different Authors> [Confident: {0:.2f}%]".format(result[0][0]*100))
+		return False, result[0][0]
 	else:
 		print("<Same Author> [confident: {0:.2f}%]".format(result[0][1]*100))
+		return True, result[0][1]
+		
 	#print_verbose('{} {}'.format(loaded_model.predict_proba(diff_vec.reshape(1,-1)),loaded_model.predict(diff_vec.reshape(1,-1))))
 
 def test_all_same(loaded_model):
@@ -128,12 +131,72 @@ def test_all_same(loaded_model):
 		print("Test: {} {}".format(TEST_FILE_1, TEST_FILE_2))
 		test_model(TEST_FILE_1, TEST_FILE_2, loaded_model)
 
+def get_count_list(file):
+	doc_name = file.split('.')[0]
+	img_name = _global.DATA_PATH + file
+	img = get_prepared_doc(img_name)
+	lines = get_lines(img, img_name)
+	letters = get_letters(lines)
+	identified_letters = get_identified_letters(letters)
+	count_list = counter_list(identified_letters)
+	return count_list
+
+def test_conf_matrix(loaded_model):
+	all_files = []
+	count_vectors = []
+	tp, fp, tn, fn = 0, 0, 0, 0
+	tp_prec, fp_prec, tn_prec, fn_prec = 0, 0, 0, 0
+	for root, dirs, files in os.walk(_global.DATA_PATH):
+		b_files = [x for x in files if 'b' in x]
+		a_files = [x.replace('b', '') for x in b_files]
+		all_files = a_files + b_files
+	
+	for file in all_files:
+		print("Get count list of {}".format(file))
+		count_list = get_count_list(file)
+		count_vectors.append([file, count_list])
+	
+	for i in range(len(count_vectors)):
+		for j in range(i+1,len(count_vectors)):
+			test1, test2 = count_vectors[i][0], count_vectors[j][0]
+			if test1 == test2:
+				continue
+			same_author = False
+			if test1.replace('b','') == test2 or test2.replace('b','') == test1:
+				same_author = True
+			print("\n---------------------")
+			print("Test: {} {}".format(test1, test2))
+			diff_vectors = []
+			diff_vectors.append(count_vectors[i][1])
+			diff_vectors.append(count_vectors[j][1])
+			result, precent = get_result(diff_vectors, loaded_model) 
+			if result and same_author:
+				tp += 1
+				tp_prec += precent
+			elif not result and same_author:
+				fn += 1
+				fn_prec += precent
+			elif not result and not same_author:
+				tn += 1
+				tn_prec += precent
+			elif result and not same_author:
+				fp += 1
+				fp_prec += precent
+			print("True-Negative: {}\tFalse-Negative: {}".format(tn, fn))
+			print("False-Positive: {}\tTrue-Positive: {}".format(fp, tp))
+	
+	print("True-Negative-Precent: {}\tFalse-Negative-Precent: {}".format(tn_prec/tn, fn_prec/fn))
+	print("False-Positive-Precent: {}\tTrue-Positive-Precent: {}".format(fp_prec/fp, tp_prec/tp))
+
 if __name__ == "__main__":
 	if len(sys.argv) > 1:
 		if 'by_vectors' in sys.argv:
 			BY_VECTORS = True
 		_global.init('hebrew', monkey_by_vectors=BY_VECTORS)
 		loaded_model = load_models()
+		if sys.argv[1] == 'conf_matrix':
+			test_conf_matrix(loaded_model)
+			sys.exit(0)
 		if sys.argv[1] == 'all_same':
 			test_all_same(loaded_model)
 			sys.exit(0)
