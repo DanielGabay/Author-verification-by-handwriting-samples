@@ -13,7 +13,7 @@ from models.letterClassifier import load_and_compile_letters_model
 
 done_path = "{}/{}".format("letter_collection","done_with.txt")
 max_threshold = 0.995
-min_threshold = 0.9
+min_threshold = 0.95
 
 
 def save_letters(letters, doc_name):

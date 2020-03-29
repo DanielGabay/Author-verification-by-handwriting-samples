@@ -83,7 +83,6 @@ def load_models():
 def test_model(TEST_FILE_1, TEST_FILE_2, loaded_model):
 	files = [TEST_FILE_1,TEST_FILE_2]
 	vectors = []
-
 	for file in files:
 		doc_name = file.split('.')[0]
 		print_verbose("> Prepare Document {}".format(file))
@@ -92,7 +91,7 @@ def test_model(TEST_FILE_1, TEST_FILE_2, loaded_model):
 		print_verbose("	>>> Detecting Lines")
 		lines = get_lines(img, img_name)
 		print_verbose("	>>> Detecting Letters")
-		append_to_vectors(vectors, lines, doc_name) 
+		append_to_vectors(vectors, lines, doc_name)
 	print_verbose("> Comparing Documents by Monkey Algoritem")
 	get_result(vectors, loaded_model)
 
@@ -106,7 +105,6 @@ def get_result(vectors, loaded_model):
 		print("Sum: {}".format(diff_vec1))
 	prediction_monkey(loaded_model, diff_vec1) 
 
-		
 def prediction_monkey(loaded_model, diff_vec):
 	diff_vec = np.asarray(diff_vec)
 	result = loaded_model.predict_proba(diff_vec.reshape(1,-1))
@@ -115,7 +113,6 @@ def prediction_monkey(loaded_model, diff_vec):
 		print("<Different Authors> [Confident: {0:.2f}%]".format(result[0][0]*100))
 	else:
 		print("<Same Author> [confident: {0:.2f}%]".format(result[0][1]*100))
-	
 	#print_verbose('{} {}'.format(loaded_model.predict_proba(diff_vec.reshape(1,-1)),loaded_model.predict(diff_vec.reshape(1,-1))))
 
 def test_all_same(loaded_model):
@@ -124,7 +121,9 @@ def test_all_same(loaded_model):
 		b_files = [x for x in files if 'b' in x]	
 	for i in range(len(b_files)):
 		TEST_FILE_1 = b_files[i]
-		TEST_FILE_2 = b_files[i].replace('b','').replace('png','tiff')
+		# uncomment if comparing *.tiff and *b.png files
+		# TEST_FILE_2 = b_files[i].replace('b','').replace('png','tiff')
+		TEST_FILE_2 = b_files[i].replace('b','')
 		print("\n---------------------")
 		print("Test: {} {}".format(TEST_FILE_1, TEST_FILE_2))
 		test_model(TEST_FILE_1, TEST_FILE_2, loaded_model)
@@ -135,7 +134,6 @@ if __name__ == "__main__":
 			BY_VECTORS = True
 		_global.init('hebrew', monkey_by_vectors=BY_VECTORS)
 		loaded_model = load_models()
-		print_verbose(sys.argv[1])
 		if sys.argv[1] == 'all_same':
 			test_all_same(loaded_model)
 			sys.exit(0)

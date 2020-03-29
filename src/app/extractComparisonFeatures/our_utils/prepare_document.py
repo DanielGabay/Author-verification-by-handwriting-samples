@@ -13,25 +13,32 @@ def cut_width(page, page_num, is_png=False):
     '''
     width, height = page.size
     bottom = height
-    top = 0
     right = width
+    top = 0
     left = 0
-    if is_png:
-        left = 95
-        bottom = bottom - 300
-    elif page_num == 1:
-        left = 104
-    else:
-        right = width - 104
-        bottom = bottom - 622
+    if page_num == 1:
+        if is_png:
+            left = 37
+        else: # is tiff
+            left = 100
+    elif page_num == 2:
+        if is_png:
+            right = width - 80
+            bottom = bottom - 300
+        else: # is tiff
+            right = width - 100
+            bottom = bottom - 622
     cropped = page.crop((left, top, right, bottom))
     # cropped.show()
     return cropped
 
 def png_to_jpeg(png):
-    cropped = cut_width(png, 0, True)
-    # cropped.show()
-    png.save('tiff_as_one_img.jpeg')
+    width, height = png.size
+    page1, page2 = png.crop((0, 0, width, height/2)), png.crop((0,height/2, width, height))
+    page1, page2 = cut_width(page1, 1, True), cut_width(page2, 2, True)
+    concat = get_concat_vertical(page1, page2)
+    concat.save('tiff_as_one_img.jpeg')
+    # concat.show()
     
 
 def tiff_to_jpeg(tiff):
@@ -41,7 +48,14 @@ def tiff_to_jpeg(tiff):
     while 1:
         try:
             save_name = 'page' + str(page_count) + ".jpeg"
-            tiff.save('temp/'+save_name)
+            try:
+                tiff.save('temp/'+save_name)
+            except OSError:
+                '''
+                Deal with OSError by saving tiff as jpeg
+                '''
+                tiff = tiff.convert("RGB")
+                tiff.save('temp/'+save_name)
             page_count = page_count+1
             tiff.seek(page_count)
         except EOFError:
