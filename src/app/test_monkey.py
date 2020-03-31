@@ -1,5 +1,6 @@
 import os
 import sys
+
 import cv2
 import joblib
 import numpy as np
@@ -17,6 +18,7 @@ from extractComparisonFeatures.our_utils.prepare_document import \
 from main import save_letters
 from models.letterClassifier import load_and_compile_letters_model
 from monkey_collect_data import counter_list, create_diff_vector
+
 
 
 BY_VECTORS = False
@@ -76,11 +78,11 @@ def append_to_vectors(vectors, lines, doc_name):
 		vectors.append(count_list)
 
 def load_models():
-	loaded_model = joblib.load(_global.MONKEY_MODEL)
+	monkey_model = joblib.load(_global.MODELS_PATH + _global.MONKEY_MODEL)
+	_global.monkeyClassifier = monkey_model
 	load_and_compile_letters_model(_global.LETTERS_MODEL)
-	return loaded_model
 
-def test_model(TEST_FILE_1, TEST_FILE_2, loaded_model):
+def test_model(TEST_FILE_1, TEST_FILE_2):
 	files = [TEST_FILE_1,TEST_FILE_2]
 	vectors = []
 	for file in files:
@@ -93,21 +95,21 @@ def test_model(TEST_FILE_1, TEST_FILE_2, loaded_model):
 		print_verbose("	>>> Detecting Letters")
 		append_to_vectors(vectors, lines, doc_name)
 	print_verbose("> Comparing Documents by Monkey Algoritem")
-	get_result(vectors, loaded_model)
+	get_result(vectors)
 
 
-def get_result(vectors, loaded_model):
+def get_result(vectors):
 	diff_vec1 = None
 	if BY_VECTORS:
 		diff_vec1 = create_diff_vector(vectors[0],vectors[1])
 	else:
 		diff_vec1 = sum(create_diff_vector(vectors[0],vectors[1]))
 		print("Sum: {}".format(diff_vec1))
-	return prediction_monkey(loaded_model, diff_vec1) 
+	return prediction_monkey(diff_vec1) 
 
-def prediction_monkey(loaded_model, diff_vec):
+def prediction_monkey(diff_vec):
 	diff_vec = np.asarray(diff_vec)
-	result = loaded_model.predict_proba(diff_vec.reshape(1,-1))
+	result = _global.monkeyClassifier.predict_proba(diff_vec.reshape(1,-1))
 	print("\nMonkey Result:")
 	if result[0][0] > 0.5:
 		print("<Different Authors> [Confident: {0:.2f}%]".format(result[0][0]*100))
@@ -116,9 +118,9 @@ def prediction_monkey(loaded_model, diff_vec):
 		print("<Same Author> [confident: {0:.2f}%]".format(result[0][1]*100))
 		return True, result[0][1]
 		
-	#print_verbose('{} {}'.format(loaded_model.predict_proba(diff_vec.reshape(1,-1)),loaded_model.predict(diff_vec.reshape(1,-1))))
+	#print_verbose('{} {}'.format(_global.monkeyClassifier.predict_proba(diff_vec.reshape(1,-1)),_global.monkeyClassifier.predict(diff_vec.reshape(1,-1))))
 
-def test_all_same(loaded_model):
+def test_all_same():
 	b_files = []
 	for root, dirs, files in os.walk(_global.DATA_PATH):
 		b_files = [x for x in files if 'b' in x]	
@@ -129,7 +131,7 @@ def test_all_same(loaded_model):
 		TEST_FILE_2 = b_files[i].replace('b','')
 		print("\n---------------------")
 		print("Test: {} {}".format(TEST_FILE_1, TEST_FILE_2))
-		test_model(TEST_FILE_1, TEST_FILE_2, loaded_model)
+		test_model(TEST_FILE_1, TEST_FILE_2)
 
 def get_count_list(file):
 	doc_name = file.split('.')[0]
@@ -141,7 +143,7 @@ def get_count_list(file):
 	count_list = counter_list(identified_letters)
 	return count_list
 
-def test_conf_matrix(loaded_model):
+def test_conf_matrix():
 	all_files = []
 	count_vectors = []
 	tp, fp, tn, fn = 0, 0, 0, 0
@@ -169,7 +171,7 @@ def test_conf_matrix(loaded_model):
 			diff_vectors = []
 			diff_vectors.append(count_vectors[i][1])
 			diff_vectors.append(count_vectors[j][1])
-			result, precent = get_result(diff_vectors, loaded_model) 
+			result, precent = get_result(diff_vectors) 
 			if result and same_author:
 				tp += 1
 				tp_prec += precent
@@ -193,18 +195,17 @@ if __name__ == "__main__":
 		if 'by_vectors' in sys.argv:
 			BY_VECTORS = True
 		_global.init('hebrew', monkey_by_vectors=BY_VECTORS)
-		loaded_model = load_models()
+		load_models()
 		if sys.argv[1] == 'conf_matrix':
-			test_conf_matrix(loaded_model)
+			test_conf_matrix()
 			sys.exit(0)
 		if sys.argv[1] == 'all_same':
-			test_all_same(loaded_model)
+			test_all_same()
 			sys.exit(0)
 		TEST_FILE_1 = sys.argv[1]
 		TEST_FILE_2 = sys.argv[2]
-		test_model(TEST_FILE_1, TEST_FILE_2, loaded_model)
+		test_model(TEST_FILE_1, TEST_FILE_2)
 
 	else:
 		print('Usgae Option1: python test_monkey <file1> <file2> [by_sum/by_vectors]')
 		print('Usage Option2: python test_monkey all_same [by_sum/by_vectors]')
-	

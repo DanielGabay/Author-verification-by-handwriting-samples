@@ -30,8 +30,3 @@ def init(language='hebrew', monkey_by_vectors=False):
         MONKEY_MODEL = 'monkey_model_by_vectors.sav'
     else:
         MONKEY_MODEL = 'monkey_model_by_sum.sav'
-
-
-
-
-    
