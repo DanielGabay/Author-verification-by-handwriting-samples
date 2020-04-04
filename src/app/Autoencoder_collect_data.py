@@ -14,7 +14,8 @@ from models.letterClassifier import load_and_compile_letters_model
 import csv
 
 PATH = os.path.dirname(os.path.abspath(__file__))
-FEATUERS_FILE = PATH +'/Autoencoder/save_features.csv'
+FEATUERS_PATH = PATH +'/Autoencoder'
+
 
 def load_and_compile_ae(name):
 	# load json and create model
@@ -30,12 +31,12 @@ def load_and_compile_ae(name):
 	return classifier
 
 
-def write_vec_to_exel(img_name,letter,encoded_states):
+def write_vec_to_exel(featuers_file,img_name,letter,encoded_states):
 	
 	row = [img_name,letter]
 	row.extend(encoded_states)
 
-	with open(FEATUERS_FILE, "a", newline='') as fp:
+	with open(featuers_file, "a", newline='') as fp:
 		wr = csv.writer(fp, dialect='excel')
 		wr.writerow(row)
 
@@ -48,13 +49,14 @@ def get_features(encoder,img_letter):
 		encoded_states = encoder.predict(img_letter)
 		return encoded_states.ravel()
 
-def already_done(doc_name):
+def already_done(featuers_file,doc_name):
 
-	with open(FEATUERS_FILE, "r") as f:
+	mode = 'r' if os.path.exists(featuers_file) else 'w+'
+	with open(featuers_file, mode) as f:
 		csvreader = csv.reader(f, delimiter=",")
 		for row in csvreader:
 			if len(row) > 0 and doc_name in row[0]:
-				print('Element exists in Dataframe!')
+				# print('Element exists in Dataframe!')
 				return True
 	return False
 
@@ -68,13 +70,14 @@ def main():
 			rel_file = os.path.join(rel_dir, file_name)
 			
 			doc_name = file_name.split('.')[0]
-			print(doc_name)
-			if already_done(doc_name):
+			featuers_file = "{}/save_featuers_{}.csv".format(FEATUERS_PATH,rel_dir)
+			# print(doc_name)
+			if already_done(featuers_file,doc_name):
 				continue
-
+			
 			img = cv2.imread("{}/{}".format(PATH_TO_DATA,rel_file), 0)
 			features = get_features(encoder,img)
-			write_vec_to_exel(doc_name,rel_dir,features)
+			write_vec_to_exel(featuers_file,doc_name,rel_dir,features)
 			
 if __name__ == "__main__":
 	main()
