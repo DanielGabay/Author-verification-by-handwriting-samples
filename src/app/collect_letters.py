@@ -19,7 +19,7 @@ min_threshold = 0.95
 def save_letters(letters, doc_name):
 	count = 0
 	for letter in letters:
-		letter = cv2.resize(letter.image_letter, (28, 28))
+		letter = cv2.resize(letter, (28, 28))
 		letter = letter.reshape((28, 28, 1))
 
 		test_letter = image.img_to_array(letter)

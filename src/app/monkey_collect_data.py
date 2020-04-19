@@ -7,6 +7,7 @@ import pandas as pd
 from keras.preprocessing import image
 
 import _global
+from classes import IdLetter
 from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.our_utils.prepare_document import \
@@ -22,6 +23,7 @@ every file of essay , we divide to two.To each part we calculate the counter_vec
 
 EQUAL_FILE = 'equal2.csv'
 COUNT_VEC_FILE = "count_vectors2.csv"
+current_script_name = os.path.basename(__file__).split('.')[0]
 
 class DividedDoc:
 	def __init__(self,letter_vec1, letter_vec2):
@@ -64,18 +66,33 @@ def create_diff_vector(list_1,list_2):
 		diff_vector[i] =  abs(list_1[i] - list_2[i])
 	return diff_vector
 
+def get_monkey_features(found_letters):
+	'''
+	function just for convinent read in main.py
+	'''
+	return counter_list(found_letters)
+
 def counter_list(found_letters):
+	'''
+	returns the 'feature vector' for a given found_letters
+	'''
 	count_list = [0] * 27
 	for letter in found_letters:
 		count_list[(letter['letter_index'])]+=1
-	precent = [i * (100/len(found_letters)) for i in count_list]
-	return precent
+	length = len(found_letters)
+	counter_list_precent = [i * (100/length) for i in count_list]
+	return counter_list_precent
 
 def get_identified_letters(letters):
+	# for main use only:
+	global current_script_name
+	if __name__ != current_script_name:
+		print("####")
+		Id_Letters = []
 	found_letters = []
 	count = 0
 	for letter in letters:
-		letter = cv2.resize(letter.image_letter, (28, 28))
+		letter = cv2.resize(letter, (28, 28))
 		letter = letter.reshape((28, 28, 1))
 		test_letter = image.img_to_array(letter)
 		test_image = np.expand_dims(test_letter, axis=0)
@@ -87,6 +104,10 @@ def get_identified_letters(letters):
 				continue
 			count += 1
 			found_letters.append({'image_letter': letter , 'letter_index': letter_index, 'letter_name': selected_letter})
+			if __name__ != current_script_name:
+				Id_Letters.append(IdLetter(letter,selected_letter))
+	if __name__ != current_script_name:
+		return found_letters, Id_Letters
 	return found_letters
 
 # divide every file to 2 diffrent 'persons'.

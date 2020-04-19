@@ -42,21 +42,21 @@ def draw_white_cells(roiriginal, roi):
             roi_temp[k][j] = 255
    return roi_temp
 
-def find_letters(word_image):
+def find_letters(line_image):
    """
       this function is the main function in this algorithm,
       the function cut each letter from the word image by using findconturs function
-      each contur is part of the word image that contain a letter.
+      each contur is part of the line image that contain a letter.
       also the function is handling few cases to get each letter without a noise around.
-   :param word_image: the word image
+   :param line_image: the word image
    :return: a list of objects , each object contain the letter image and info about the image
    """
    
-   if word_image.shape[0] < 40:
-      word_image = cv2.resize(word_image, (word_image.shape[1] * 2, word_image.shape[0] * 2))
+   if line_image.shape[0] < 40:
+      line_image = cv2.resize(line_image, (line_image.shape[1] * 2, line_image.shape[0] * 2))
 
    #binary
-   ret,thresh = cv2.threshold(word_image, 109, 255, cv2.THRESH_BINARY_INV)
+   ret,thresh = cv2.threshold(line_image, 109, 255, cv2.THRESH_BINARY_INV)
 
    if cv2.__version__.startswith('3.'):
       im2, ctrs, hier = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -66,7 +66,7 @@ def find_letters(word_image):
    #sort contours
    sorted_ctrs = sorted(ctrs, key=lambda ctr: cv2.boundingRect(ctr)[0], reverse=True)
 
-#creating objects - so we coult hold a few arguments that connected together in the same variable
+   #creating objects - so we coult hold a few arguments that connected together in the same variable
 
    class contur:
       def __init__(self, x, y, w, h):
@@ -74,11 +74,6 @@ def find_letters(word_image):
          self.y_start = y
          self.x_end = x + w
          self.y_end = y + h
-
-   class charInfo:
-      def __init__(self,img_b, conturHight):
-         self.image_letter = img_b
-         self.conturH = conturHight
 
    letters_images = list()
    new_ctr = list()
@@ -96,7 +91,7 @@ def find_letters(word_image):
       x, y, w, h = cv2.boundingRect(sorted_ctrs[i])
 
       if h > 3:
-         canvas = np.ones_like(word_image)
+         canvas = np.ones_like(line_image)
          canvas.fill(255)
          cv2.drawContours(canvas, sorted_ctrs, i, (0, 0, 0), 3)
 
@@ -106,22 +101,21 @@ def find_letters(word_image):
 
             if union_left_ctr(new_ctr[i], new_ctr[i+1], canvas) == 0:
                roi = canvas[y:y + h, x:x + w]
-               roiriginal = word_image[y:y + h, x:x + w]
+               roiriginal = line_image[y:y + h, x:x + w]
             else:
                roi = canvas[new_ctr[i + 1].y_start:Y_end_bigger, new_ctr[i + 1].x_start:new_ctr[i + 1].x_end]
-               roiriginal = word_image[new_ctr[i + 1].y_start:Y_end_bigger, new_ctr[i + 1].x_start:new_ctr[i + 1].x_end]
+               roiriginal = line_image[new_ctr[i + 1].y_start:Y_end_bigger, new_ctr[i + 1].x_start:new_ctr[i + 1].x_end]
                i += 1
          else:
             roi = canvas[y:y + h, x:x + w]
-            roiriginal = word_image[y:y + h, x:x + w]
+            roiriginal = line_image[y:y + h, x:x + w]
 
-         img_b = np.pad(roiriginal, pad_width=10, mode='constant', constant_values=255)
-         letterInfo = charInfo(img_b, roiriginal.shape[0])
+         letter = np.pad(roiriginal, pad_width=10, mode='constant', constant_values=255)
 
          # cv2.imshow(str(i), img_b)
          # cv2.waitKey(0)
          # cv2.destroyAllWindows()
-         letters_images.append(letterInfo)
+         letters_images.append(letter)
       i+=1
    return letters_images
 

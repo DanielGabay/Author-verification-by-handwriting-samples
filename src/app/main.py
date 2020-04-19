@@ -7,38 +7,82 @@ import numpy as np
 from keras.preprocessing import image
 
 import _global
+from classes import Document, IdLetter, IdWord, CompareDocuments
 from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
+from extractComparisonFeatures.detectWords import get_words
 from extractComparisonFeatures.our_utils.prepare_document import \
     get_prepared_doc
 from models.letterClassifier import load_and_compile_letters_model
 
+#TODO: move functions to some helper function file instead of
+#getting them from the monkey_collect_data & test_monkey
+from monkey_collect_data import get_identified_letters, get_monkey_features
+from test_monkey import get_monkey_result, save_letters
 
-def save_letters(letters, doc_name):
-	found_letters = []
-	out_path = createOutputDirs(doc_name)
-	count = 0
-	for letter in letters:
-		letter = cv2.resize(letter.image_letter, (28, 28))
-		letter = letter.reshape((28, 28, 1))
+def main(doc_name1, doc_name2):
+	#TODO: think about the path of document for future use in GUI
+	path = _global.DATA_PATH
+	docs = [Document(doc_name1), Document(doc_name2)]
 
-		test_letter = image.img_to_array(letter)
-		test_image = np.expand_dims(test_letter, axis=0)
-		result = _global.lettersClassifier.predict((test_image/255))
-		if max(result[0]) > 0.995:
-			letter_index = result[0].tolist().index(max(result[0]))
-			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
-			if selected_letter == "ץ": 
+	# prepare Documents
+	for doc in docs:
+		doc.doc_img = get_prepared_doc(path+doc.name)
+		# ---> Detection Phase
+		lines = get_lines(doc.doc_img, doc.name)
+		words = get_words(lines)
+		letters = get_letters(lines)
+
+		# ---> Identification Phase
+		# we keep monkey letters in a different way for monkey use
+		# than our new IdLetter class. for now keep it that way.
+		id_letters_for_monkey, doc.id_letters = get_identified_letters(letters)
+		doc.monkey_features = get_monkey_features(id_letters_for_monkey)
+
+	compare_docs = CompareDocuments(docs[0], docs[1])
+	# ---> Verification Phase
+	monkey_res, monkey_precent = get_monkey_result(compare_docs.doc1.monkey_features,\
+												   compare_docs.doc2.monkey_features)
+
+	compare_docs.monkey_results = {'result': 'Same' if monkey_res is True else 'Different',\
+								   'precent' : monkey_precent}
+					   
+	# print(compare_docs.monkey_results)
+
+	# call autoencoder with letters & words
+	# summaraize all results into one result
+
+if __name__ == "__main__":
+	# if(len(sys.argv) < 2):
+	# 	print("Usage: python main.py <[save_all]/[file_name]> ")
+	# 	sys.exit(1)
+	#TODO: think how to determine monkey algo by_sum/by_vectors
+	_global.init('hebrew')
+	load_and_compile_letters_model(_global.LETTERS_MODEL)
+	main('10.tiff', '100.tiff')
+	# if(sys.argv[1] == 'save_all'):
+	# 	main_save_all()
+	# else: 
+	# 	doc_name = str(sys.argv[1])
+	# 	main(doc_name)
+
+#TODO: move next functions to other file
+#      no need in main file
+
+def main_save_all():
+	for root, dirs, files in os.walk(_global.DATA_PATH):
+		for file in files:
+			doc_name = file.split('.')[0]
+			check_path_exist = "out/{}".format(doc_name)
+			if os.path.exists(check_path_exist):   
+				print("{}.tiff already done".format(file))
 				continue
-			inner_folder = "{}/{}".format(out_path,letter_index+1)
-			if not os.path.exists(inner_folder):   # create folder to contain the line's img
-				os.mkdir(inner_folder)
-			save_name = "{}/{}.jpeg".format(inner_folder,count)
-			print(save_name)
-			cv2.imwrite(save_name,letter)
-			count += 1
-			found_letters.append({'image_letter': letter , 'letter_index': letter_index, 'selected_letter': selected_letter})
-	return found_letters
+			img_name = _global.DATA_PATH + file
+			img = get_prepared_doc(img_name)
+			lines = get_lines(img, img_name)
+			letters = get_letters(lines)
+			found_letters = save_letters(letters, doc_name)
+
 
 def print_predictions(preidction):
 		for i, v in enumerate(preidction):
@@ -58,7 +102,7 @@ def show_letters(letters):
 	count_good = 0
 	count_all = 0
 	for letter in letters:
-		letter = cv2.resize(letter.image_letter, (28, 28))
+		letter = cv2.resize(letter, (28, 28))
 		letter = letter.reshape((28, 28, 1))
 
 		test_letter = image.img_to_array(letter)
@@ -82,39 +126,3 @@ def show_letters(letters):
 				break
 			plt.close('all')
 	print("{} {} {}".format(count_good, count_all, count_good/count_all))
-
-def main(doc_name):
-	img_name = _global.DATA_PATH + doc_name
-	img = get_prepared_doc(img_name)
-	lines = get_lines(img, img_name)
-	letters = get_letters(lines)
-
-	# show_letters(letters)
-
-
-def main_save_all():
-	for root, dirs, files in os.walk(_global.DATA_PATH):
-		for file in files:
-			doc_name = file.split('.')[0]
-			check_path_exist = "out/{}".format(doc_name)
-			if os.path.exists(check_path_exist):   
-				print("{}.tiff already done".format(file))
-				continue
-			img_name = _global.DATA_PATH + file
-			img = get_prepared_doc(img_name)
-			lines = get_lines(img, img_name)
-			letters = get_letters(lines)
-			found_letters = save_letters(letters, doc_name)
-
-
-if __name__ == "__main__":
-	if(len(sys.argv) < 2):
-		print("Usage: python main.py <[save_all]/[file_name]> ")
-		sys.exit(1)
-	_global.init('hebrew')
-	load_and_compile_letters_model(_global.LETTERS_MODEL)
-	if(sys.argv[1] == 'save_all'):
-		main_save_all()
-	else: 
-		doc_name = str(sys.argv[1])
-		main(doc_name)

@@ -12,20 +12,27 @@ def init(language='hebrew', monkey_by_vectors=False):
     '''
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
     global lang_letters
+    global lang_words
     global DATA_PATH
     global MODELS_PATH
     global LETTERS_MODEL
+    global WORDS_MODEL
     global MONKEY_MODEL
 
     DATA_PATH = 'data/'
     MODELS_PATH = 'models/'
 
     lang_letters = []
+    lang_words = []
     if language == 'hebrew':
         lang_letters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י',\
                         'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת',\
                         'ך', 'ם', 'ן', 'ף', 'ץ']
         LETTERS_MODEL = 'hebrewLettersModel'
+        lang_words = ['של', 'לא', 'את', 'גם', 'לסיכום', 'כי', 'זה',\
+                        'זו', 'יש', 'לדעתי', 'אני', 'לסיכום']
+        #TODO: add trained words model to Model diractory
+        WORDS_MODEL = 'hebrewWordsModel'
     if monkey_by_vectors:
         MONKEY_MODEL = 'monkey_model_by_vectors.sav'
     else:

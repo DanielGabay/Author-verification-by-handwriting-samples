@@ -15,47 +15,19 @@ from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.our_utils.prepare_document import \
     get_prepared_doc
-from main import save_letters
 from models.letterClassifier import load_and_compile_letters_model
-from monkey_collect_data import counter_list, create_diff_vector
+from monkey_collect_data import counter_list, create_diff_vector, \
+	 get_identified_letters, get_pair_letters
 
 
 
 BY_VECTORS = False
 BY_HALF = False
-PRINT_VERBOSE = False
+PRINT_VERBOSE = True
 
 def print_verbose(str):
 	if PRINT_VERBOSE:
 		print(str)
-
-def get_identified_letters(letters):
-	found_letters = []
-	count = 0
-	for letter in letters:
-		letter = cv2.resize(letter.image_letter, (28, 28))
-		letter = letter.reshape((28, 28, 1))
-		test_letter = image.img_to_array(letter)
-		test_image = np.expand_dims(test_letter, axis=0)
-		result = _global.lettersClassifier.predict((test_image/255))
-		if max(result[0]) > 0.995:
-			letter_index = result[0].tolist().index(max(result[0]))
-			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
-			if selected_letter == "ץ": 
-				continue
-			count += 1
-			found_letters.append({'image_letter': letter , 'letter_index': letter_index, 'letter_name': selected_letter})
-	return found_letters
-
-# divide every file to 2 different 'persons'.
-def get_pair_letters(lines):
-	letters = get_letters(lines)
-	size = len(letters)//2
-	letters_1 = letters[:size]
-	letters_2 = letters[size:]
-	identified_letters_1 = get_identified_letters(letters_1)
-	identified_letters_2 = get_identified_letters(letters_2)
-	return identified_letters_1,identified_letters_2
 
 def rescale(data):
 	# built in function to rescale data
@@ -97,25 +69,40 @@ def test_model(TEST_FILE_1, TEST_FILE_2):
 	print_verbose("> Comparing Documents by Monkey Algoritem")
 	get_result(vectors)
 
+def get_monkey_result(feature_vec1, feature_vec2):
+	'''
+	use this function for main in order to get result
+	of monkey algorithem by sending 2 feature vectors
+	'''
+	#loads the right monkey model
+	monkey_model = joblib.load(_global.MODELS_PATH + _global.MONKEY_MODEL)
+	_global.monkeyClassifier = monkey_model
 
-def get_result(vectors):
+	diff_vector = None
+	diff_vector = create_diff_vector(feature_vec1,feature_vec2)
+	if 'by_sum' in _global.MONKEY_MODEL:
+		diff_vector = sum(create_diff_vector(feature_vec1,feature_vec2))
+	return prediction_monkey(diff_vector) 
+
+
+def get_result(vectors, alpha = 0):
 	diff_vec1 = None
 	if BY_VECTORS:
 		diff_vec1 = create_diff_vector(vectors[0],vectors[1])
 	else:
 		diff_vec1 = sum(create_diff_vector(vectors[0],vectors[1]))
-		print("Sum: {}".format(diff_vec1))
-	return prediction_monkey(diff_vec1) 
+		print_verbose("Sum: {}".format(diff_vec1))
+	return prediction_monkey(diff_vec1, alpha) 
 
-def prediction_monkey(diff_vec):
+def prediction_monkey(diff_vec, alpha = 0):
 	diff_vec = np.asarray(diff_vec)
 	result = _global.monkeyClassifier.predict_proba(diff_vec.reshape(1,-1))
-	print("\nMonkey Result:")
-	if result[0][0] > 0.5:
-		print("<Different Authors> [Confident: {0:.2f}%]".format(result[0][0]*100))
+	print_verbose("\nMonkey Result:")
+	if result[0][0] > 0.5 + alpha:
+		print_verbose("<Different Authors> [Confident: {0:.2f}%]".format(result[0][0]*100))
 		return False, result[0][0]
 	else:
-		print("<Same Author> [confident: {0:.2f}%]".format(result[0][1]*100))
+		print_verbose("<Same Author> [confident: {0:.2f}%]".format(result[0][1]*100))
 		return True, result[0][1]
 		
 	#print_verbose('{} {}'.format(_global.monkeyClassifier.predict_proba(diff_vec.reshape(1,-1)),_global.monkeyClassifier.predict(diff_vec.reshape(1,-1))))
@@ -146,8 +133,6 @@ def get_count_list(file):
 def test_conf_matrix():
 	all_files = []
 	count_vectors = []
-	tp, fp, tn, fn = 0, 0, 0, 0
-	tp_prec, fp_prec, tn_prec, fn_prec = 0, 0, 0, 0
 	for root, dirs, files in os.walk(_global.DATA_PATH):
 		b_files = [x for x in files if 'b' in x]
 		a_files = [x.replace('b', '') for x in b_files]
@@ -157,38 +142,73 @@ def test_conf_matrix():
 		print("Get count list of {}".format(file))
 		count_list = get_count_list(file)
 		count_vectors.append([file, count_list])
-	
-	for i in range(len(count_vectors)):
-		for j in range(i+1,len(count_vectors)):
-			test1, test2 = count_vectors[i][0], count_vectors[j][0]
-			if test1 == test2:
+	for alpha in range(-50,50,5):
+		tp, fp, tn, fn = 0, 0, 0, 0
+		tp_prec, fp_prec, tn_prec, fn_prec = [], [], [], []
+		for i in range(len(count_vectors)):
+			for j in range(i+1,len(count_vectors)):
+				test1, test2 = count_vectors[i][0], count_vectors[j][0]
+				if test1 == test2:
+					continue
+				same_author = False
+				if test1.replace('b','') == test2 or test2.replace('b','') == test1:
+					same_author = True
+				# print("\n---------------------")
+				# print("Test: {} {}".format(test1, test2))
+				diff_vectors = []
+				diff_vectors.append(count_vectors[i][1])
+				diff_vectors.append(count_vectors[j][1])
+				result, precent = get_result(diff_vectors, alpha/100) 
+				precent *= 100
+				if result and same_author:
+					tp += 1
+					tp_prec.append(precent)
+				elif not result and same_author:
+					fn += 1
+					fn_prec.append(precent)
+				elif not result and not same_author:
+					tn += 1
+					tn_prec.append(precent)
+				elif result and not same_author:
+					fp += 1
+					fp_prec.append(precent)
+		print("\n------------------")
+		print("bigger than threshold={0:.2f} is different person".format(alpha/100+0.5))
+		print("Model accuracy: {0:.2f}%".format((tn+tp)/(tn+tp+fn+fp)*100))
+		print("Confusion Matrix:")
+		print("True-Negative: {0:.2f}\tFalse-Negative: {0:.2f}".format(tn, fn))
+		print("False-Positive: {0:.2f}\tTrue-Positive: {0:.2f}".format(fp, tp))
+		print("")
+		print("True-Negative-Precent: mean:{0:.2f} std:{0:.2f}".format(np.mean(tn_prec,axis=0),np.std(tn_prec,axis=0)))
+		print("False-Negative-Precent: mean:{0:.2f} std:{0:.2f}".format(np.mean(fn_prec,axis=0),np.std(fn_prec,axis=0)))
+		print("False-Positive-Precent: mean:{0:.2f} std:{0:.2f}".format(np.mean(fp_prec,axis=0),np.std(fp_prec,axis=0)))
+		print("True-Positive-Precent: mean:{0:.2f} std:{0:.2f}".format(np.mean(tp_prec,axis=0),np.std(tp_prec,axis=0)))
+
+def save_letters(letters, doc_name):
+	found_letters = []
+	out_path = createOutputDirs(doc_name)
+	count = 0
+	for letter in letters:
+		letter = cv2.resize(letter, (28, 28))
+		letter = letter.reshape((28, 28, 1))
+
+		test_letter = image.img_to_array(letter)
+		test_image = np.expand_dims(test_letter, axis=0)
+		result = _global.lettersClassifier.predict((test_image/255))
+		if max(result[0]) > 0.995:
+			letter_index = result[0].tolist().index(max(result[0]))
+			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
+			if selected_letter == "ץ": 
 				continue
-			same_author = False
-			if test1.replace('b','') == test2 or test2.replace('b','') == test1:
-				same_author = True
-			print("\n---------------------")
-			print("Test: {} {}".format(test1, test2))
-			diff_vectors = []
-			diff_vectors.append(count_vectors[i][1])
-			diff_vectors.append(count_vectors[j][1])
-			result, precent = get_result(diff_vectors) 
-			if result and same_author:
-				tp += 1
-				tp_prec += precent
-			elif not result and same_author:
-				fn += 1
-				fn_prec += precent
-			elif not result and not same_author:
-				tn += 1
-				tn_prec += precent
-			elif result and not same_author:
-				fp += 1
-				fp_prec += precent
-			print("True-Negative: {}\tFalse-Negative: {}".format(tn, fn))
-			print("False-Positive: {}\tTrue-Positive: {}".format(fp, tp))
-	
-	print("True-Negative-Precent: {}\tFalse-Negative-Precent: {}".format(tn_prec/tn, fn_prec/fn))
-	print("False-Positive-Precent: {}\tTrue-Positive-Precent: {}".format(fp_prec/fp, tp_prec/tp))
+			inner_folder = "{}/{}".format(out_path,letter_index+1)
+			if not os.path.exists(inner_folder):   # create folder to contain the line's img
+				os.mkdir(inner_folder)
+			save_name = "{}/{}.jpeg".format(inner_folder,count)
+			print(save_name)
+			cv2.imwrite(save_name,letter)
+			count += 1
+			found_letters.append({'image_letter': letter , 'letter_index': letter_index, 'selected_letter': selected_letter})
+	return found_letters
 
 if __name__ == "__main__":
 	if len(sys.argv) > 1:

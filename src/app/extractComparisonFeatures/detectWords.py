@@ -1,7 +1,6 @@
 import os
 import cv2
-from wordSegmentation import wordSegmentation, prepareImg
-
+from extractComparisonFeatures.wordSegmentation import wordSegmentation, prepareImg
 
 def foo(input_folder):
 	"""reads images from data/ and outputs the word-segmentation to out/"""
@@ -45,3 +44,21 @@ def foo(input_folder):
 		
 		# output summary image with bounding boxes around words
 		cv2.imwrite(path+'/%s/summary.png'%f, img)
+
+def find_words(line):
+	res = wordSegmentation(line, kernelSize=25, sigma=11, theta=7, minArea=100)
+	# iterate over all segmented words
+	words = list()
+	for (j, w) in enumerate(res):
+		(wordBox, wordImg) = w
+		words.append(wordImg)
+
+	return words
+
+def get_words(lines):
+   words = []
+   for line in lines:
+      words.append(find_words(line))
+
+   words = [y for x in words for y in x]
+   return words
