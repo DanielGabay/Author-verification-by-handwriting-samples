@@ -18,9 +18,14 @@ def init(language='hebrew', monkey_by_vectors=False):
     global LETTERS_MODEL
     global WORDS_MODEL
     global MONKEY_MODEL
+    global LETTERS_SIZE
+    global WORDS_SIZE
 
     DATA_PATH = 'data/'
     MODELS_PATH = 'models/'
+
+    LETTERS_SIZE = 28
+    WORDS_SIZE = 64
 
     lang_letters = []
     lang_words = []

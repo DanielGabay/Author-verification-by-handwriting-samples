@@ -189,8 +189,8 @@ def save_letters(letters, doc_name):
 	out_path = createOutputDirs(doc_name)
 	count = 0
 	for letter in letters:
-		letter = cv2.resize(letter, (28, 28))
-		letter = letter.reshape((28, 28, 1))
+		letter = cv2.resize(letter, (_global.LETTERS_SIZE, _global.LETTERS_SIZE))
+		letter = letter.reshape((_global.LETTERS_SIZE, _global.LETTERS_SIZE, 1))
 
 		test_letter = image.img_to_array(letter)
 		test_image = np.expand_dims(test_letter, axis=0)

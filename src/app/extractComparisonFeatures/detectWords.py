@@ -1,6 +1,7 @@
 import os
 import cv2
 from extractComparisonFeatures.wordSegmentation import wordSegmentation, prepareImg
+import _global
 
 def foo(input_folder):
 	"""reads images from data/ and outputs the word-segmentation to out/"""
@@ -51,6 +52,7 @@ def find_words(line):
 	words = list()
 	for (j, w) in enumerate(res):
 		(wordBox, wordImg) = w
+		wordImg = cv2.resize(wordImg, dsize=(_global.WORDS_SIZE, _global.WORDS_SIZE))
 		words.append(wordImg)
 
 	return words
