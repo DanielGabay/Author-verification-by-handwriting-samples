@@ -61,7 +61,7 @@ def already_done(featuers_file,doc_name):
 	return False
 
 def main():
-	encoder = load_and_compile_ae(PATH+'/AutoEncoder/weights/encoder_encoder_full')
+	encoder = load_and_compile_ae(PATH+'/AutoEncoder/weights/encoder_encoder_32')
 	PATH_TO_DATA = PATH + '/Autoencoder/dataset/try1'
 
 	for dir_, _, files in os.walk(PATH_TO_DATA):

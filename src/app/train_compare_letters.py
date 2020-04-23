@@ -9,6 +9,7 @@ import random
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPClassifier
 
 import _global
 from extractComparisonFeatures.detectLetters import get_letters
@@ -25,7 +26,7 @@ def split_train_test(X, y, train_percent=0.75):
 	y_test = y[size:]
 	return (X_train, X_test, y_train, y_test)
 
-def get_xy(PATH_TO_CSV , SIZE = 500):
+def get_xy(PATH_TO_CSV , SIZE = 10000):
 	isFirst = True
 	X = np.asarray(list())
 	print(PATH_TO_CSV)
@@ -45,7 +46,7 @@ def get_xy(PATH_TO_CSV , SIZE = 500):
 	np.random.shuffle(X)
 	y = X[:,-1]
 	X = np.delete(X, -1, 1)
-	# X = rescale(X)
+	#X = rescale(X)
 	return (X, y)
 
 
@@ -82,18 +83,26 @@ def get_diff_x(df_diff , SIZE):
 		diff_vector.append(0) # for the y vector (sign that this vector is diff vectors)
 		rows.append(diff_vector)
 		rand1 ,rand2 = -1, -1
-
 	return np.asarray(rows)
 
+def print_result(model,X_test,y_test,X_train,y_train,str = ""):
+	print(">>result of {}:".format(str))
+	print(">>>X_test-y_test score: {}".format(model.score(X_test, y_test)))
+	print(confusion_matrix(y_test, model.predict(X_test)))
+	print(">>>X_train-y_train score: {}".format(model.score(X_train, y_train)))
+	print(confusion_matrix(y_train, model.predict(X_train)))
+
+
+
 def train_model():
-	X, y = get_xy("AutoEncoder/features_data",2000)
-	X_train, X_test, y_train, y_test = split_train_test(X,y,0.70)
-	clf = LogisticRegression(random_state=0,max_iter=1000).fit(X_train, y_train)
-	joblib.dump(clf, 'compare_letters_by_vectors.sav') 	# save trained model
-	print(clf.score(X_test, y_test))
-	print(clf.score(X_train, y_train))
-	print(confusion_matrix(y_test, clf.predict(X_test)))
-	# print(clf.coef_)
+	X, y = get_xy("AutoEncoder/features_data",10000)
+	X_train, X_test, y_train, y_test = split_train_test(X,y,0.8)
+	lr_model = LogisticRegression(random_state=0,max_iter=1000).fit(X_train, y_train)
+	mlp_model = MLPClassifier()
+	mlp_model.fit(X_train, y_train)
+	print_result(mlp_model,X_test,y_test,X_train,y_train,"Logistic")
+	print_result(lr_model,X_test,y_test,X_train,y_train,"CNN")
+	joblib.dump(lr_model, 'compare_letters_by_vectors.sav') 	# save trained model
 
 def rescale(data):
 	# built in function to rescale data

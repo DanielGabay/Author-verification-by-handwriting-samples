@@ -45,15 +45,15 @@ x = MaxPooling2D((2, 2), padding='same')(x)
 x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
 x = MaxPooling2D((2, 2), padding='same')(x)
 x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
+x = MaxPooling2D((2, 2), padding='same')(x)
+x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
 encoded = MaxPooling2D((2, 2), padding='same',name='encoder')(x)
-# x = MaxPooling2D((2, 2), padding='same')(x)
-# x = Conv2D(4, (3, 3), activation='relu', padding='same')(x)
 
 # at this point the representation is (4, 4, 8) i.e. 128-dimensional
 
-# x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)  #encoded instead of x
-# x = UpSampling2D((2, 2))(x)
-x = Conv2D(8, (3, 3), activation='relu', padding='same')(encoded)
+x = Conv2D(8, (3, 3), activation='relu', padding='same')(encoded)  #encoded instead of x
+x = UpSampling2D((2, 2))(x)
+x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
 x = UpSampling2D((2, 2))(x)
 x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
 x = UpSampling2D((2, 2))(x)
@@ -73,7 +73,6 @@ x_train,x_test = read_dataset('/dataset/4+5')
 print(len(x_train))
 print(len(x_test))
 
-print("$$")
 x_train = x_train.astype('float32') / 255.
 x_test = x_test.astype('float32') / 255.
 x_train = np.reshape(x_train, (len(x_train), 28, 28, 1))  # adapt this if using `channels_first` image data format
@@ -84,8 +83,8 @@ autoencoder.fit(x_train, x_train,epochs=100,batch_size=128,
 				validation_data=(x_test, x_test))
 
 
-save_model(autoencoder,"autoencoder_full")
-save_model(encoder,"encoder_full")
+save_model(autoencoder,"autoencoder_32")
+save_model(encoder,"encoder_32")
 
 decoded_imgs = autoencoder.predict(x_test)
 
@@ -108,6 +107,6 @@ for i in range(n):
 plt.show()
 
 encoded_states = encoder.predict(x_test)
-
+print("$$$$")
 print(encoded_states[0])
 print (len(encoded_states[0]))
