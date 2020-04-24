@@ -63,10 +63,12 @@ def init_doc(doc):
 def get_compared_docs_ae_letters_results(compare_docs):
 	ae_letters_model = joblib.load('models/ae_diff_vectors_letters.sav')
 	count_diff = count_same = count_h_same = count_d_same = count_h_diff = count_d_diff = 0
+	ae_learned_letters = ['א' ,'פ','ל','ב','ס' ,'ם','מ' ,'ח','ד' ,'ה']
+
 	for letter1 in compare_docs.doc1.id_letters:
 		for letter2 in compare_docs.doc2.id_letters:
-			if letter1.letter_name == 'ה' and letter2.letter_name == 'ה'\
-				or letter1.letter_name == 'ד' and letter2.letter_name == 'ד':
+			if letter1.letter_name == letter2.letter_name and\
+				letter1.letter_name in ae_learned_letters:
 					diff_vector = create_diff_vector(letter1.ae_features, letter2.ae_features)
 					is_same, _ = predict_ae(diff_vector, ae_letters_model)
 					if(is_same):
@@ -200,7 +202,7 @@ def test_all_pairs():
 					 	 compare_docs.letters_ae_results['count_same'],\
 			     		 compare_docs.letters_ae_results['count_diff']))
 			# FOR EASY NAVIGATION IN FILE
-			print("Real: {}\nMarked as: {}".format(same_author, mark_as))
+			print("Real: {}\n{}".format(same_author, mark_as))
 
 	print("\n------------------")
 	len_b = len(b_files)
