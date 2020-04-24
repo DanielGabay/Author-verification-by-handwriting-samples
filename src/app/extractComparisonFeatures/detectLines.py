@@ -26,7 +26,7 @@ def findMedian(points):
             differences.append(points[i] - points[i - 1])
     return median(differences)
 
-def detect_Lines(original, thresh, out_folder):
+def detect_Lines(original, thresh, out_folder=None):
     hight, width = thresh.shape[:2]
 
     # creates a vector that containing the sum of pixels per line
@@ -111,7 +111,8 @@ def detect_Lines(original, thresh, out_folder):
         if roi.shape[0] > 0:    
             lines.append(roi)
             # uncomment to save_lines
-            cv2.imwrite(out_folder + "/" + str(v) + ".png", roi)
+            if out_folder is not None:
+                cv2.imwrite(out_folder + "/" + str(v) + ".png", roi)
     return lines
 
 def createOutputDirs(img_name):
@@ -125,9 +126,11 @@ def createOutputDirs(img_name):
     return out_path
 
 def get_lines(img, img_name):
-    out_path = createOutputDirs(img_name)
+    # uncomment to save lines
+    # out_path = createOutputDirs(img_name)
     ret, thresh = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY_INV)
-    return detect_Lines(img, thresh, out_path)
+    return detect_Lines(img, thresh)
+    # return detect_Lines(img, thresh, out_path)
 
 def main():
     if(len(sys.argv) < 2):

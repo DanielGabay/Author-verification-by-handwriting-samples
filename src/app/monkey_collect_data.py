@@ -83,11 +83,9 @@ def counter_list(found_letters):
 	counter_list_precent = [i * (100/length) for i in count_list]
 	return counter_list_precent
 
-def get_identified_letters(letters):
+def get_identified_letters(letters, from_main=False):
 	# for main use only:
-	global current_script_name
-	if __name__ != current_script_name:
-		print("####")
+	if from_main:
 		Id_Letters = []
 	found_letters = []
 	count = 0
@@ -104,9 +102,9 @@ def get_identified_letters(letters):
 				continue
 			count += 1
 			found_letters.append({'image_letter': letter , 'letter_index': letter_index, 'letter_name': selected_letter})
-			if __name__ != current_script_name:
+			if from_main:
 				Id_Letters.append(IdLetter(letter,selected_letter))
-	if __name__ != current_script_name:
+	if from_main:
 		return found_letters, Id_Letters
 	return found_letters
 

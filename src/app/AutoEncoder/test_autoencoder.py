@@ -38,7 +38,7 @@ def load_and_compile_ae(name):
 
 	# load weights into new model
 	classifier.load_weights(name + ".h5")
-	print("Loaded model from disk")
+	# print("Loaded model {} from disk".format(name))
 	classifier.compile(optimizer='sgd', loss='mse')
 	return classifier
 
@@ -50,6 +50,18 @@ def write_vec_to_exel(df_name,file,letter,count,encoded_states):
 	with open(df_name, "a", newline='') as fp:
 		wr = csv.writer(fp, dialect='excel')
 		wr.writerow(row)
+
+def get_letters_ae_features(letters):
+	path_weights = 'AutoEncoder/weights'
+
+	encoder = load_and_compile_ae(path_weights+'/encoder_encoder_32')
+	autoencoder = load_and_compile_ae(path_weights+'/encoder_encoder_32')
+
+	for letter in letters:
+		img = np.asarray(np.array(letter.letter_img))
+		img = img.astype('float32') / 255.
+		img = np.reshape(img, (1, 28, 28, 1))  # adapt this if using `channels_first` image data format
+		letter.ae_features = encoder.predict(img).ravel()
 
 def test(name):
 	path = os.path.dirname(os.path.abspath(__file__))
