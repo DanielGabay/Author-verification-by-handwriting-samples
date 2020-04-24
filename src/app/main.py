@@ -196,7 +196,7 @@ def test_all_pairs():
 				ae_fp += 1
 
 			print("Letters AE Result:\n<{} Authors>\ncount_same: {}\ncount_diff: {}"\
-				 .format(compare_docs.monkey_results['result'],\
+				 .format(compare_docs.letters_ae_results['result'],\
 					 	 compare_docs.letters_ae_results['count_same'],\
 			     		 compare_docs.letters_ae_results['count_diff']))
 			# FOR EASY NAVIGATION IN FILE
