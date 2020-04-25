@@ -8,9 +8,9 @@ import numpy as np
 from PIL import Image
 from scipy.signal import argrelextrema, savgol_filter
 
-# import detectWords
-from .our_utils.prepare_document import get_prepared_doc
 import _global
+
+from .our_utils.prepare_document import get_prepared_doc
 
 """
 sumPixles algoritem is taken from https://github.com/moranzargari/Handwriting-detection-recognition

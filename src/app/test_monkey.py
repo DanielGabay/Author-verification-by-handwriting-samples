@@ -16,10 +16,9 @@ from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.our_utils.prepare_document import \
     get_prepared_doc
 from models.letterClassifier import load_and_compile_letters_model
-from monkey_collect_data import counter_list, create_diff_vector, \
-	 get_identified_letters, get_pair_letters
-
-
+from monkey_functions import (counter_list, create_diff_vector,
+                              get_identified_letters, get_pair_letters,
+                              prediction_monkey)
 
 BY_VECTORS = False
 BY_HALF = False
@@ -69,22 +68,6 @@ def test_model(TEST_FILE_1, TEST_FILE_2):
 	print_verbose("> Comparing Documents by Monkey Algoritem")
 	get_result(vectors)
 
-def get_monkey_result(feature_vec1, feature_vec2):
-	'''
-	use this function for main in order to get result
-	of monkey algorithem by sending 2 feature vectors
-	'''
-	#loads the right monkey model
-	monkey_model = joblib.load(_global.MODELS_PATH + _global.MONKEY_MODEL)
-	_global.monkeyClassifier = monkey_model
-
-	diff_vector = None
-	diff_vector = create_diff_vector(feature_vec1,feature_vec2)
-	if 'by_sum' in _global.MONKEY_MODEL:
-		diff_vector = sum(create_diff_vector(feature_vec1,feature_vec2))
-	return prediction_monkey(diff_vector) 
-
-
 def get_result(vectors, alpha = 0):
 	diff_vec1 = None
 	if BY_VECTORS:
@@ -93,19 +76,6 @@ def get_result(vectors, alpha = 0):
 		diff_vec1 = sum(create_diff_vector(vectors[0],vectors[1]))
 		print_verbose("Sum: {}".format(diff_vec1))
 	return prediction_monkey(diff_vec1, alpha) 
-
-def prediction_monkey(diff_vec, alpha = 0):
-	diff_vec = np.asarray(diff_vec)
-	result = _global.monkeyClassifier.predict_proba(diff_vec.reshape(1,-1))
-	print_verbose("\nMonkey Result:")
-	if result[0][0] > 0.5 + alpha:
-		print_verbose("<Different Authors> [Confident: {0:.2f}%]".format(result[0][0]*100))
-		return False, result[0][0]
-	else:
-		print_verbose("<Same Author> [confident: {0:.2f}%]".format(result[0][1]*100))
-		return True, result[0][1]
-		
-	#print_verbose('{} {}'.format(_global.monkeyClassifier.predict_proba(diff_vec.reshape(1,-1)),_global.monkeyClassifier.predict(diff_vec.reshape(1,-1))))
 
 def test_all_same():
 	b_files = []
@@ -183,32 +153,6 @@ def test_conf_matrix():
 		print("False-Negative-Precent: mean:{0:.2f} std:{0:.2f}".format(np.mean(fn_prec,axis=0),np.std(fn_prec,axis=0)))
 		print("False-Positive-Precent: mean:{0:.2f} std:{0:.2f}".format(np.mean(fp_prec,axis=0),np.std(fp_prec,axis=0)))
 		print("True-Positive-Precent: mean:{0:.2f} std:{0:.2f}".format(np.mean(tp_prec,axis=0),np.std(tp_prec,axis=0)))
-
-def save_letters(letters, doc_name):
-	found_letters = []
-	out_path = createOutputDirs(doc_name)
-	count = 0
-	for letter in letters:
-		letter = cv2.resize(letter, (_global.LETTERS_SIZE, _global.LETTERS_SIZE))
-		letter = letter.reshape((_global.LETTERS_SIZE, _global.LETTERS_SIZE, 1))
-
-		test_letter = image.img_to_array(letter)
-		test_image = np.expand_dims(test_letter, axis=0)
-		result = _global.lettersClassifier.predict((test_image/255))
-		if max(result[0]) > 0.995:
-			letter_index = result[0].tolist().index(max(result[0]))
-			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
-			if selected_letter == "ץ": 
-				continue
-			inner_folder = "{}/{}".format(out_path,letter_index+1)
-			if not os.path.exists(inner_folder):   # create folder to contain the line's img
-				os.mkdir(inner_folder)
-			save_name = "{}/{}.jpeg".format(inner_folder,count)
-			print(save_name)
-			cv2.imwrite(save_name,letter)
-			count += 1
-			found_letters.append({'image_letter': letter , 'letter_index': letter_index, 'selected_letter': selected_letter})
-	return found_letters
 
 if __name__ == "__main__":
 	if len(sys.argv) > 1:

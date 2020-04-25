@@ -13,6 +13,7 @@ def init(language='hebrew', monkey_by_vectors=False):
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
     global lang_letters
     global lang_words
+    global ae_letters
     global DATA_PATH
     global MODELS_PATH
     global LETTERS_MODEL
@@ -20,6 +21,8 @@ def init(language='hebrew', monkey_by_vectors=False):
     global MONKEY_MODEL
     global LETTERS_SIZE
     global WORDS_SIZE
+    global AE_LETTERS_MODEL
+    global ae_trained_letters
 
     DATA_PATH = 'data/'
     MODELS_PATH = 'models/'
@@ -29,6 +32,7 @@ def init(language='hebrew', monkey_by_vectors=False):
 
     lang_letters = []
     lang_words = []
+    ae_trained_letters = []
     if language == 'hebrew':
         lang_letters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י',\
                         'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת',\
@@ -36,8 +40,10 @@ def init(language='hebrew', monkey_by_vectors=False):
         LETTERS_MODEL = 'hebrewLettersModel'
         lang_words = ['של', 'לא', 'את', 'גם', 'לסיכום', 'כי', 'זה',\
                         'זו', 'יש', 'לדעתי', 'אני', 'לסיכום']
+        ae_trained_letters = ['א' ,'פ','ל','ב','ס' ,'ם','מ' ,'ח','ד' ,'ה']
         #TODO: add trained words model to Model diractory
         WORDS_MODEL = 'hebrewWordsModel'
+        AE_LETTERS_MODEL = 'ae_diff_vectors_letters.sav'
     if monkey_by_vectors:
         MONKEY_MODEL = 'monkey_model_by_vectors.sav'
     else:

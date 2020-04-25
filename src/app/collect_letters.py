@@ -1,14 +1,16 @@
 import os
 import sys
+
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from keras.preprocessing import image
+
 import _global
 from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.our_utils.prepare_document import \
-	get_prepared_doc
+    get_prepared_doc
 from models.letterClassifier import load_and_compile_letters_model
 
 done_path = "{}/{}".format("letter_collection","done_with.txt")

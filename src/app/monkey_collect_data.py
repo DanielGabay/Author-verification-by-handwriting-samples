@@ -13,6 +13,8 @@ from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.our_utils.prepare_document import \
     get_prepared_doc
 from models.letterClassifier import load_and_compile_letters_model
+from monkey_functions import (counter_list, create_diff_vector,
+                              get_identified_letters)
 
 """
 the main goal of this file is to collect data in order to train a logistic regression _global.LETTERS_MODEL.
@@ -59,54 +61,6 @@ def sum_diff(list_of_pairs):
 	print("Equal std: {}".format(np.std(np.asarray(sumEqual))))
 	print("Diff mean: {}".format(np.mean(np.asarray(sumDiff))))
 	print("Diff std: {}".format(np.std(np.asarray(sumDiff))))
-
-def create_diff_vector(list_1,list_2):
-	diff_vector = [0] * len(list_1)
-	for i in range (0,len(list_1)):
-		diff_vector[i] =  abs(list_1[i] - list_2[i])
-	return diff_vector
-
-def get_monkey_features(found_letters):
-	'''
-	function just for convinent read in main.py
-	'''
-	return counter_list(found_letters)
-
-def counter_list(found_letters):
-	'''
-	returns the 'feature vector' for a given found_letters
-	'''
-	count_list = [0] * 27
-	for letter in found_letters:
-		count_list[(letter['letter_index'])]+=1
-	length = len(found_letters)
-	counter_list_precent = [i * (100/length) for i in count_list]
-	return counter_list_precent
-
-def get_identified_letters(letters, from_main=False):
-	# for main use only:
-	if from_main:
-		Id_Letters = []
-	found_letters = []
-	count = 0
-	for letter in letters:
-		letter = cv2.resize(letter, (_global.LETTERS_SIZE, _global.LETTERS_SIZE))
-		letter = letter.reshape((_global.LETTERS_SIZE, _global.LETTERS_SIZE, 1))
-		test_letter = image.img_to_array(letter)
-		test_image = np.expand_dims(test_letter, axis=0)
-		result = _global.lettersClassifier.predict((test_image/255))
-		if max(result[0]) > 0.995:
-			letter_index = result[0].tolist().index(max(result[0]))
-			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
-			if selected_letter == "ץ": 
-				continue
-			count += 1
-			found_letters.append({'image_letter': letter , 'letter_index': letter_index, 'letter_name': selected_letter})
-			if from_main:
-				Id_Letters.append(IdLetter(letter,selected_letter))
-	if from_main:
-		return found_letters, Id_Letters
-	return found_letters
 
 # divide every file to 2 diffrent 'persons'.
 def get_pair_letters(lines):
