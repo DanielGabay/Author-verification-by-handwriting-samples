@@ -39,7 +39,6 @@ def test_all_same():
 def init_doc(doc):
 	#TODO: think about the path of document for future use in GUI
 	path = _global.DATA_PATH
-	path = 'data2/'
 	doc.doc_img = get_prepared_doc(path+doc.name)
 	# ---> Detection Phase
 	detected_lines = get_lines(doc.doc_img, doc.name)
@@ -78,8 +77,7 @@ def test_all_pairs():
 	all_files = []
 	count_vectors = []
 	all_docs = []
-	# for _, _, files in os.walk(_global.DATA_PATH):
-	for _, _, files in os.walk('data2/'):
+	for _, _, files in os.walk(_global.DATA_PATH):
 		b_files = [x for x in files if 'b' in x]
 		a_files = [x.replace('b', '') for x in b_files]
 		all_files = a_files + b_files
