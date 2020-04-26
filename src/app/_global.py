@@ -23,9 +23,11 @@ def init(language='hebrew', monkey_by_vectors=False):
     global WORDS_SIZE
     global AE_LETTERS_MODEL
     global ae_trained_letters
+    global OBJ_PATH
 
     DATA_PATH = 'data/'
     MODELS_PATH = 'models/'
+    OBJ_PATH = 'objects/'
 
     LETTERS_SIZE = 28
     WORDS_SIZE = 64

@@ -18,7 +18,7 @@ from extractComparisonFeatures.our_utils.prepare_document import \
 from models.letterClassifier import load_and_compile_letters_model
 from monkey_functions import (get_compared_docs_monkey_results,
                               get_identified_letters, get_monkey_features)
-
+from main_functions import save_object, load_object
 import warnings
 warnings.simplefilter("ignore", UserWarning)
 
@@ -36,30 +36,35 @@ def test_all_same():
 		print("Test: {} {}".format(TEST_FILE_1, TEST_FILE_2))
 		main(TEST_FILE_1, TEST_FILE_2)
 
-def init_doc(doc):
+def init_doc(doc, only_for_save_obj=False):
 	#TODO: think about the path of document for future use in GUI
-	path = _global.DATA_PATH
-	doc.doc_img = get_prepared_doc(path+doc.name)
-	# ---> Detection Phase
-	detected_lines = get_lines(doc.doc_img, doc.name)
-	# detected_words = get_words(detected_lines)
-	detected_letters = get_letters(detected_lines)
+	obj_name = doc.name.split('.')[0]
+	if os.path.exists(_global.OBJ_PATH + obj_name):
+		doc = load_object(obj_name)
+	else:
+		path = _global.DATA_PATH
+		doc.doc_img = get_prepared_doc(path+doc.name)
+		# ---> Detection Phase
+		detected_lines = get_lines(doc.doc_img, doc.name)
+		# detected_words = get_words(detected_lines)
+		detected_letters = get_letters(detected_lines)
 
-	# ---> Identification Phase
-	# we keep monkey letters in a different way for monkey use
-	# than our new IdLetter class. for now keep it that way.
-	id_letters_for_monkey, doc.id_letters = get_identified_letters(detected_letters, from_main=True)
-	doc.monkey_features = get_monkey_features(id_letters_for_monkey)
-	get_letters_ae_features(doc.id_letters)
-
-
+		# ---> Identification Phase
+		# we keep monkey letters in a different way for monkey use
+		# than our new IdLetter class. for now keep it that way.
+		id_letters_for_monkey, doc.id_letters = get_identified_letters(detected_letters, from_main=True)
+		doc.monkey_features = get_monkey_features(id_letters_for_monkey)
+		save_object(doc, obj_name)
+	if not only_for_save_obj:
+		get_letters_ae_features(doc.id_letters)
+	return doc
 
 def main(doc_name1, doc_name2):
 	doc1, doc2 = Document(doc_name1), Document(doc_name2)
 	# prepare Documents
 	# ---> Detection Phase
-	init_doc(doc1)
-	init_doc(doc2)
+	doc1 = init_doc(doc1)
+	doc2 = init_doc(doc2)
 		
 	# ---> Verification Phase
 	compare_docs = CompareDocuments(doc1, doc2)
@@ -85,7 +90,7 @@ def test_all_pairs():
 	for file_name in all_files:
 		print("Get Document obj for: {}".format(file_name))
 		doc = Document(file_name)
-		init_doc(doc)
+		doc = init_doc(doc)
 		all_docs.append(doc)
 	
 	tp, fp, tn, fn = 0, 0, 0, 0
@@ -181,6 +186,13 @@ def print_conf_matrix(title, tn, tp, fn, fp):
 	print("True-Negative: {}\tFalse-Negative: {}".format(tn, fn))
 	print("False-Positive: {}\tTrue-Positive: {}".format(fp, tp))
 
+def save_all_docs_obj_as_files():
+	for _, _, files in os.walk(_global.DATA_PATH):
+		for file in files:
+			print(file)
+			doc = Document(file)
+			doc = init_doc(doc, only_for_save_obj=True)
+
 if __name__ == "__main__":
 	# if(len(sys.argv) < 2):
 	# 	print("Usage: python main.py <[save_all]/[file_name]> ")
@@ -188,9 +200,10 @@ if __name__ == "__main__":
 	#TODO: think how to determine monkey algo by_sum/by_vectors
 	_global.init('hebrew')
 	load_and_compile_letters_model(_global.LETTERS_MODEL)
+	save_all_docs_obj_as_files()
 	# test_all_same()
 	# test_all_pairs()
-	main('1.tiff', '2.tiff')
+	# main('1.tiff', '2.tiff')
 	# if(sys.argv[1] == 'save_all'):
 	# 	main_save_all()
 	# else: 

@@ -7,7 +7,7 @@ from keras.preprocessing import image
 
 import _global
 from classes import CompareDocuments, Document, IdLetter, IdWord
-from main_functions import createOutputDirs
+from main_functions import createOutputDirs, save_letters
 
 
 def get_monkey_features(found_letters):
@@ -87,32 +87,6 @@ def prediction_monkey(diff_vec, alpha = 0):
 		return True, result[0][1]
 			
 #print_verbose('{} {}'.format(_global.monkeyClassifier.predict_proba(diff_vec.reshape(1,-1)),_global.monkeyClassifier.predict(diff_vec.reshape(1,-1))))
-
-def save_letters(letters, doc_name):
-	found_letters = []
-	out_path = createOutputDirs(doc_name)
-	count = 0
-	for letter in letters:
-		letter = cv2.resize(letter, (_global.LETTERS_SIZE, _global.LETTERS_SIZE))
-		letter = letter.reshape((_global.LETTERS_SIZE, _global.LETTERS_SIZE, 1))
-
-		test_letter = image.img_to_array(letter)
-		test_image = np.expand_dims(test_letter, axis=0)
-		result = _global.lettersClassifier.predict((test_image/255))
-		if max(result[0]) > 0.995:
-			letter_index = result[0].tolist().index(max(result[0]))
-			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
-			if selected_letter == "ץ": 
-				continue
-			inner_folder = "{}/{}".format(out_path,letter_index+1)
-			if not os.path.exists(inner_folder):   # create folder to contain the line's img
-				os.mkdir(inner_folder)
-			save_name = "{}/{}.jpeg".format(inner_folder,count)
-			print(save_name)
-			cv2.imwrite(save_name,letter)
-			count += 1
-			found_letters.append({'image_letter': letter , 'letter_index': letter_index, 'selected_letter': selected_letter})
-	return found_letters
 
 def get_compared_docs_monkey_results(compare_docs):
 	monkey_res, monkey_precent = get_monkey_result(compare_docs.doc1.monkey_features,\
