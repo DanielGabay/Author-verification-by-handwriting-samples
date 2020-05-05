@@ -17,6 +17,7 @@ def prediction_ae_letters(diff_vec):
 
 def get_compared_docs_ae_letters_results(compare_docs):
 	count_same, count_diff = 0, 0
+	threshold = 0.4
 	for letter1 in compare_docs.doc1.id_letters:
 		for letter2 in compare_docs.doc2.id_letters:
 			if letter1.letter_name == letter2.letter_name and\
@@ -28,7 +29,7 @@ def get_compared_docs_ae_letters_results(compare_docs):
 					else:
 						count_diff += 1
 
-	compare_docs.letters_ae_results = {'result': 'Same' if count_same > count_diff else 'Different',\
-								   	#    'precent' : ?}
+	compare_docs.letters_ae_results = {'result': 'Same' if (count_same > count_diff \
+												or count_same / count_diff > threshold) else 'Different',\
 									   'count_same': count_same,\
 									   'count_diff': count_diff}
