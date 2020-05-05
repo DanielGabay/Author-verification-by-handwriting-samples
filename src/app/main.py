@@ -4,6 +4,7 @@ import sys
 import cv2
 import joblib
 import numpy as np
+import random
 
 import _global
 from ae_letters_functions import (get_compared_docs_ae_letters_results,
@@ -21,94 +22,155 @@ from monkey_functions import (get_compared_docs_monkey_results,
 from main_functions import save_object, load_object
 import warnings
 warnings.simplefilter("ignore", UserWarning)
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3"
 
+class Stats():
+	def __init__(self):
+		self.tp = 0
+		self.fp = 0
+		self.tn = 0
+		self.fn = 0
+		self.ae_tp = 0
+		self.ae_fp = 0
+		self.ae_tn = 0
+		self.ae_fn = 0
+		self.monkey_tp = 0
+		self.monkey_fp = 0
+		self.monkey_tn = 0
+		self.monkey_fn = 0
+		self.conflict = 0
+		self.conflict_while_same = 0
+		self.conflict_while_diff = 0
+		self.mark_as = ""
+		self.same_author = None
+		self.count_num_of_tests = 0
 
-def test_all_same():
-	b_files = []
-	tp, fp, tn, fn = 0, 0, 0, 0
-	ae_tp, ae_fp, ae_tn, ae_fn = 0, 0, 0, 0
-	conflict, conflict_while_same, conflict_while_diff = 0, 0, 0
-	tp_prec, fp_prec, tn_prec, fn_prec = [], [], [], []
-	mark_as = ""
-	same_author = True
-	for _, _, files in os.walk(_global.DATA_PATH):
-		b_files = [x for x in files if 'b' in x]	
-	for i in range(len(b_files)):
-		TEST_FILE_1 = b_files[i]
-		# uncomment if comparing *.tiff and *b.png files
-		# TEST_FILE_2 = b_files[i].replace('b','').replace('png','tiff')
-		TEST_FILE_2 = b_files[i].replace('b','')
-		print("\n---------------------")
-		print("Test: {} {}".format(TEST_FILE_1, TEST_FILE_2))
-		compare_docs = main(TEST_FILE_1, TEST_FILE_2, True)
-		result_monkey = True if compare_docs.monkey_results['result'] == 'Same' else False
-		precent_monkey = compare_docs.monkey_results['precent'] * 100
-		result_letters_ae = True if compare_docs.letters_ae_results['result'] == 'Same' else False
-		if result_monkey and result_letters_ae and same_author:
-			# all results 'Same author'
-			tp += 1
-			tp_prec.append(precent_monkey)
-			mark_as = "Same"
-		elif not result_monkey and not result_letters_ae and same_author:
-			# both monkey and ae call 'diff' while same
-			fn += 1
-			fn_prec.append(precent_monkey)
-			mark_as = "Different while Same"
-		elif not result_monkey and not result_letters_ae and not same_author:
-			# all results 'Different author'
-			tn += 1
-			tn_prec.append(precent_monkey)
-			mark_as = "Different"
-		elif result_monkey and result_letters_ae and not same_author:
-			# both monkey and ae call 'same' while diff
-			fp += 1
-			fp_prec.append(precent_monkey)
-			mark_as = "Same while Different"
+def calc_stats(s, result_monkey, result_letters_ae, same_author):
+	if result_monkey and result_letters_ae and same_author:
+		# all results 'Same author'
+		s.tp += 1
+		s.mark_as = "Mark: Same"
+	elif not result_monkey and not result_letters_ae and same_author:
+		# both monkey and ae call 'diff' while same
+		s.fn += 1
+		s.mark_as = "Mark: Different while Same"
+	elif not result_monkey and not result_letters_ae and not same_author:
+		# all results 'Different author'
+		s.tn += 1
+		s.mark_as = "Mark: Different"
+	elif result_monkey and result_letters_ae and not same_author:
+		# both monkey and ae call 'same' while diff
+		s.fp += 1
+		s.mark_as = "Mark: Same while Different"
+	else:
+		s.conflict += 1
+		if same_author:
+			s.conflict_while_same += 1
 		else:
-			conflict += 1
-			if same_author:
-				conflict_while_same += 1
-			else:
-				conflict_while_diff += 1
-			mark_as = "Conflict/Mistake"
+			s.conflict_while_diff += 1
+		s.mark_as = "Conflict/Mistake"
 
-		
-		if result_letters_ae and same_author:
-			ae_tp += 1
-		elif not result_letters_ae and same_author:
-			ae_fn += 1
-		elif not result_letters_ae and not same_author:
-			ae_tn += 1
-		elif result_letters_ae and not same_author:
-			ae_fp += 1
+			
+	if result_letters_ae and same_author:
+		s.ae_tp += 1
+	elif not result_letters_ae and same_author:
+		s.ae_fn += 1
+	elif not result_letters_ae and not same_author:
+		s.ae_tn += 1
+	elif result_letters_ae and not same_author:
+		s.ae_fp += 1
 
-		print("Letters AE Result:\n<{} Authors>\ncount_same: {}\ncount_diff: {}"\
-				.format(compare_docs.letters_ae_results['result'],\
-						compare_docs.letters_ae_results['count_same'],\
-						compare_docs.letters_ae_results['count_diff']))
-		# FOR EASY NAVIGATION IN FILE
-		print("Real: {}\nMark as: {}".format(same_author, mark_as))
+	if result_monkey and same_author:
+		s.monkey_tp += 1
+	elif not result_monkey and same_author:
+		s.monkey_fn += 1
+	elif not result_monkey and not same_author:
+		s.monkey_tn += 1
+	elif result_monkey and not same_author:
+		s.monkey_fp += 1
 
+def get_ae_monkey_results(s, compare_docs):
+	get_compared_docs_monkey_results(compare_docs)
+	get_compared_docs_ae_letters_results(compare_docs)
+	result_monkey = True if compare_docs.monkey_results['result'] == 'Same' else False
+	precent_monkey = compare_docs.monkey_results['precent'] * 100
+	result_letters_ae = True if compare_docs.letters_ae_results['result'] == 'Same' else False
+	
+	calc_stats(s, result_monkey, result_letters_ae, s.same_author)
+	print("Letters AE Result:\n<{} Author>\ncount_same: {}\ncount_diff: {}"\
+		.format(compare_docs.letters_ae_results['result'],\
+				compare_docs.letters_ae_results['count_same'],\
+				compare_docs.letters_ae_results['count_diff']))
+	print("Real: {}\n{}".format(s.same_author, s.mark_as)) 	# FOR EASY NAVIGATION IN FILE
+
+def print_ae_monkey_results(s, len_b):
 	print("\n------------------")
-	len_b = len(b_files)
-	len_all_pairs = ((len_b*2)*(len_b*2-1))/2
 	print("Number of same pairs checked:{}".format(len_b))
-	print("Sum of all pairs checked: {}".format(len_all_pairs))
+	print("Sum of al pairs checked: {}".format(s.count_num_of_tests))
 	print("\n------------------")
-	print_conf_matrix("Monkey & letter AE Conf Matrix:", tn, tp, fn, fp)
-	print("Model accuracy: {0:.2f}% (*NOTE: not includes Undecided results!)".format((tn+tp)/(tn+tp+fn+fp)*100))
+	print_conf_matrix("Monkey & letter AE Conf Matrix:", s.tn, s.tp, s.fn, s.fp)
+	print("Model accuracy: {0:.2f}% (*NOTE: not includes Undecided results!)".format((s.tn+s.tp)/(s.tn+s.tp+s.fn+s.fp)*100))
 	print("Undecided Results:\n->conflict:{}\n-->conflict_while_same:{}\n-->conflict_while_diff:{}"\
-		.format(conflict, conflict_while_same,conflict_while_diff))
+		.format(s.conflict, s.conflict_while_same,s.conflict_while_diff))
 	print("\n------------------")
-	print_conf_matrix("Only letter AE Conf Matrix:", ae_tn, ae_tp, ae_fn, ae_fp)
-	print("Model accuracy: {0:.2f}%".format((ae_tn+ae_tp)/(ae_tn+ae_tp+ae_fn+ae_fp)*100))
+	print_conf_matrix("Only letter AE Conf Matrix:", s.ae_tn,s.ae_tp, s.ae_fn, s.ae_fp)
+	print("Model accuracy: {0:.2f}%".format((s.ae_tn+s.ae_tp)/(s.ae_tn+s.ae_tp+s.ae_fn+s.ae_fp)*100))
 	print("\n------------------")
-	print("Monkey precents")
-	print("True-Negative-Precent: mean:{0:.2f} std:{0:.2f}".format(np.mean(tn_prec,axis=0),np.std(tn_prec,axis=0)))
-	print("False-Negative-Precent: mean:{0:.2f} std:{0:.2f}".format(np.mean(fn_prec,axis=0),np.std(fn_prec,axis=0)))
-	print("False-Positive-Precent: mean:{0:.2f} std:{0:.2f}".format(np.mean(fp_prec,axis=0),np.std(fp_prec,axis=0)))
-	print("True-Positive-Precent: mean:{0:.2f} std:{0:.2f}".format(np.mean(tp_prec,axis=0),np.std(tp_prec,axis=0)))
+	print_conf_matrix("Only Monkey Conf Matrix:", s.monkey_tp, s.monkey_fp, s.monkey_tn, s.monkey_fn)
+	print("Model accuracy: {0:.2f}%".format((s.monkey_tn+s.monkey_tp)/(s.monkey_tn+s.monkey_tp+s.monkey_fn+s.monkey_fp)*100))
 
+def get_doc_by_name(all_docs, file_name):
+	for doc in all_docs:
+		if doc.name == file_name:
+			return doc
+
+def test_all_same(test_random_different=0):
+	b_files = []
+	s = Stats()
+	all_docs = []
+
+	for _, _, files in os.walk(_global.DATA_PATH):
+		b_files = [x for x in files if 'b' in x]
+	for _, _, files in os.walk(_global.DATA_PATH):
+		b_files = [x for x in files if 'b' in x]
+		a_files = [x.replace('b', '') for x in b_files]
+		all_files = a_files + b_files
+	
+	for file_name in all_files:
+		print("Get Document obj for: {}".format(file_name))
+		doc = Document(file_name)
+		doc = init_doc(doc)
+		all_docs.append(doc)
+		
+	for file_name in b_files:
+		doc1 = get_doc_by_name(all_docs, file_name)
+		doc2 = get_doc_by_name(all_docs, file_name.replace('b',''))
+		print("\n---------------------")
+		print("Test: {} {}".format(doc1.name, doc2.name))
+		s.same_author = True
+		compare_docs = CompareDocuments(doc1, doc2)
+		get_ae_monkey_results(s, compare_docs)
+		s.count_num_of_tests += 1
+
+
+	if test_random_different != 0:
+		for i in range(test_random_different):
+			sampled_list = random.sample(all_files, 2)
+			doc1 = get_doc_by_name(all_docs, sampled_list[0])
+			doc2 = get_doc_by_name(all_docs, sampled_list[1])
+			if doc1.name.replace('b','') == doc2.name or doc2.name.replace('b','') == doc1.name:
+				continue
+			s.same_author = False
+			print("\n---------------------")
+			print("Test: {} {}".format(doc1.name, doc2.name))
+			compare_docs = CompareDocuments(doc1, doc2)
+			get_ae_monkey_results(s, compare_docs)
+			s.count_num_of_tests += 1
+
+	print_ae_monkey_results(s, len(b_files))
+	
 def init_doc(doc, only_for_save_obj=False):
 	#TODO: think about the path of document for future use in GUI
 	# obj_name = doc.name.split('.')[0]
@@ -153,6 +215,7 @@ def main(doc_name1, doc_name2, test_all_same=False):
 	# summaraize all results into one result
 
 def test_all_pairs():
+	count_pairs = 0
 	all_files = []
 	count_vectors = []
 	all_docs = []
@@ -283,7 +346,7 @@ if __name__ == "__main__":
 	_global.init('hebrew')
 	load_and_compile_letters_model(_global.LETTERS_MODEL)
 	# save_all_docs_obj_as_files()
-	test_all_same()
+	test_all_same(5000)
 	# test_all_pairs()
 	# main('1.tiff', '2.tiff')
 	# if(sys.argv[1] == 'save_all'):

@@ -9,17 +9,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def save_model(model, name=""):
-		path = os.path.dirname(os.path.abspath(__file__))
-		path += "/weights/"
-		if not os.path.exists(path):
-			os.mkdir(path)
+	path = os.path.dirname(os.path.abspath(__file__))
+	path += "/weights/"
+	if not os.path.exists(path):
+		os.mkdir(path)
 
-		# save train to Json
-		encoder_json = model.to_json()
-		with open(path + "encoder_" + name +".json" ,"w") as json_file:
-			json_file.write(encoder_json)
-		# serialize weights to HDF5
-		model.save_weights(path + "encoder_" + name + ".h5")
+	# save train to Json
+	encoder_json = model.to_json()
+	with open(path + "encoder_" + name +".json" ,"w") as json_file:
+		json_file.write(encoder_json)
+	# serialize weights to HDF5
+	model.save_weights(path + "encoder_" + name + ".h5")
 
 def read_dataset(path):
 	data = []
