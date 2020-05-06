@@ -22,9 +22,6 @@ from monkey_functions import (get_compared_docs_monkey_results,
 from main_functions import save_object, load_object
 import warnings
 warnings.simplefilter("ignore", UserWarning)
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3"
 
 class Stats():
 	def __init__(self):
@@ -47,48 +44,48 @@ class Stats():
 		self.same_author = None
 		self.count_num_of_tests = 0
 
-def calc_stats(s, result_monkey, result_letters_ae, same_author):
-	if result_monkey and result_letters_ae and same_author:
+def calc_stats(s, result_monkey, result_letters_ae):
+	if result_monkey and result_letters_ae and s.same_author:
 		# all results 'Same author'
 		s.tp += 1
 		s.mark_as = "Mark: Same"
-	elif not result_monkey and not result_letters_ae and same_author:
+	elif not result_monkey and not result_letters_ae and s.same_author:
 		# both monkey and ae call 'diff' while same
 		s.fn += 1
 		s.mark_as = "Mark: Different while Same"
-	elif not result_monkey and not result_letters_ae and not same_author:
+	elif not result_monkey and not result_letters_ae and not s.same_author:
 		# all results 'Different author'
 		s.tn += 1
 		s.mark_as = "Mark: Different"
-	elif result_monkey and result_letters_ae and not same_author:
+	elif result_monkey and result_letters_ae and not s.same_author:
 		# both monkey and ae call 'same' while diff
 		s.fp += 1
 		s.mark_as = "Mark: Same while Different"
 	else:
 		s.conflict += 1
-		if same_author:
+		if s.same_author:
 			s.conflict_while_same += 1
 		else:
 			s.conflict_while_diff += 1
 		s.mark_as = "Conflict/Mistake"
 
 			
-	if result_letters_ae and same_author:
+	if result_letters_ae and s.same_author:
 		s.ae_tp += 1
-	elif not result_letters_ae and same_author:
+	elif not result_letters_ae and s.same_author:
 		s.ae_fn += 1
-	elif not result_letters_ae and not same_author:
+	elif not result_letters_ae and not s.same_author:
 		s.ae_tn += 1
-	elif result_letters_ae and not same_author:
+	elif result_letters_ae and not s.same_author:
 		s.ae_fp += 1
 
-	if result_monkey and same_author:
+	if result_monkey and s.same_author:
 		s.monkey_tp += 1
-	elif not result_monkey and same_author:
+	elif not result_monkey and s.same_author:
 		s.monkey_fn += 1
-	elif not result_monkey and not same_author:
+	elif not result_monkey and not s.same_author:
 		s.monkey_tn += 1
-	elif result_monkey and not same_author:
+	elif result_monkey and not s.same_author:
 		s.monkey_fp += 1
 
 def get_ae_monkey_results(s, compare_docs):
@@ -98,7 +95,7 @@ def get_ae_monkey_results(s, compare_docs):
 	precent_monkey = compare_docs.monkey_results['precent'] * 100
 	result_letters_ae = True if compare_docs.letters_ae_results['result'] == 'Same' else False
 	
-	calc_stats(s, result_monkey, result_letters_ae, s.same_author)
+	calc_stats(s, result_monkey, result_letters_ae)
 	print("Letters AE Result:\n<{} Author>\ncount_same: {}\ncount_diff: {}"\
 		.format(compare_docs.letters_ae_results['result'],\
 				compare_docs.letters_ae_results['count_same'],\
@@ -118,7 +115,7 @@ def print_ae_monkey_results(s, len_b):
 	print_conf_matrix("Only letter AE Conf Matrix:", s.ae_tn,s.ae_tp, s.ae_fn, s.ae_fp)
 	print("Model accuracy: {0:.2f}%".format((s.ae_tn+s.ae_tp)/(s.ae_tn+s.ae_tp+s.ae_fn+s.ae_fp)*100))
 	print("\n------------------")
-	print_conf_matrix("Only Monkey Conf Matrix:", s.monkey_tp, s.monkey_fp, s.monkey_tn, s.monkey_fn)
+	print_conf_matrix("Only Monkey Conf Matrix:", s.monkey_tn, s.monkey_tp, s.monkey_fn, s.monkey_fp)
 	print("Model accuracy: {0:.2f}%".format((s.monkey_tn+s.monkey_tp)/(s.monkey_tn+s.monkey_tp+s.monkey_fn+s.monkey_fp)*100))
 
 def get_doc_by_name(all_docs, file_name):
@@ -160,7 +157,8 @@ def test_all_same(test_random_different=0):
 			sampled_list = random.sample(all_files, 2)
 			doc1 = get_doc_by_name(all_docs, sampled_list[0])
 			doc2 = get_doc_by_name(all_docs, sampled_list[1])
-			if doc1.name.replace('b','') == doc2.name or doc2.name.replace('b','') == doc1.name:
+			if doc1.name.replace('b','') == doc2.name or doc2.name.replace('b','') == doc1.name\
+				or doc1.name == doc2.name:
 				continue
 			s.same_author = False
 			print("\n---------------------")
@@ -322,7 +320,8 @@ def test_all_pairs():
 	print_conf_matrix("Only letter AE Conf Matrix:", ae_tn, ae_tp, ae_fn, ae_fp)
 	print("Model accuracy: {0:.2f}%".format((ae_tn+ae_tp)/(ae_tn+ae_tp+ae_fn+ae_fp)*100))
 	print("\n------------------")
-	print_conf_matrix("Only Monkey Conf Matrix:", monkey_tp, monkey_fp, monkey_tn, monkey_fn)
+	print_conf_matrix("Only Monkey Conf Matrix:", monkey_tn, monkey_tp, monkey_fn, monkey_fp)
+	# print_conf_matrix("Only Monkey Conf Matrix:", monkey_tp, monkey_fp, monkey_tn, monkey_fn)
 	print("Model accuracy: {0:.2f}%".format((monkey_tn+monkey_tp)/(monkey_tn+monkey_tp+monkey_fn+monkey_fp)*100))
 
 
