@@ -43,7 +43,8 @@ def init(language='hebrew', monkey_by_vectors=False):
         lang_words = ['של', 'לא', 'את', 'גם', 'לסיכום', 'כי', 'זה',\
                         'זו', 'יש', 'לדעתי', 'אני', 'לסיכום']
         # ae_trained_letters = ['א' ,'פ','ל','ב','ס' ,'ם','מ' ,'ח','ד' ,'ה']
-        ae_trained_letters = ['א' ,'פ','ל','ב','מ' ,'ח','ד' ,'ה']
+        ae_trained_letters = ['ה', 'ד','ח','מ','ם','ב','ל','פ']
+        # ae_trained_letters = ['א' ,'פ','ל','ב','מ' ,'ח','ד' ,'ה']
         #TODO: add trained words model to Model diractory
         WORDS_MODEL = 'hebrewWordsModel'
         AE_LETTERS_MODEL = 'ae_diff_vectors_letters.sav'
