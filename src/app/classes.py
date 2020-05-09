@@ -10,9 +10,10 @@ class IdLetter():
 	'''
 	Identified letter
 	'''
-	def __init__(self, letter_img, letter_name):
+	def __init__(self, letter_img, letter_name,letter_index):
 		self.letter_img = letter_img
 		self.letter_name = letter_name # identified letter name
+		self.letter_index = letter_index
 
 class Document():
 	#@name: document name.

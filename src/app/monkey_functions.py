@@ -47,7 +47,7 @@ def get_identified_letters(letters, from_main=False):
 			count += 1
 			found_letters.append({'image_letter': letter , 'letter_index': letter_index, 'letter_name': selected_letter})
 			if from_main:
-				Id_Letters.append(IdLetter(letter,selected_letter))
+				Id_Letters.append(IdLetter(letter,selected_letter,letter_index + 1))
 	if from_main:
 		return found_letters, Id_Letters
 	return found_letters

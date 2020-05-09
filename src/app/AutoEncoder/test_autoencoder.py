@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import sys
 import csv
 import pandas as pd
+import _global
 
 
 FEATUERS_FILE ='save_features.csv'
@@ -51,17 +52,30 @@ def write_vec_to_exel(df_name,file,letter,count,encoded_states):
 		wr = csv.writer(fp, dialect='excel')
 		wr.writerow(row)
 
+def get_encoders():
+	letters = ['1','2','4','5','8','12','13','15','17','24']
+	path_weights = 'AutoEncoder/weights'
+	encoders = {}
+	for letter in letters:
+		encoders.update({letter : load_and_compile_ae(path_weights+'/encoder_encoder_32_{}'.format(letter))})
+	return encoders
+
 def get_letters_ae_features(letters):
 	path_weights = 'AutoEncoder/weights'
-
-	encoder = load_and_compile_ae(path_weights+'/encoder_encoder_32')
-	autoencoder = load_and_compile_ae(path_weights+'/encoder_encoder_32')
+	encoders = get_encoders()
+	default_encoder = load_and_compile_ae(path_weights+'/encoder_full_32')
+	#autoencoder = load_and_compile_ae(path_weights+'/encoder_encoder_32')
 
 	for letter in letters:
 		img = np.asarray(np.array(letter.letter_img))
 		img = img.astype('float32') / 255.
 		img = np.reshape(img, (1, 28, 28, 1))  # adapt this if using `channels_first` image data format
+		if letter.letter_name in _global.ae_trained_letters:
+			encoder = encoders[str(letter.letter_index)]
+		else:
+			encoder = default_encoder
 		letter.ae_features = encoder.predict(img).ravel()
+
 
 def test(name):
 	path = os.path.dirname(os.path.abspath(__file__))
