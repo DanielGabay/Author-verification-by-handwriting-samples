@@ -100,9 +100,9 @@ def train_model():
 	lr_model = LogisticRegression(random_state=0,max_iter=1000).fit(X_train, y_train)
 	mlp_model = MLPClassifier()
 	mlp_model.fit(X_train, y_train)
-	print_result(mlp_model,X_test,y_test,X_train,y_train,"Logistic")
-	print_result(lr_model,X_test,y_test,X_train,y_train,"CNN")
-	joblib.dump(lr_model, 'compare_letters_by_vectors.sav') 	# save trained model
+	print_result(lr_model,X_test,y_test,X_train,y_train,"Logistic")
+	print_result(mlp_model,X_test,y_test,X_train,y_train,"CNN")
+	joblib.dump(mlp_model, 'compare_letters_by_vectors.sav') 	# save trained model
 
 def rescale(data):
 	# built in function to rescale data
@@ -112,7 +112,6 @@ def rescale(data):
 def is_same_author(row1,row2):
 	author1 ,author2 = row1[0].split("_")[0] ,row2[0].split("_")[0]  # get the autor name 
 	return True if author1 == author2 else False
-
 	
 
 if __name__ == "__main__":

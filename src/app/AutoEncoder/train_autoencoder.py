@@ -8,6 +8,11 @@ from keras.datasets import mnist
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+TRAIN_SEPARATELY = True
+path = '/letters/'      # should end with '/'
+
+
 def save_model(model, name=""):
 	path = os.path.dirname(os.path.abspath(__file__))
 	path += "/weights/"
@@ -23,7 +28,6 @@ def save_model(model, name=""):
 
 def read_dataset(path):
 	data = []
-	path = os.path.dirname(os.path.abspath(__file__)) + path
 	for root, dirs, files in os.walk(path):
 		for file in files:
 			img = cv2.imread(path + "/" + file, 0)
@@ -38,75 +42,94 @@ def split_train_test(data, train_precent=0.7):
 	test = data[train_size:]
 	return (train, test)
 
-input_img = Input(shape=(28, 28, 1))  # adapt this if using `channels_first` image data format
+def main(path,directory):
 
-x = Conv2D(16, (3, 3), activation='relu', padding='same')(input_img)
-x = MaxPooling2D((2, 2), padding='same')(x)
-x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
-x = MaxPooling2D((2, 2), padding='same')(x)
-x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
-x = MaxPooling2D((2, 2), padding='same')(x)
-x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
-encoded = MaxPooling2D((2, 2), padding='same',name='encoder')(x)
+	input_img = Input(shape=(28, 28, 1))  # adapt this if using `channels_first` image data format
 
-# at this point the representation is (4, 4, 8) i.e. 128-dimensional
+	x = Conv2D(16, (3, 3), activation='relu', padding='same')(input_img)
+	x = MaxPooling2D((2, 2), padding='same')(x)
+	x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
+	x = MaxPooling2D((2, 2), padding='same')(x)
+	x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
+	x = MaxPooling2D((2, 2), padding='same')(x)
+	x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
+	encoded = MaxPooling2D((2, 2), padding='same',name='encoder')(x)
 
-x = Conv2D(8, (3, 3), activation='relu', padding='same')(encoded)  #encoded instead of x
-x = UpSampling2D((2, 2))(x)
-x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
-x = UpSampling2D((2, 2))(x)
-x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
-x = UpSampling2D((2, 2))(x)
-x = Conv2D(16, (3, 3), activation='relu')(x)
-x = UpSampling2D((2, 2))(x)
-decoded = Conv2D(1, (3, 3), activation='sigmoid', padding='same')(x)
+	# at this point the representation is (4, 4, 8) i.e. 128-dimensional
+
+	x = Conv2D(8, (3, 3), activation='relu', padding='same')(encoded)  #encoded instead of x
+	x = UpSampling2D((2, 2))(x)
+	x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
+	x = UpSampling2D((2, 2))(x)
+	x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
+	x = UpSampling2D((2, 2))(x)
+	x = Conv2D(16, (3, 3), activation='relu')(x)
+	x = UpSampling2D((2, 2))(x)
+	decoded = Conv2D(1, (3, 3), activation='sigmoid', padding='same')(x)
+
+	autoencoder = Model(input_img, decoded)
+	autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
+
+	encoder = Model(inputs=autoencoder.input,
+							outputs=autoencoder.get_layer('encoder').output)
+
+	print(">>>")
+	x_train,x_test = read_dataset(path)
+	print('>>data size of dir {} : Xtrain: {} Xtest: {}'.format(directory,len(x_train),len(x_test)))
+
+	x_train = x_train.astype('float32') / 255.
+	x_test = x_test.astype('float32') / 255.
+	x_train = np.reshape(x_train, (len(x_train), 28, 28, 1))  # adapt this if using `channels_first` image data format
+	x_test = np.reshape(x_test, (len(x_test), 28, 28, 1))  # adapt this if using `channels_first` image data format
+
+	autoencoder.fit(x_train, x_train,epochs=100,batch_size=128,
+					shuffle=True,
+					validation_data=(x_test, x_test))
+
+	save_model(autoencoder,"autoencoder_32_{}".format(directory))
+	save_model(encoder,"encoder_32_{}".format(directory))
+
+	decoded_imgs = autoencoder.predict(x_test)
+
+	n = 10
+	plt.figure(figsize=(20, 4))
+	for i in range(n):
+		# display original
+		ax = plt.subplot(2, n, i+1)
+		plt.imshow(x_test[i].reshape(28, 28))
+		plt.gray()
+		ax.get_xaxis().set_visible(False)
+		ax.get_yaxis().set_visible(False)
+
+		# display reconstruction
+		ax = plt.subplot(2, n, i +1 + n)
+		plt.imshow(decoded_imgs[i].reshape(28, 28))
+		plt.gray()
+		ax.get_xaxis().set_visible(False)
+		ax.get_yaxis().set_visible(False)
+	plt.savefig('plt_for_{}'.format(directory))
+
+	encoded_states = encoder.predict(x_test)
+	print("finished train {}".format(directory))
+	# print(encoded_states[0])
+	# print (len(encoded_states[0]))
+
+if __name__ == '__main__':
+
+	if TRAIN_SEPARATELY:
+		path = os.path.dirname(os.path.abspath(__file__)) + path
+		for root, dirs, files in os.walk(path):
+			for directory in dirs:
+				print(directory)
+				print(path)
+				main('{}/{}'.format(path,directory),directory)
+	else:
+		main(path)
 
 
-autoencoder = Model(input_img, decoded)
-autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
-
-encoder = Model(inputs=autoencoder.input,
-						outputs=autoencoder.get_layer('encoder').output)
-
-print("$$")
-x_train,x_test = read_dataset('/dataset/4+5')
-print(len(x_train))
-print(len(x_test))
-
-x_train = x_train.astype('float32') / 255.
-x_test = x_test.astype('float32') / 255.
-x_train = np.reshape(x_train, (len(x_train), 28, 28, 1))  # adapt this if using `channels_first` image data format
-x_test = np.reshape(x_test, (len(x_test), 28, 28, 1))  # adapt this if using `channels_first` image data format
-
-autoencoder.fit(x_train, x_train,epochs=100,batch_size=128,
-				shuffle=True,
-				validation_data=(x_test, x_test))
 
 
-save_model(autoencoder,"autoencoder_32")
-save_model(encoder,"encoder_32")
 
-decoded_imgs = autoencoder.predict(x_test)
 
-n = 10
-plt.figure(figsize=(20, 4))
-for i in range(n):
-	# display original
-	ax = plt.subplot(2, n, i+1)
-	plt.imshow(x_test[i].reshape(28, 28))
-	plt.gray()
-	ax.get_xaxis().set_visible(False)
-	ax.get_yaxis().set_visible(False)
+	
 
-	# display reconstruction
-	ax = plt.subplot(2, n, i +1 + n)
-	plt.imshow(decoded_imgs[i].reshape(28, 28))
-	plt.gray()
-	ax.get_xaxis().set_visible(False)
-	ax.get_yaxis().set_visible(False)
-plt.show()
-
-encoded_states = encoder.predict(x_test)
-print("$$$$")
-print(encoded_states[0])
-print (len(encoded_states[0]))

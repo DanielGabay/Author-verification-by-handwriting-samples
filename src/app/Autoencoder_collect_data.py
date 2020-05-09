@@ -5,16 +5,13 @@ import numpy as np
 import pandas as pd
 from keras.preprocessing import image
 from keras.models import model_from_json
-import _global
-from extractComparisonFeatures.detectLetters import get_letters
-from extractComparisonFeatures.detectLines import get_lines
-from extractComparisonFeatures.our_utils.prepare_document import \
-    get_prepared_doc
-from models.letterClassifier import load_and_compile_letters_model
+
 import csv
 
 PATH = os.path.dirname(os.path.abspath(__file__))
-FEATUERS_PATH = PATH +'/Autoencoder'
+FEATUERS_PATH = PATH
+
+letters = ['1','2','4','5','8','12','13','15','17','24']
 
 
 def load_and_compile_ae(name):
@@ -60,10 +57,18 @@ def already_done(featuers_file,doc_name):
 				return True
 	return False
 
-def main():
-	encoder = load_and_compile_ae(PATH+'/AutoEncoder/weights/encoder_encoder_32')
-	PATH_TO_DATA = PATH + '/Autoencoder/dataset/try1'
 
+def get_encoders():
+	encoders = {}
+	for letter in letters:
+		encoders.update({letter : load_and_compile_ae(PATH+'/weights/encoder_32_{}'.format(letter))})
+	return encoders
+
+def main():
+
+	encoders = get_encoders()
+	PATH_TO_DATA = PATH + '/letters'
+	
 	for dir_, _, files in os.walk(PATH_TO_DATA):
 		for file_name in files:
 			rel_dir = os.path.relpath(dir_, PATH_TO_DATA)
@@ -74,10 +79,11 @@ def main():
 			# print(doc_name)
 			if already_done(featuers_file,doc_name):
 				continue
-			
+			encoder = encoders[rel_dir]
 			img = cv2.imread("{}/{}".format(PATH_TO_DATA,rel_file), 0)
 			features = get_features(encoder,img)
 			write_vec_to_exel(featuers_file,doc_name,rel_dir,features)
 			
 if __name__ == "__main__":
+
 	main()
