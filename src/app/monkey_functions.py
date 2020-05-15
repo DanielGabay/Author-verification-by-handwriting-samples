@@ -116,15 +116,18 @@ def get_monkey_result(feature_vec1, feature_vec2):
 	return prediction_monkey(diff_vector)
 
 
-def prediction_monkey(diff_vec, alpha = 0):
+def prediction_monkey(diff_vec, alpha = 0, print_pred=False):
 	diff_vec = np.asarray(diff_vec)
 	result = _global.monkeyClassifier.predict_proba(diff_vec.reshape(1,-1))
-	print("\nMonkey Result:")
+	if print_pred:
+		print("\nMonkey Result:")
 	if result[0][0] > 0.5 + alpha:
-		print("<Different Authors> [Confident: {0:.2f}%]".format(result[0][0]*100))
+		if print_pred:
+			print("<Different Authors> [Confident: {0:.2f}%]".format(result[0][0]*100))
 		return False, result[0][0]
 	else:
-		print("<Same Author> [confident: {0:.2f}%]".format(result[0][1]*100))
+		if print_pred:
+			print("<Same Author> [confident: {0:.2f}%]".format(result[0][1]*100))
 		return True, result[0][1]
 			
 #print_verbose('{} {}'.format(_global.monkeyClassifier.predict_proba(diff_vec.reshape(1,-1)),_global.monkeyClassifier.predict(diff_vec.reshape(1,-1))))

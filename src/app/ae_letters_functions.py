@@ -27,6 +27,13 @@ def get_compared_docs_ae_letters_results(compare_docs):
 					else:
 						count_diff += 1
 
-	compare_docs.letters_ae_results = {'result': 'Same' if count_same > count_diff else 'Different',\
+	precent = 0
+	result = 'Same' if count_same > count_diff else 'Different'
+	if result is 'Same' and (count_same + count_same != 0):
+		precent = count_same / (count_same + count_diff)
+	elif result is 'Different' and (count_same + count_same != 0):
+		precent = count_diff / (count_same + count_diff)
+	compare_docs.letters_ae_results = {'result': result,\
+								       'precent': precent,\
 									   'count_same': count_same,\
 									   'count_diff': count_diff}

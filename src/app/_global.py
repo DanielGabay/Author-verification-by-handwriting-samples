@@ -2,7 +2,7 @@ import os
 import joblib
 from keras.models import model_from_json
 
-def init(self, language='hebrew', monkey_by_vectors=False,\
+def init(language='hebrew', monkey_by_vectors=False,\
 		test_mode=True, default_letters_ae=True):
 	'''
 	@param: language:

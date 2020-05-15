@@ -2,6 +2,8 @@ import os
 import random
 import sys
 import warnings
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+warnings.filterwarnings("ignore")
 
 import cv2
 import joblib
@@ -19,7 +21,11 @@ from extractComparisonFeatures.our_utils.prepare_document import \
 from monkey_functions import (get_compared_docs_monkey_results,
                               get_identified_letters, get_monkey_features)
 
-warnings.simplefilter("ignore", UserWarning)
+
+
+
+
+
 
 def calc_stats(s, result_monkey, result_letters_ae):
 	if result_monkey and result_letters_ae and s.same_author:
@@ -167,10 +173,11 @@ def init_doc(doc, only_save_letters=False):
 	get_letters_ae_features(doc.id_letters)
 	return doc
 
-def main(doc_name1, doc_name2):
+def main_app(doc_name1, doc_name2):
 	_global.init('hebrew')
 	doc1, doc2 = Document(doc_name1), Document(doc_name2)
 	gui_output = ""
+	output = ""
 	# prepare Documents
 	# ---> Detection Phase
 	doc1 = init_doc(doc1)
@@ -181,14 +188,24 @@ def main(doc_name1, doc_name2):
 
 	get_compared_docs_monkey_results(compare_docs)
 	get_compared_docs_ae_letters_results(compare_docs)
-	gui_output = gui_output + "Monkey Result:{}\nAE result: {}".format(compare_docs.monkey_results,\
+	output = output + "Monkey Result:{}\nAE result: {}".format(compare_docs.monkey_results,\
 												   compare_docs.letters_ae_results)
 	result_letters_ae = True if compare_docs.letters_ae_results['result'] == 'Same' else False	
 	# gui_output = gui_output + "Letters AE Result:\n<{} Author>\ncount_same: {}\ncount_diff: {}"\
 	# 	.format(compare_docs.letters_ae_results['result'],\
 	# 			compare_docs.letters_ae_results['count_same'],\
 	# 			compare_docs.letters_ae_results['count_diff'])
-	print(gui_output)
+	print(output)
+	gui_output += "Algo1: Monkey Result:\n\t<{0}> [Confident: {1:.2f}%]\n".format(compare_docs.monkey_results['result'],\
+														  compare_docs.monkey_results['precent']*100)
+	gui_output += "Algo2: AutoEncoder Letters Result:\n\t<{0}> [Confident: {1:.2f}%]\n".format(\
+														compare_docs.letters_ae_results['result'],\
+														compare_docs.letters_ae_results['precent']*100)
+	conclusion = "\n\nFinal Result:\n\t<"
+	conclusion += compare_docs.monkey_results['result'] + ">" if\
+				 compare_docs.monkey_results['result'] == compare_docs.letters_ae_results['result']\
+				 else "Conflict>"
+	gui_output += conclusion
 	return gui_output
 	# call autoencoder with letters & words
 	# summaraize all results into one result
@@ -333,5 +350,4 @@ if __name__ == "__main__":
 	# test_all_same(106)
 	# test_all_pairs()
 	# save_all_pairs_docs_letters()
-	main('10.tiff', '2.tiff')
-
+	main_app('10.tiff', '2.tiff')
