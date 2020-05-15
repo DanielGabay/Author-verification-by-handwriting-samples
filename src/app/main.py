@@ -173,8 +173,15 @@ def init_doc(doc, only_save_letters=False):
 	get_letters_ae_features(doc.id_letters)
 	return doc
 
-def main_app(doc_name1, doc_name2):
-	_global.init('hebrew')
+def _main_app(doc_name1, doc_name2, queue=None, test_mode=False):
+	try:
+		main_app(doc_name1, doc_name2, queue, test_mode)
+	except:
+		print("error")
+		queue.put('Error occured')
+
+def main_app(doc_name1, doc_name2, queue=None, test_mode=False):
+	_global.init('hebrew', test_mode=test_mode)
 	doc1, doc2 = Document(doc_name1), Document(doc_name2)
 	gui_output = ""
 	output = ""
@@ -206,7 +213,10 @@ def main_app(doc_name1, doc_name2):
 				 compare_docs.monkey_results['result'] == compare_docs.letters_ae_results['result']\
 				 else "Conflict>"
 	gui_output += conclusion
-	return gui_output
+	# return gui_output
+	if queue is not None: #and queue.empty():
+		queue.put(gui_output)
+
 	# call autoencoder with letters & words
 	# summaraize all results into one result
 
@@ -350,4 +360,4 @@ if __name__ == "__main__":
 	# test_all_same(106)
 	# test_all_pairs()
 	# save_all_pairs_docs_letters()
-	main_app('10.tiff', '2.tiff')
+	main_app('10.tiff', '2.tiff', test_mode=True)
