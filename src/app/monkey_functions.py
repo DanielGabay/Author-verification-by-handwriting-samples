@@ -48,7 +48,7 @@ def get_identified_letters(letters, from_main=False, doc_name="", interactive=Fa
 				continue
 			count += 1
 			found_letters.append({'image_letter': letter , 'letter_index': letter_index, 'letter_name': selected_letter})
-			if doc_name and selected_letter in _global.ae_trained_letters:
+			if doc_name and selected_letter in _global.ae_trained_letters.values():
 				out_path = "{}/{}".format("letters_out", doc_name)
 				if not os.path.exists(out_path):
 					os.mkdir(out_path)
@@ -146,7 +146,7 @@ def get_pair_letters(lines):
 # 			if selected_letter == "ץ":
 # 				continue
 # 			save_letter = False
-# 			if selected_letter in _global.ae_trained_letters:
+# 			if selected_letter in _global.ae_trained_letters.values():
 # 				print(selected_letter)
 # 				while(1):
 # 					cv2.imshow('', letter)

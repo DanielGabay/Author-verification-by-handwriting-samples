@@ -332,13 +332,8 @@ if __name__ == "__main__":
 	# 	sys.exit(1)
 	#TODO: think how to determine monkey algo by_sum/by_vectors
 	_global.init('hebrew')
-	# save_all_docs_obj_as_files()
 	# test_all_same(106)
-	test_all_pairs()
+	# test_all_pairs()
 	# save_all_pairs_docs_letters()
-	main('490.tiff', '82.tiff')
-	# if(sys.argv[1] == 'save_all'):
-	# 	main_save_all()
-	# else: 
-	# 	doc_name = str(sys.argv[1])
-	# 	main(doc_name)
+	main('10.tiff', '2.tiff')
+

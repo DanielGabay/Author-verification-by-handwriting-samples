@@ -2,7 +2,8 @@ import os
 import joblib
 from keras.models import model_from_json
 
-def init(self, language='hebrew', monkey_by_vectors=False):
+def init(self, language='hebrew', monkey_by_vectors=False,\
+		test_mode=True, default_letters_ae=True):
 	'''
 	@param: language:
 		Current version has the ability to process only hebrew docs.
@@ -30,6 +31,7 @@ def init(self, language='hebrew', monkey_by_vectors=False):
 	global monkeyClassifier
 	global aeLettersClassifier
 	global lettersClassifier
+	global DEFAULT_LETTERS_AE
 
 	'''
 	use this try block to check wether this init function was
@@ -51,7 +53,10 @@ def init(self, language='hebrew', monkey_by_vectors=False):
 	LETTERS_SIZE = 28
 	WORDS_W_SIZE = 120
 	WORDS_H_SIZE = 80
-	TEST_MODE = True
+
+	
+	TEST_MODE = test_mode # True if we want to use DATA_PATH to load docs
+	DEFAULT_LETTERS_AE = default_letters_ae # True if we use 1 AutoEncoder for all letters
 
 
 	lang_letters = {}
@@ -68,7 +73,6 @@ def init(self, language='hebrew', monkey_by_vectors=False):
 		lang_letters = get_lang_letters_dict(language)
 		lang_words = get_lang_words_ditc(language)
 		ae_trained_letters = get_ae_trained_letters(language)
-		ae_trained_letters = ['פ','ל','ב','ס' ,'ם','מ' ,'ח','ד' ,'ה']
 	
 		#TODO: add trained words model to Model diractory
 
@@ -104,6 +108,7 @@ def get_ae_trained_letters(lang):
 					16: 'פ',\
 					23: 'ם'
 					}
+	return lang_dict
 
 def get_lang_words_ditc(lang):
 	lang_dict = {}

@@ -8,30 +8,39 @@ class IdWord():
 
 class IdLetter():
 	'''
-	Identified letter
+	Identified letter.
 	'''
 	def __init__(self, letter_img, letter_name,letter_index):
 		self.letter_img = letter_img
 		self.letter_name = letter_name # identified letter name
-		self.letter_index = letter_index
+		self.letter_index = letter_index # index in dictionary
+	'''
+	at run time we'll add the following:
+	@ae_features -> holds the vector of auto-encoder features for this letter
+	'''
 
 class Document():
-	#@name: document name.
+	'''
+	This class will hold all the needed data for our document object
+	'''
+	# @name: document name.
 	def __init__(self, name):
 		self.name = name
 
 	'''
-	at run time we'll add the following fields:
+	at run time we'll add the following:
 	@doc_img: save prepared document
 	@id_words: list of all identified words. -> [IdWord objects]
 	@id_letters: list of all identified letters.  ->[IdLetter objects]
 	@monkey_features: list of features that were found at the monkey algorithem.
-	@letters_ae_features -> holds the vector of auto-encoder features
 	'''
 
 class CompareDocuments():
-	#@doc1 -> Document object representing the first doc
-	#@doc2 -> Document object representing the second doc
+	'''
+	This class hold pair of documents that we are currently comparing.
+	'''
+	# @doc1 -> Document object representing the first doc
+	# @doc2 -> Document object representing the second doc
 	def __init__(self, doc1, doc2):
 		self.doc1 = doc1
 		self.doc2 = doc2

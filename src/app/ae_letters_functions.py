@@ -19,7 +19,7 @@ def get_compared_docs_ae_letters_results(compare_docs):
 	for letter1 in compare_docs.doc1.id_letters:
 		for letter2 in compare_docs.doc2.id_letters:
 			if letter1.letter_name == letter2.letter_name and\
-				letter1.letter_name in _global.ae_trained_letters:
+				letter1.letter_name in _global.ae_trained_letters.values():
 					diff_vector = create_diff_vector(letter1.ae_features, letter2.ae_features)
 					is_same, _ = prediction_ae_letters(diff_vector)
 					if(is_same):
