@@ -146,8 +146,8 @@ def test_all_same(test_random_different=0):
 	print_ae_monkey_results(s, len(b_files))
 
 def init_doc(doc, only_save_letters=False):
-	path = _global.DATA_PATH
 	if _global.TEST_MODE:
+		path = _global.DATA_PATH
 		doc.doc_img = get_prepared_doc(path+doc.name)
 	else:
 		doc.doc_img = get_prepared_doc(doc.name)
@@ -158,21 +158,19 @@ def init_doc(doc, only_save_letters=False):
 	detected_letters = get_letters(detected_lines)
 
 	if only_save_letters:
-		_, doc.id_letters = get_identified_letters(detected_letters, True, doc.name.split(".")[0], False)
+		_, doc.id_letters = get_identified_letters(detected_letters, doc.name.split(".")[0], False)
 		return
 
 	# ---> Recognition Phase
-	# we keep monkey letters in a different way for monkey use
-	# than our new IdLetter class. for now keep it that way.
-	id_letters_for_monkey, doc.id_letters = get_identified_letters(detected_letters, True)
-	doc.monkey_features = get_monkey_features(id_letters_for_monkey)
+	doc.id_letters = get_identified_letters(detected_letters)
+	doc.monkey_features = get_monkey_features(doc.id_letters)
 	get_letters_ae_features(doc.id_letters)
 	return doc
 
 def main(doc_name1, doc_name2):
 	_global.init('hebrew')
 	doc1, doc2 = Document(doc_name1), Document(doc_name2)
-	output = ""
+	gui_output = ""
 	# prepare Documents
 	# ---> Detection Phase
 	doc1 = init_doc(doc1)
@@ -183,15 +181,15 @@ def main(doc_name1, doc_name2):
 
 	get_compared_docs_monkey_results(compare_docs)
 	get_compared_docs_ae_letters_results(compare_docs)
-	output = output + "Monkey Result:{}\nAE result: {}".format(compare_docs.monkey_results,\
+	gui_output = gui_output + "Monkey Result:{}\nAE result: {}".format(compare_docs.monkey_results,\
 												   compare_docs.letters_ae_results)
 	result_letters_ae = True if compare_docs.letters_ae_results['result'] == 'Same' else False	
-	# output = output + "Letters AE Result:\n<{} Author>\ncount_same: {}\ncount_diff: {}"\
+	# gui_output = gui_output + "Letters AE Result:\n<{} Author>\ncount_same: {}\ncount_diff: {}"\
 	# 	.format(compare_docs.letters_ae_results['result'],\
 	# 			compare_docs.letters_ae_results['count_same'],\
 	# 			compare_docs.letters_ae_results['count_diff'])
-	print(output)
-	return output
+	print(gui_output)
+	return gui_output
 	# call autoencoder with letters & words
 	# summaraize all results into one result
 

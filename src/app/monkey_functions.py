@@ -20,20 +20,17 @@ def counter_list(found_letters):
 	'''
 	count_list = [0] * 27
 	for letter in found_letters:
-		count_list[(letter['letter_index'])]+=1
+		count_list[letter.letter_index]+=1
 	length = len(found_letters)
 	counter_list_precent = [i * (100/length) for i in count_list]
 	return counter_list_precent
 
-def get_identified_letters(letters, from_main=False, doc_name="", interactive=False):
+def get_identified_letters_testing(letters, from_main=False, doc_name="", interactive=False):
 	# for main use only:
-	if from_main:
-		Id_Letters = []
-	if doc_name is not "":
+	Id_Letters = []
+	if doc_name is not "": # for testing
 		if not os.path.exists("letters_out"):
 			os.mkdir("letters_out")
-
-	found_letters = []
 	count = 0
 	for letter in letters:
 		letter = cv2.resize(letter, (_global.LETTERS_SIZE, _global.LETTERS_SIZE))
@@ -47,8 +44,8 @@ def get_identified_letters(letters, from_main=False, doc_name="", interactive=Fa
 			if selected_letter == "ץ":
 				continue
 			count += 1
-			found_letters.append({'image_letter': letter , 'letter_index': letter_index, 'letter_name': selected_letter})
-			if doc_name and selected_letter in _global.ae_trained_letters.values():
+			
+			if doc_name and selected_letter in _global.ae_trained_letters.values(): # for testing
 				out_path = "{}/{}".format("letters_out", doc_name)
 				if not os.path.exists(out_path):
 					os.mkdir(out_path)
@@ -57,9 +54,11 @@ def get_identified_letters(letters, from_main=False, doc_name="", interactive=Fa
 					os.mkdir(inner_folder)
 				save_name = "{}/{}.jpeg".format(inner_folder,count)
 				cv2.imwrite(save_name,letter)
-			if from_main and not doc_name:
+			
+			if not doc_name:
 				Id_Letters.append(IdLetter(letter,selected_letter, letter_index+1))
-	if from_main and doc_name is not "":
+
+	if doc_name is not "": # for testing
 		if interactive:
 			print("filter manually letters in {} and press ENTER".format(doc_name))
 			input()
@@ -71,9 +70,32 @@ def get_identified_letters(letters, from_main=False, doc_name="", interactive=Fa
 				for f in files:
 					f_p = "{}/{}".format(in_p, f)
 					Id_Letters.append(IdLetter(cv2.imread(f_p,0), _global.lang_letters.get(int(_dir)-1)))
-	if from_main:
-		return found_letters, Id_Letters
-	return found_letters
+	return Id_Letters
+
+def get_identified_letters(letters, doc_name="", interactive=False):
+	if doc_name is not "":
+		return get_identified_letters_testing(letters, doc_name, interactive)
+	else:
+		return _get_identified_letters(letters)
+	
+def _get_identified_letters(letters):
+	# for main use only:
+	Id_Letters = []
+	count = 0
+	for letter in letters:
+		letter = cv2.resize(letter, (_global.LETTERS_SIZE, _global.LETTERS_SIZE))
+		letter = letter.reshape((_global.LETTERS_SIZE, _global.LETTERS_SIZE, 1))
+		test_letter = image.img_to_array(letter)
+		test_image = np.expand_dims(test_letter, axis=0)
+		result = _global.lettersClassifier.predict((test_image/255))
+		if max(result[0]) > 0.995:
+			letter_index = result[0].tolist().index(max(result[0]))
+			selected_letter = _global.lang_letters.get(result[0].tolist().index(max(result[0])))
+			if selected_letter == "ץ":
+				continue
+			count += 1
+			Id_Letters.append(IdLetter(letter,selected_letter, letter_index+1))
+	return Id_Letters
 
 def create_diff_vector(list_1,list_2):
 	diff_vector = [0] * len(list_1)
