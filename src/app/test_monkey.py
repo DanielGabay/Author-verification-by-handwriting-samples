@@ -15,7 +15,6 @@ from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.our_utils.prepare_document import \
     get_prepared_doc
-from models.letterClassifier import load_and_compile_letters_model
 from monkey_functions import (counter_list, create_diff_vector,
                               get_identified_letters, get_pair_letters,
                               prediction_monkey)
@@ -47,11 +46,6 @@ def append_to_vectors(vectors, lines, doc_name):
 		# identified_letters = save_letters(letters, doc_name) # save letter
 		count_list = counter_list(identified_letters)
 		vectors.append(count_list)
-
-def load_models():
-	monkey_model = joblib.load(_global.MODELS_PATH + _global.MONKEY_MODEL)
-	_global.monkeyClassifier = monkey_model
-	load_and_compile_letters_model(_global.LETTERS_MODEL)
 
 def test_model(TEST_FILE_1, TEST_FILE_2):
 	files = [TEST_FILE_1,TEST_FILE_2]
@@ -159,7 +153,6 @@ if __name__ == "__main__":
 		if 'by_vectors' in sys.argv:
 			BY_VECTORS = True
 		_global.init('hebrew', monkey_by_vectors=BY_VECTORS)
-		load_models()
 		if sys.argv[1] == 'conf_matrix':
 			test_conf_matrix()
 			sys.exit(0)

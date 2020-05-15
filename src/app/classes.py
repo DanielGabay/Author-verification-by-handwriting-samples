@@ -45,3 +45,23 @@ class CompareDocuments():
 	self.words_ae_results -> dict: same as above
 	self.final_result -> dict: same as above, after summarize all algos results
 	'''
+class Stats():
+	def __init__(self):
+		self.tp = 0
+		self.fp = 0
+		self.tn = 0
+		self.fn = 0
+		self.ae_tp = 0
+		self.ae_fp = 0
+		self.ae_tn = 0
+		self.ae_fn = 0
+		self.monkey_tp = 0
+		self.monkey_fp = 0
+		self.monkey_tn = 0
+		self.monkey_fn = 0
+		self.conflict = 0
+		self.conflict_while_same = 0
+		self.conflict_while_diff = 0
+		self.mark_as = ""
+		self.same_author = None
+		self.count_num_of_tests = 0

@@ -5,9 +5,8 @@ from monkey_functions import create_diff_vector
 from classes import CompareDocuments, Document, IdLetter, IdWord
 
 def prediction_ae_letters(diff_vec):
-	ae_letters_model = joblib.load(_global.MODELS_PATH + _global.AE_LETTERS_MODEL)
 	diff_vec = np.asarray(diff_vec)
-	result = ae_letters_model.predict_proba(diff_vec.reshape(1,-1))
+	result = _global.aeLettersClassifier.predict_proba(diff_vec.reshape(1,-1))
 	if result[0][0] > 0.5:
 		# print("<Different Authors> [Confident: {0:.2f}%]".format(result[0][0]*100))
 		return False, result[0][0]

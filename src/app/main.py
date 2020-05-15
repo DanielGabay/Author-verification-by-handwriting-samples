@@ -1,48 +1,25 @@
 import os
+import random
 import sys
+import warnings
 
 import cv2
 import joblib
 import numpy as np
-import random
 
 import _global
-from ae_letters_functions import (get_compared_docs_ae_letters_results,
-                                  prediction_ae_letters)
+from ae_letters_functions import get_compared_docs_ae_letters_results
 from AutoEncoder.test_autoencoder import get_letters_ae_features
-from classes import CompareDocuments, Document, IdLetter, IdWord
+from classes import CompareDocuments, Document, IdLetter, IdWord, Stats
 from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.detectWords import get_words
 from extractComparisonFeatures.our_utils.prepare_document import \
     get_prepared_doc
-from models.letterClassifier import load_and_compile_letters_model
 from monkey_functions import (get_compared_docs_monkey_results,
                               get_identified_letters, get_monkey_features)
-from main_functions import save_object, load_object
-import warnings
-warnings.simplefilter("ignore", UserWarning)
 
-class Stats():
-	def __init__(self):
-		self.tp = 0
-		self.fp = 0
-		self.tn = 0
-		self.fn = 0
-		self.ae_tp = 0
-		self.ae_fp = 0
-		self.ae_tn = 0
-		self.ae_fn = 0
-		self.monkey_tp = 0
-		self.monkey_fp = 0
-		self.monkey_tn = 0
-		self.monkey_fn = 0
-		self.conflict = 0
-		self.conflict_while_same = 0
-		self.conflict_while_diff = 0
-		self.mark_as = ""
-		self.same_author = None
-		self.count_num_of_tests = 0
+warnings.simplefilter("ignore", UserWarning)
 
 def calc_stats(s, result_monkey, result_letters_ae):
 	if result_monkey and result_letters_ae and s.same_author:
@@ -69,7 +46,6 @@ def calc_stats(s, result_monkey, result_letters_ae):
 			s.conflict_while_diff += 1
 		s.mark_as = "Conflict/Mistake"
 
-			
 	if result_letters_ae and s.same_author:
 		s.ae_tp += 1
 	elif not result_letters_ae and s.same_author:
@@ -168,32 +144,35 @@ def test_all_same(test_random_different=0):
 			s.count_num_of_tests += 1
 
 	print_ae_monkey_results(s, len(b_files))
-	
-def init_doc(doc, only_for_save_obj=False):
-	#TODO: think about the path of document for future use in GUI
-	# obj_name = doc.name.split('.')[0]
-	# if os.path.exists(_global.OBJ_PATH + obj_name):
-	# 	doc = load_object(obj_name)
-	# else:
+
+def init_doc(doc, only_save_letters=False):
 	path = _global.DATA_PATH
-	doc.doc_img = get_prepared_doc(path+doc.name)
+	if _global.TEST_MODE:
+		doc.doc_img = get_prepared_doc(path+doc.name)
+	else:
+		doc.doc_img = get_prepared_doc(doc.name)
+
 	# ---> Detection Phase
 	detected_lines = get_lines(doc.doc_img, doc.name)
-	# detected_words = get_words(detected_lines)
+	# detected_words = get_words(detected_lines) # uncomment after testing
 	detected_letters = get_letters(detected_lines)
 
-	# ---> Identification Phase
+	if only_save_letters:
+		_, doc.id_letters = get_identified_letters(detected_letters, True, doc.name.split(".")[0], False)
+		return
+
+	# ---> Recognition Phase
 	# we keep monkey letters in a different way for monkey use
 	# than our new IdLetter class. for now keep it that way.
-	id_letters_for_monkey, doc.id_letters = get_identified_letters(detected_letters, from_main=True)
+	id_letters_for_monkey, doc.id_letters = get_identified_letters(detected_letters, True)
 	doc.monkey_features = get_monkey_features(id_letters_for_monkey)
-	# save_object(doc, obj_name)
-	# if not only_for_save_obj:
 	get_letters_ae_features(doc.id_letters)
 	return doc
 
-def main(doc_name1, doc_name2, test_all_same=False):
+def main(doc_name1, doc_name2):
+	_global.init('hebrew')
 	doc1, doc2 = Document(doc_name1), Document(doc_name2)
+	output = ""
 	# prepare Documents
 	# ---> Detection Phase
 	doc1 = init_doc(doc1)
@@ -204,11 +183,15 @@ def main(doc_name1, doc_name2, test_all_same=False):
 
 	get_compared_docs_monkey_results(compare_docs)
 	get_compared_docs_ae_letters_results(compare_docs)
-	if test_all_same:
-		return compare_docs
-	# print("Monkey Result:{}\nAE result: {}".format(compare_docs.monkey_results,\
-	# 											   compare_docs.letters_ae_results))
-
+	output = output + "Monkey Result:{}\nAE result: {}".format(compare_docs.monkey_results,\
+												   compare_docs.letters_ae_results)
+	result_letters_ae = True if compare_docs.letters_ae_results['result'] == 'Same' else False	
+	# output = output + "Letters AE Result:\n<{} Author>\ncount_same: {}\ncount_diff: {}"\
+	# 	.format(compare_docs.letters_ae_results['result'],\
+	# 			compare_docs.letters_ae_results['count_same'],\
+	# 			compare_docs.letters_ae_results['count_diff'])
+	print(output)
+	return output
 	# call autoencoder with letters & words
 	# summaraize all results into one result
 
@@ -321,21 +304,27 @@ def test_all_pairs():
 	print("Model accuracy: {0:.2f}%".format((ae_tn+ae_tp)/(ae_tn+ae_tp+ae_fn+ae_fp)*100))
 	print("\n------------------")
 	print_conf_matrix("Only Monkey Conf Matrix:", monkey_tn, monkey_tp, monkey_fn, monkey_fp)
-	# print_conf_matrix("Only Monkey Conf Matrix:", monkey_tp, monkey_fp, monkey_tn, monkey_fn)
 	print("Model accuracy: {0:.2f}%".format((monkey_tn+monkey_tp)/(monkey_tn+monkey_tp+monkey_fn+monkey_fp)*100))
-
 
 def print_conf_matrix(title, tn, tp, fn, fp):
 	print(title)
-	print("True-Negative: {}\tFalse-Negative: {}".format(tn, fn))
-	print("False-Positive: {}\tTrue-Positive: {}".format(fp, tp))
+	print("True-Positive: {}\tFalse-Negative: {}".format(tp, fn))
+	print("False-Positive: {}\tTrue-Negative: {}".format(fp, tn))
+	recall = tp/(tp+fn)
+	precision = tp/(tp+fp)
+	f1_score = (2)/((1/recall)+(1/precision))
+	print("Recall: {0:.2f}%\nPrecision: {1:.2f}%\nF1-Score: {2:.2f}%".format(recall*100,precision*100, f1_score*100))
 
-def save_all_docs_obj_as_files():
+def save_all_pairs_docs_letters():
 	for _, _, files in os.walk(_global.DATA_PATH):
-		for file in files:
-			print(file)
-			doc = Document(file)
-			doc = init_doc(doc, only_for_save_obj=True)
+		b_files = [x for x in files if 'b' in x]
+		a_files = [x.replace('b', '') for x in b_files]
+		all_files = a_files + b_files
+	
+	for file_name in all_files:
+		print("Get Document obj for: {}".format(file_name))
+		doc = Document(file_name)
+		doc = init_doc(doc, True)
 
 if __name__ == "__main__":
 	# if(len(sys.argv) < 2):
@@ -343,11 +332,11 @@ if __name__ == "__main__":
 	# 	sys.exit(1)
 	#TODO: think how to determine monkey algo by_sum/by_vectors
 	_global.init('hebrew')
-	load_and_compile_letters_model(_global.LETTERS_MODEL)
 	# save_all_docs_obj_as_files()
-	test_all_same(5000)
-	# test_all_pairs()
-	# main('1.tiff', '2.tiff')
+	# test_all_same(106)
+	test_all_pairs()
+	# save_all_pairs_docs_letters()
+	main('490.tiff', '82.tiff')
 	# if(sys.argv[1] == 'save_all'):
 	# 	main_save_all()
 	# else: 

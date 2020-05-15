@@ -12,7 +12,7 @@ from extractComparisonFeatures.detectWords import get_words
 from extractComparisonFeatures.our_utils.prepare_document import \
     get_prepared_doc
 import pickle
-
+import joblib
 
 def main_save_all():
 	for root, dirs, files in os.walk(_global.DATA_PATH):
@@ -31,7 +31,7 @@ def main_save_all():
 
 def print_predictions(preidction):
 		for i, v in enumerate(preidction):
-			print(str(i)+" " + _global.lang_letters[i]+": "+str(float("{0:.2f}".format(v))))
+			print(str(i)+" " + _global.lang_letters.get(i)+": "+str(float("{0:.2f}".format(v))))
 		print("______")
 
 def createOutputDirs(doc_name):
@@ -55,7 +55,7 @@ def show_letters(letters):
 		result = _global.lettersClassifier.predict((test_image/255))
 		# print_predictions(result[0])
 		if max(result[0]) > 0.995:
-			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
+			selected_letter = _global.lang_letters.get(result[0].tolist().index(max(result[0])))
 			if selected_letter == "ץ": 
 				continue
 			count_all += 1
@@ -72,23 +72,6 @@ def show_letters(letters):
 			plt.close('all')
 	print("{} {} {}".format(count_good, count_all, count_good/count_all))
 
-def save_object(obj, filename):
-	if obj == None or filename == None:
-		print("Error: missing param")
-		return
-	if not os.path.exists(_global.OBJ_PATH):   # create folder to contain the line's img
-		os.mkdir(_global.OBJ_PATH)
-	with open(_global.OBJ_PATH + filename, 'wb') as obj_file:
-		pickle.dump(obj, obj_file)
-
-def load_object(filename):
-	if filename == None:
-		print("Error: missing param")
-	obj = None
-	with open(_global.OBJ_PATH + filename, 'rb') as obj_file:
-		obj = pickle.load(obj_file)
-	return obj 
-
 def save_letters(letters, doc_name):
 	found_letters = []
 	out_path = createOutputDirs(doc_name)
@@ -102,7 +85,7 @@ def save_letters(letters, doc_name):
 		result = _global.lettersClassifier.predict((test_image/255))
 		if max(result[0]) > 0.995:
 			letter_index = result[0].tolist().index(max(result[0]))
-			selected_letter = _global.lang_letters[result[0].tolist().index(max(result[0]))]
+			selected_letter = _global.lang_letters.get(result[0].tolist().index(max(result[0])))
 			if selected_letter == "ץ": 
 				continue
 			inner_folder = "{}/{}".format(out_path,letter_index+1)

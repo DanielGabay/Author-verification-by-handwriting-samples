@@ -1,54 +1,159 @@
 import os
+import joblib
+from keras.models import model_from_json
 
-def init(language='hebrew', monkey_by_vectors=False):
-    '''
-    @param: language:
-        Current version has the ability to process only hebrew docs.
-        In the future we'll support in more languages
-    @param: monkey_by_vectors
-        Load the right monkey model by the wanted method
-        True: by_vectors
-        False: by_sum
-    '''
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-    global lang_letters
-    global lang_words
-    global ae_letters
-    global DATA_PATH
-    global MODELS_PATH
-    global LETTERS_MODEL
-    global WORDS_MODEL
-    global MONKEY_MODEL
-    global LETTERS_SIZE
-    global WORDS_SIZE
-    global AE_LETTERS_MODEL
-    global ae_trained_letters
-    global OBJ_PATH
+def init(self, language='hebrew', monkey_by_vectors=False):
+	'''
+	@param: language:
+		Current version has the ability to process only hebrew docs.
+		In the future we'll support in more languages
+	@param: monkey_by_vectors
+		Load the right monkey model by the wanted method
+		True: by_vectors
+		False: by_sum
+	'''
+	os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+	global lang_letters
+	global lang_words
+	global ae_letters
+	global DATA_PATH
+	global MODELS_PATH
+	global LETTERS_MODEL
+	global WORDS_MODEL
+	global MONKEY_MODEL
+	global LETTERS_SIZE
+	global WORDS_W_SIZE
+	global WORDS_H_SIZE
+	global AE_LETTERS_MODEL
+	global ae_trained_letters
+	global TEST_MODE
+	global monkeyClassifier
+	global aeLettersClassifier
+	global lettersClassifier
 
-    DATA_PATH = 'data/'
-    MODELS_PATH = 'models/'
-    OBJ_PATH = 'objects/'
+	'''
+	use this try block to check wether this init function was
+	called already.
+	at the first time: continue init
+	else: return
+	'''
+	try:
+		lettersClassifier
+	except NameError:
+		pass
+	else:
+		return
 
-    LETTERS_SIZE = 28
-    WORDS_SIZE = 64
+	
+	DATA_PATH = 'data/'
+	MODELS_PATH = 'models/'
 
-    lang_letters = []
-    lang_words = []
-    ae_trained_letters = []
-    if language == 'hebrew':
-        lang_letters = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י',\
-                        'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת',\
-                        'ך', 'ם', 'ן', 'ף', 'ץ']
-        LETTERS_MODEL = 'hebrewLettersModel'
-        lang_words = ['של', 'לא', 'את', 'גם', 'לסיכום', 'כי', 'זה',\
-                        'זו', 'יש', 'לדעתי', 'אני', 'לסיכום']
-        # ae_trained_letters = ['א' ,'פ','ל','ב','ס' ,'ם','מ' ,'ח','ד' ,'ה']
-        ae_trained_letters = ['ה', 'ד','ח','מ','ם','ב','ל','פ']
-        # ae_trained_letters = ['א' ,'פ','ל','ב','מ' ,'ח','ד' ,'ה']
-        #TODO: add trained words model to Model diractory
-        WORDS_MODEL = 'hebrewWordsModel'
-        AE_LETTERS_MODEL = 'ae_diff_vectors_letters.sav'
-    if monkey_by_vectors:
-        MONKEY_MODEL = 'monkey_model_by_vectors.sav'
-    else:
-        MONKEY_MODEL = 'monkey_model_by_sum.sav'
+	LETTERS_SIZE = 28
+	WORDS_W_SIZE = 120
+	WORDS_H_SIZE = 80
+	TEST_MODE = True
+
+
+	lang_letters = {}
+	lang_words = {}
+	ae_trained_letters = {}
+	if language == 'hebrew':
+		LETTERS_MODEL = 'hebLettersModel'
+		WORDS_MODEL = 'hebrewWordsModel'
+		AE_LETTERS_MODEL = 'hebAutoEncoderDiffVecModel.sav'
+		if monkey_by_vectors:
+			MONKEY_MODEL = 'hebMonkeyLettersByVectors.sav'
+		else:
+			MONKEY_MODEL = 'hebMonkeyLettersBySum.sav'
+		lang_letters = get_lang_letters_dict(language)
+		lang_words = get_lang_words_ditc(language)
+		ae_trained_letters = get_ae_trained_letters(language)
+		ae_trained_letters = ['פ','ל','ב','ס' ,'ם','מ' ,'ח','ד' ,'ה']
+	
+		#TODO: add trained words model to Model diractory
+
+		monkeyClassifier = joblib.load(MODELS_PATH + MONKEY_MODEL)
+		aeLettersClassifier = joblib.load(MODELS_PATH + AE_LETTERS_MODEL)
+		lettersClassifier = load_and_compile_letters_model(LETTERS_MODEL, MODELS_PATH)
+
+def load_and_compile_letters_model(model, models_path):
+	'''
+	Load the model .h5 and .json files and compile it.
+	add lettersClassifier into _globals
+	'''
+	json_file = open('{}{}.json'.format(models_path, model), 'r')
+	loaded_model_json = json_file.read()
+	json_file.close()
+	classifier = model_from_json(loaded_model_json)
+	classifier.load_weights("{}{}.h5".format(models_path, model))
+	classifier.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+	print("Loaded & compiled model from disk")
+	return classifier
+
+def get_ae_trained_letters(lang):
+	lang_dict = {}
+	if lang is 'hebrew':
+		lang_dict = {
+					1: 'ב',\
+					3: 'ד',\
+					4: 'ה',\
+					7: 'ח',\
+					11: 'ל',\
+					12: 'מ',\
+					14: 'ס',\
+					16: 'פ',\
+					23: 'ם'
+					}
+
+def get_lang_words_ditc(lang):
+	lang_dict = {}
+	if lang is 'hebrew':
+		lang_dict = {
+					0: 'של',\
+					1: 'לא',\
+					2: 'את',\
+					3: 'גם',\
+					4: 'לסיכום',\
+					5: 'כי',\
+					6: 'זה',\
+					7: 'זו',\
+					8: 'יש',\
+					9: 'לדעתי',\
+					10: 'אני',\
+					11: 'לסיכום'
+					}
+	return lang_dict
+
+def get_lang_letters_dict(lang):
+	lang_dict = {}
+	if lang is 'hebrew':
+		lang_dict = {
+					0: 'א',\
+					1: 'ב',\
+					2: 'ג',\
+					3: 'ד',\
+					4: 'ה',\
+					5: 'ו',\
+					6: 'ז',\
+					7: 'ח',\
+					8: 'ט',\
+					9: 'י',\
+					10: 'כ',\
+					11: 'ל',\
+					12: 'מ',\
+					13: 'נ',\
+					14: 'ס',\
+					15: 'ע',\
+					16: 'פ',\
+					17: 'צ',\
+					18: 'ק',\
+					29: 'ר',\
+					20: 'ש',\
+					21: 'ת',\
+					22: 'ך',\
+					23: 'ם',\
+					24: 'ן',\
+					25: 'ף',\
+					26: 'ץ'
+					}
+	return lang_dict

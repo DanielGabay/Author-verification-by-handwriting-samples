@@ -12,9 +12,8 @@ from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.our_utils.prepare_document import \
     get_prepared_doc
-from models.letterClassifier import load_and_compile_letters_model
 from monkey_functions import (counter_list, create_diff_vector,
-                              get_identified_letters)
+                              get_identified_letters, get_pair_letters)
 
 """
 the main goal of this file is to collect data in order to train a logistic regression _global.LETTERS_MODEL.
@@ -62,17 +61,6 @@ def sum_diff(list_of_pairs):
 	print("Diff mean: {}".format(np.mean(np.asarray(sumDiff))))
 	print("Diff std: {}".format(np.std(np.asarray(sumDiff))))
 
-# divide every file to 2 diffrent 'persons'.
-def get_pair_letters(lines):
-	letters = get_letters(lines)
-	size = len(letters)//2
-	letters_1 = letters[:size]
-	letters_2 = letters[size:]
-	identified_letters_1 = get_identified_letters(letters_1)
-	identified_letters_2 = get_identified_letters(letters_2)
-
-	return identified_letters_1,identified_letters_2
-
 def write_to_csv(dfName,vecName,vector):
 	#write a new line to the dfName.
 	df = pd.read_csv(dfName)
@@ -90,7 +78,7 @@ def already_done(doc_name):
 	return False
 
 def main():
-	load_and_compile_letters_model(_global.LETTERS_MODEL)
+	_global.init('hebrew')
 	divided_docs = []
 	for root, dirs, files in os.walk(_global.DATA_PATH):
 		for file in files:

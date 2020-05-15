@@ -5,7 +5,11 @@ import numpy as np
 import pandas as pd
 from keras.preprocessing import image
 from keras.models import model_from_json
-
+import _global
+from extractComparisonFeatures.detectLetters import get_letters
+from extractComparisonFeatures.detectLines import get_lines
+from extractComparisonFeatures.our_utils.prepare_document import \
+    get_prepared_doc
 import csv
 
 PATH = os.path.dirname(os.path.abspath(__file__))

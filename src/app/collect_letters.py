@@ -11,7 +11,6 @@ from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.our_utils.prepare_document import \
     get_prepared_doc
-from models.letterClassifier import load_and_compile_letters_model
 
 done_path = "{}/{}".format("letter_collection","done_with.txt")
 max_threshold = 0.995
@@ -36,7 +35,7 @@ def save_letters(letters, doc_name):
 		if threshold != -1:
 			letter_index = result[0].tolist().index(max_result)
 			inner_folder = "{}/{}/{}/".format("letter_collection",letter_index+1, threshold*100)
-			selected_letter = _global.lang_letters[result[0].tolist().index(max_result)]
+			selected_letter = _global.lang_letters.get(result[0].tolist().index(max_result))
 			if selected_letter == "ץ": 
 				continue
 			if not os.path.exists(inner_folder):   # create folder to contain the line's img
@@ -48,7 +47,7 @@ def save_letters(letters, doc_name):
 
 def print_predictions(preidction):
 		for i, v in enumerate(preidction):
-			print(str(i)+" " + _global.lang_letters[i]+": "+str(float("{0:.2f}".format(v))))
+			print(str(i)+" " + _global.lang_letters.get(i)+": "+str(float("{0:.2f}".format(v))))
 		print("______")
 
 def createOutputDirs():
@@ -101,6 +100,5 @@ def main_save_all():
 
 if __name__ == "__main__":
 	_global.init('hebrew')
-	load_and_compile_letters_model(_global.LETTERS_MODEL)
 	createOutputDirs() # create the folders to collect the data
 	main_save_all()
