@@ -76,9 +76,9 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	
 		#TODO: add trained words model to Model diractory
 
-		monkeyClassifier = joblib.load(MODELS_PATH + MONKEY_MODEL)
 		aeLettersClassifier = joblib.load(MODELS_PATH + AE_LETTERS_MODEL)
 		lettersClassifier = load_and_compile_letters_model(LETTERS_MODEL, MODELS_PATH)
+		monkeyClassifier = joblib.load(MODELS_PATH + MONKEY_MODEL)
 
 def load_and_compile_letters_model(model, models_path):
 	'''
