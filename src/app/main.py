@@ -24,9 +24,6 @@ from monkey_functions import (get_compared_docs_monkey_results,
 
 
 
-
-
-
 def calc_stats(s, result_monkey, result_letters_ae):
 	if result_monkey and result_letters_ae and s.same_author:
 		# all results 'Same author'
@@ -360,4 +357,4 @@ if __name__ == "__main__":
 	# test_all_same(106)
 	# test_all_pairs()
 	# save_all_pairs_docs_letters()
-	main_app('10.tiff', '2.tiff', test_mode=True)
+	main_app('tiff_as_one_img.png', 'tiff_as_one_img.jpeg', test_mode=True)

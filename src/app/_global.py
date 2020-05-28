@@ -32,6 +32,7 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	global lettersClassifier
 	global wordsClassifier
 	global DEFAULT_LETTERS_AE
+	global CONCAT_AS_ONE_IMAGE
 
 	'''
 	use this try block to check wether this init function was
@@ -52,7 +53,7 @@ def init(language='hebrew', monkey_by_vectors=False,\
 
 	LETTERS_SIZE = 28
 	WORDS_SIZE = 64
-
+	CONCAT_AS_ONE_IMAGE = 'tiff_as_one_img.png'
 	
 	TEST_MODE = test_mode # True if we want to use DATA_PATH to load docs
 	DEFAULT_LETTERS_AE = default_letters_ae # True if we use 1 AutoEncoder for all letters
