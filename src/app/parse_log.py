@@ -8,6 +8,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 import matplotlib.pyplot as plt
+from classes import Stats
 
 '''
 test log example:
@@ -124,7 +125,6 @@ def _print_scores(model, model_name, X_train, y_train, X_test, y_test):
 	conf_mat_y_train = metrics.confusion_matrix(y_train, model.predict(X_train))
 	conf_mat_y_test = metrics.confusion_matrix(y_test, model.predict(X_test))
 
-
 def plot_features(data):
 	colors = ['r', 'g']
 	fig, ax = plt.subplots()
@@ -140,14 +140,100 @@ def plot_features(data):
 	plt.ylabel('Auto-Encoder')
 	plt.show()
 
+def monkey_ae_res(test, monkey_threshold=0.5, ae_threshold=0.5):
+	monkey_res = True if test[0] > monkey_threshold else False
+	ae_res = True if test[1] > ae_threshold else False
+	return {'monkey_res': monkey_res, 'ae_res': ae_res}
+
+def update_stats(s, r):
+	if r['monkey_res'] and r['ae_res'] and s.same_author:
+		# all results 'Same author'
+		s.tp += 1
+		s.mark_as = "Mark: Same"
+	elif not r['monkey_res'] and not r['ae_res'] and s.same_author:
+		# both monkey and ae call 'diff' while same
+		s.fn += 1
+		s.mark_as = "Mark: Different while Same"
+	elif not r['monkey_res'] and not r['ae_res'] and not s.same_author:
+		# all results 'Different author'
+		s.tn += 1
+		s.mark_as = "Mark: Different"
+	elif r['monkey_res'] and r['ae_res'] and not s.same_author:
+		# both monkey and ae call 'same' while diff
+		s.fp += 1
+		s.mark_as = "Mark: Same while Different"
+	else:
+		s.conflict += 1
+		if s.same_author:
+			s.conflict_while_same += 1
+		else:
+			s.conflict_while_diff += 1
+		s.mark_as = "Conflict/Mistake"
+
+	if r['ae_res'] and s.same_author:
+		s.ae_tp += 1
+	elif not r['ae_res'] and s.same_author:
+		s.ae_fn += 1
+	elif not r['ae_res'] and not s.same_author:
+		s.ae_tn += 1
+	elif r['ae_res'] and not s.same_author:
+		s.ae_fp += 1
+
+	if r['monkey_res'] and s.same_author:
+		s.monkey_tp += 1
+	elif not r['monkey_res'] and s.same_author:
+		s.monkey_fn += 1
+	elif not r['monkey_res'] and not s.same_author:
+		s.monkey_tn += 1
+	elif r['monkey_res'] and not s.same_author:
+		s.monkey_fp += 1
+
+def conf_matrix_by_thresholds(data, monkey_threshold=0.5, ae_threshold=0.5):
+	stats = Stats()
+	for d in data:
+		results = monkey_ae_res(d, monkey_threshold, ae_threshold)
+		stats.same_author = True if d[2] == 1 else False
+		update_stats(stats, results)
+	print_ae_monkey_results(stats, monkey_threshold, ae_threshold)
+
+
+def print_ae_monkey_results(s, monkey_threshold, ae_threshold):
+	print("\n------------------")
+	print("Monkey threshold: {0:.2f}\nAE threshold: {1:.2f}".format(monkey_threshold, ae_threshold))
+	print("\n------------------")
+	print_conf_matrix("Monkey & letter AE Conf Matrix:", s.tn, s.tp, s.fn, s.fp)
+	print("Model accuracy: {0:.2f}% (*NOTE: not includes Undecided results!)".format((s.tn+s.tp)/(s.tn+s.tp+s.fn+s.fp)*100))
+	print("Undecided Results:\n->conflict:{}\n-->conflict_while_same:{}\n-->conflict_while_diff:{}"\
+		.format(s.conflict, s.conflict_while_same,s.conflict_while_diff))
+	print("\n------------------")
+	print_conf_matrix("Only letter AE Conf Matrix:", s.ae_tn,s.ae_tp, s.ae_fn, s.ae_fp)
+	print("Model accuracy: {0:.2f}%".format((s.ae_tn+s.ae_tp)/(s.ae_tn+s.ae_tp+s.ae_fn+s.ae_fp)*100))
+	print("\n------------------")
+	# print_conf_matrix("Only Monkey Conf Matrix:", s.monkey_tn, s.monkey_tp, s.monkey_fn, s.monkey_fp)
+	# print("Model accuracy: {0:.2f}%".format((s.monkey_tn+s.monkey_tp)/(s.monkey_tn+s.monkey_tp+s.monkey_fn+s.monkey_fp)*100))
+
+def print_conf_matrix(title, tn, tp, fn, fp):
+	print(title)
+	print("True-Positive: {}\tFalse-Negative: {}".format(tp, fn))
+	print("False-Positive: {}\tTrue-Negative: {}".format(fp, tn))
+	# recall = tp/(tp+fn)
+	# precision = tp/(tp+fp)
+	# f1_score = (2)/((1/recall)+(1/precision))
+	# print("Recall: {0:.2f}%\nPrecision: {1:.2f}%\nF1-Score: {2:.2f}%".format(recall*100,precision*100, f1_score*100))
+
+
 if __name__ == "__main__":
-	# filename = 'ae_no_0.4__monkey_log.txt'
-	filename = 'ae_monkey-bySum_106_diff_same_pairs_no_alef_results.txt'
+	filename = 'ae_no_0.4__monkey_log.txt'
+	# filename = 'ae_monkey-bySum_106_diff_same_pairs_no_alef_results.txt'
 	if len(sys.argv) > 1:
 		filename = sys.argv[1]
 	data = parse_log(filename)
-	filterd_data = filter_only_conflicts(data, 50, 1000)
+	conf_matrix_by_thresholds(data, monkey_threshold=0.5, ae_threshold=0.4)
+	# print(data)
+	# plot_features(data)
+	# filterd_data = filter_only_conflicts(data, 50, 1000)
 	# random.shuffle(filterd_data)
-	plot_features(filterd_data)
+	# plot_features(filterd_data)
 	# train_nn(filterd_data)
 	# train_nn(data)
+	

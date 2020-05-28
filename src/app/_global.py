@@ -23,14 +23,14 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	global WORDS_MODEL
 	global MONKEY_MODEL
 	global LETTERS_SIZE
-	global WORDS_W_SIZE
-	global WORDS_H_SIZE
+	global WORDS_SIZE
 	global AE_LETTERS_MODEL
 	global ae_trained_letters
 	global TEST_MODE
 	global monkeyClassifier
 	global aeLettersClassifier
 	global lettersClassifier
+	global wordsClassifier
 	global DEFAULT_LETTERS_AE
 
 	'''
@@ -51,8 +51,7 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	MODELS_PATH = 'models/'
 
 	LETTERS_SIZE = 28
-	WORDS_W_SIZE = 120
-	WORDS_H_SIZE = 80
+	WORDS_SIZE = 64
 
 	
 	TEST_MODE = test_mode # True if we want to use DATA_PATH to load docs
@@ -64,7 +63,7 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	ae_trained_letters = {}
 	if language == 'hebrew':
 		LETTERS_MODEL = 'hebLettersModel'
-		WORDS_MODEL = 'hebrewWordsModel'
+		WORDS_MODEL = 'hebWordsModel'
 		AE_LETTERS_MODEL = 'hebAutoEncoderDiffVecModel.sav'
 		if monkey_by_vectors:
 			MONKEY_MODEL = 'hebMonkeyLettersByVectors.sav'
@@ -77,10 +76,11 @@ def init(language='hebrew', monkey_by_vectors=False,\
 		#TODO: add trained words model to Model diractory
 
 		aeLettersClassifier = joblib.load(MODELS_PATH + AE_LETTERS_MODEL)
-		lettersClassifier = load_and_compile_letters_model(LETTERS_MODEL, MODELS_PATH)
+		lettersClassifier = load_and_compile_model(LETTERS_MODEL, MODELS_PATH)
+		wordsClassifier = load_and_compile_model(WORDS_MODEL, MODELS_PATH)
 		monkeyClassifier = joblib.load(MODELS_PATH + MONKEY_MODEL)
 
-def load_and_compile_letters_model(model, models_path):
+def load_and_compile_model(model, models_path):
 	'''
 	Load the model .h5 and .json files and compile it.
 	add lettersClassifier into _globals

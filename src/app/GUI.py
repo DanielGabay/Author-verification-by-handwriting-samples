@@ -4,7 +4,6 @@ import warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.filterwarnings("ignore")
 
-import time
 from tkinter import *
 from tkinter import messagebox
 from tkinter.filedialog import askopenfile, asksaveasfilename
@@ -20,7 +19,7 @@ class MainApplication(Frame):
 		Frame.__init__(self, root, *args, **kwargs)
 		self.root = root
 		self.root.title("Author Verification Based On Hand Writing Analysis")
-		self.root.geometry('600x250')
+		self.root.geometry('470x250')
 		self.open1_btn = Button(root, text ='Open File 1', command = lambda:self.open_clicked1()).grid(row=0, column=0)
 		self.file_name1_lable = Label(root, text="")
 		self.file_name1_lable.grid(row=0, column=1)
@@ -130,13 +129,12 @@ class MainApplication(Frame):
 									  		file2.split('.')[0]),
 			filetypes=[("Text Files", "*.txt")],
 			defaultextension='txt'
-
 		)
 		try:
 			f = open(name, "w")
 			f.write("Test: {} {}\n{}".format(file1,file2,self.get_output()))
 			f.close()
-			messagebox.showinfo("Saved Success", "Path:\n" + name)
+			# messagebox.showinfo("Saved successfully", "Path:\n" + name)
 		except:
 			pass
 
