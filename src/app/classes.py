@@ -2,9 +2,10 @@ class IdWord():
 	'''
 	Identified word
 	'''
-	def __init__(self, word_img, word_name):
+	def __init__(self, word_img, word_name, word_index):
 		self.word_img = word_img
 		self.word_name = word_name # identified word name
+		self.word_index = word_index # index in dictionary
 
 class IdLetter():
 	'''

@@ -9,6 +9,7 @@ import cv2
 import joblib
 import numpy as np
 
+from keras.preprocessing import image
 import _global
 from ae_letters_functions import get_compared_docs_ae_letters_results
 from AutoEncoder.test_autoencoder import get_letters_ae_features
@@ -17,12 +18,10 @@ from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.detectWords import get_words
 from extractComparisonFeatures.our_utils.prepare_document import \
-    get_prepared_doc
+	get_prepared_doc
 from monkey_functions import (get_compared_docs_monkey_results,
-                              get_identified_letters, get_monkey_features)
-
-
-
+							  get_identified_letters, get_monkey_features)
+from main_functions import createOutputDirs
 
 def calc_stats(s, result_monkey, result_letters_ae):
 	if result_monkey and result_letters_ae and s.same_author:
@@ -148,6 +147,54 @@ def test_all_same(test_random_different=0):
 
 	print_ae_monkey_results(s, len(b_files))
 
+def improve_images(img):
+	kernel = np.ones((2,2),np.uint8)
+	retval, thresh_for_large = cv2.threshold(img, 220, 255, cv2.THRESH_BINARY)
+	opening = cv2.morphologyEx(thresh_for_large, cv2.MORPH_OPEN, kernel)
+	opening = np.expand_dims(opening, axis=0)
+	opening = opening.transpose((1, 2, 0)) 
+	img = np.expand_dims(opening, axis=0)
+
+	return img
+
+def improve_images(img, IMG_SIZE):
+	kernel = np.ones((3,3),np.uint8)
+	retval, thresh_for_large = cv2.threshold(img, 220, 255, cv2.THRESH_BINARY)
+	opening = cv2.morphologyEx(thresh_for_large, cv2.MORPH_OPEN, kernel)
+	opening = np.expand_dims(opening, axis=0)
+	opening = opening.transpose((1, 2, 0)) 
+	wordImg = cv2.resize(opening, dsize=(IMG_SIZE, IMG_SIZE))
+	return wordImg
+
+
+def get_identified_words(words, doc_name):
+	# for main use only:
+	Id_Words = []
+	count = 0
+	out_path = createOutputDirs(doc_name.split(".")[0])
+	for word in words:
+		_word = word
+		# _word = cv2.resize(word, (_global.WORDS_SIZE, _global.WORDS_SIZE))
+		# _word = improve_images(word, _global.WORDS_SIZE)
+		word = _word.reshape((_global.WORDS_SIZE, _global.WORDS_SIZE, 1))
+		test_word = image.img_to_array(word)
+		test_word = np.expand_dims(test_word, axis=0)
+		# test_word = improve_images(test_word)
+
+		result = _global.wordsClassifier.predict((test_word/255))
+		if max(result[0]) > 0.995:
+			word_index = result[0].tolist().index(max(result[0]))
+			selected_word = _global.lang_words.get(result[0].tolist().index(max(result[0])))
+			count += 1
+			Id_Words.append(IdWord(word,selected_word, word_index+1))
+			inner_folder = "{}/{}".format(out_path,word_index+1)
+			if not os.path.exists(inner_folder):   # create folder to contain the line's img
+				os.mkdir(inner_folder)
+			save_name = "{}/{}.jpeg".format(inner_folder,count)
+			print(save_name)
+			cv2.imwrite(save_name,_word)
+	return Id_Words
+
 def init_doc(doc, only_save_letters=False):
 	if _global.TEST_MODE:
 		path = _global.DATA_PATH
@@ -157,14 +204,15 @@ def init_doc(doc, only_save_letters=False):
 
 	# ---> Detection Phase
 	detected_lines = get_lines(doc.doc_img, doc.name)
-	# detected_words = get_words(detected_lines) # uncomment after testing
+	detected_words = get_words(detected_lines) # uncomment after testing
 	detected_letters = get_letters(detected_lines)
 
 	if only_save_letters:
-		_, doc.id_letters = get_identified_letters(detected_letters, doc.name.split(".")[0], False)
+		# _, doc.id_letters = get_identified_letters(detected_letters, doc.name.split(".")[0], False)
 		return
 
 	# ---> Recognition Phase
+	doc.id_words = get_identified_words(detected_words, doc.name)
 	doc.id_letters = get_identified_letters(detected_letters)
 	doc.monkey_features = get_monkey_features(doc.id_letters)
 	get_letters_ae_features(doc.id_letters)
@@ -186,7 +234,7 @@ def main_app(doc_name1, doc_name2, queue=None, test_mode=False):
 	# ---> Detection Phase
 	doc1 = init_doc(doc1)
 	doc2 = init_doc(doc2)
-		
+
 	# ---> Verification Phase
 	compare_docs = CompareDocuments(doc1, doc2)
 
@@ -210,7 +258,6 @@ def main_app(doc_name1, doc_name2, queue=None, test_mode=False):
 				 compare_docs.monkey_results['result'] == compare_docs.letters_ae_results['result']\
 				 else "Conflict>"
 	gui_output += conclusion
-	# return gui_output
 	if queue is not None: #and queue.empty():
 		queue.put(gui_output)
 
@@ -307,7 +354,7 @@ def test_all_pairs():
 			print("Letters AE Result:\n<{} Author>\ncount_same: {}\ncount_diff: {}"\
 				 .format(compare_docs.letters_ae_results['result'],\
 					 	 compare_docs.letters_ae_results['count_same'],\
-			     		 compare_docs.letters_ae_results['count_diff']))
+				 		 compare_docs.letters_ae_results['count_diff']))
 			# FOR EASY NAVIGATION IN FILE
 			print("Real: {}\n{}".format(same_author, mark_as))
 
@@ -357,4 +404,4 @@ if __name__ == "__main__":
 	# test_all_same(106)
 	# test_all_pairs()
 	# save_all_pairs_docs_letters()
-	main_app('tiff_as_one_img.png', 'tiff_as_one_img.jpeg', test_mode=True)
+	main_app('300.tiff', '1b.tiff', test_mode=True)

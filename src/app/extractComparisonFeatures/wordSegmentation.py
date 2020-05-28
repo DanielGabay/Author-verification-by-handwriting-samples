@@ -18,10 +18,18 @@ def wordSegmentation(img, kernelSize=25, sigma=11, theta=7, minArea=0):
 	"""
 
 	# apply filter kernel
-	kernel = createKernel(kernelSize, sigma, theta)
-	imgFiltered = cv2.filter2D(img, -1, kernel, borderType=cv2.BORDER_REPLICATE).astype(np.uint8)
-	(_, imgThres) = cv2.threshold(imgFiltered, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-	imgThres = 255 - imgThres
+	kernel = np.ones((3,3),np.uint8)
+	retval, thresh_for_large = cv2.threshold(img, 220, 255, cv2.THRESH_BINARY)
+	opening = cv2.morphologyEx(thresh_for_large, cv2.MORPH_OPEN, kernel)
+	# opening = np.expand_dims(opening, axis=0)
+	# opening = opening.transpose((1, 2, 0)) 
+	# wordImg = cv2.resize(opening, dsize=(64, 64))
+
+	# kernel = createKernel(kernelSize, sigma, theta)
+	# imgFiltered = cv2.filter2D(img, -1, kernel, borderType=cv2.BORDER_REPLICATE).astype(np.uint8)
+	# (_, imgThres) = cv2.threshold(imgFiltered, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+	# imgThres = 255 - imgThres
+	imgThres = 255 - opening
 
 	# find connected components. OpenCV: return type differs between OpenCV2 and 3
 	if cv2.__version__.startswith('3.'):
