@@ -5,11 +5,6 @@ import numpy as np
 import pandas as pd
 from keras.preprocessing import image
 from keras.models import model_from_json
-import _global
-from extractComparisonFeatures.detectLetters import get_letters
-from extractComparisonFeatures.detectLines import get_lines
-from extractComparisonFeatures.our_utils.prepare_document import \
-    get_prepared_doc
 import csv
 
 PATH = os.path.dirname(os.path.abspath(__file__))
@@ -68,10 +63,13 @@ def get_encoders():
 		encoders.update({letter : load_and_compile_ae(PATH+'/weights/encoder_32_{}'.format(letter))})
 	return encoders
 
+
 def main():
 
-	encoders = get_encoders()
+	#encoders = get_encoders()
 	PATH_TO_DATA = PATH + '/letters'
+
+	encoder = load_and_compile_ae(PATH+'/weights/encoder_32_no_alef')
 	
 	for dir_, _, files in os.walk(PATH_TO_DATA):
 		for file_name in files:
@@ -83,11 +81,10 @@ def main():
 			# print(doc_name)
 			if already_done(featuers_file,doc_name):
 				continue
-			encoder = encoders[rel_dir]
+			#encoder = encoders[rel_dir]
 			img = cv2.imread("{}/{}".format(PATH_TO_DATA,rel_file), 0)
 			features = get_features(encoder,img)
 			write_vec_to_exel(featuers_file,doc_name,rel_dir,features)
 			
 if __name__ == "__main__":
-
 	main()

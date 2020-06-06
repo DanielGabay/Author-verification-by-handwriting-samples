@@ -11,10 +11,18 @@ from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
 
-from monkey_collect_data import create_diff_vector
 import matplotlib.pyplot as plt
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+
+def create_diff_vector(list_1,list_2):
+	diff_vector = [0] * len(list_1)
+	for i in range (0,len(list_1)):
+		diff_vector[i] =  abs(list_1[i] - list_2[i])
+	return diff_vector
+
+
 
 def split_train_test(X, y, train_percent=0.75):
 	size = int(len(X) * train_percent)
@@ -105,7 +113,7 @@ def print_result(model,X_test,y_test,X_train,y_train,str = ""):
 
 
 def train_model():
-	X, y = get_xy("AutoEncoder/features_data",12000)
+	X, y = get_xy("features_data",12000)
 	X_train, X_test, y_train, y_test = split_train_test(X,y,0.8)
 	lr_model = LogisticRegression(random_state=0,max_iter=1000).fit(X_train, y_train)
 	mlp_model = MLPClassifier()
