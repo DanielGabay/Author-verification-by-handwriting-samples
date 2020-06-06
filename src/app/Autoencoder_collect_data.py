@@ -10,9 +10,6 @@ import csv
 PATH = os.path.dirname(os.path.abspath(__file__))
 FEATUERS_PATH = PATH
 
-letters = ['1','2','4','5','8','12','13','15','17','24']
-
-
 def load_and_compile_ae(name):
 	# load json and create model
 	json_file = open(name + '.json', 'r')
@@ -26,9 +23,7 @@ def load_and_compile_ae(name):
 	classifier.compile(optimizer='sgd', loss='mse')
 	return classifier
 
-
-def write_vec_to_exel(featuers_file,img_name,letter,encoded_states):
-	
+def write_vec_to_exel(featuers_file,img_name,letter,encoded_states):	
 	row = [img_name,letter]
 	row.extend(encoded_states)
 
@@ -56,17 +51,8 @@ def already_done(featuers_file,doc_name):
 				return True
 	return False
 
-
-def get_encoders():
-	encoders = {}
-	for letter in letters:
-		encoders.update({letter : load_and_compile_ae(PATH+'/weights/encoder_32_{}'.format(letter))})
-	return encoders
-
-
 def main():
 
-	#encoders = get_encoders()
 	PATH_TO_DATA = PATH + '/letters'
 
 	encoder = load_and_compile_ae(PATH+'/weights/encoder_32_no_alef')
