@@ -157,16 +157,6 @@ def improve_images(img):
 
 	return img
 
-def improve_images(img, IMG_SIZE):
-	kernel = np.ones((3,3),np.uint8)
-	retval, thresh_for_large = cv2.threshold(img, 220, 255, cv2.THRESH_BINARY)
-	opening = cv2.morphologyEx(thresh_for_large, cv2.MORPH_OPEN, kernel)
-	opening = np.expand_dims(opening, axis=0)
-	opening = opening.transpose((1, 2, 0)) 
-	wordImg = cv2.resize(opening, dsize=(IMG_SIZE, IMG_SIZE))
-	return wordImg
-
-
 def get_identified_words(words, doc_name):
 	# for main use only:
 	Id_Words = []
@@ -184,10 +174,10 @@ def get_identified_words(words, doc_name):
 		result = _global.wordsClassifier.predict((test_word/255))
 		if max(result[0]) > 0.995:
 			word_index = result[0].tolist().index(max(result[0]))
-			selected_word = _global.lang_words.get(result[0].tolist().index(max(result[0])))
+			selected_word = _global.lang_words.get(word_index)
 			count += 1
-			Id_Words.append(IdWord(word,selected_word, word_index+1))
-			inner_folder = "{}/{}".format(out_path,word_index+1)
+			Id_Words.append(IdWord(word, selected_word, word_index))
+			inner_folder = "{}/{}".format(out_path, word_index)
 			if not os.path.exists(inner_folder):   # create folder to contain the line's img
 				os.mkdir(inner_folder)
 			save_name = "{}/{}.jpeg".format(inner_folder,count)
@@ -204,15 +194,15 @@ def init_doc(doc, only_save_letters=False):
 
 	# ---> Detection Phase
 	detected_lines = get_lines(doc.doc_img, doc.name)
-	detected_words = get_words(detected_lines) # uncomment after testing
+	# detected_words = get_words(detected_lines) # uncomment after testing
 	detected_letters = get_letters(detected_lines)
 
 	if only_save_letters:
-		# _, doc.id_letters = get_identified_letters(detected_letters, doc.name.split(".")[0], False)
+		_, doc.id_letters = get_identified_letters(detected_letters, doc.name.split(".")[0], False)
 		return
 
 	# ---> Recognition Phase
-	doc.id_words = get_identified_words(detected_words, doc.name)
+	# doc.id_words = get_identified_words(detected_words, doc.name)
 	doc.id_letters = get_identified_letters(detected_letters)
 	doc.monkey_features = get_monkey_features(doc.id_letters)
 	get_letters_ae_features(doc.id_letters)
@@ -234,14 +224,15 @@ def main_app(doc_name1, doc_name2, queue=None, test_mode=False):
 	# ---> Detection Phase
 	doc1 = init_doc(doc1)
 	doc2 = init_doc(doc2)
-
 	# ---> Verification Phase
 	compare_docs = CompareDocuments(doc1, doc2)
 
 	get_compared_docs_monkey_results(compare_docs)
 	get_compared_docs_ae_letters_results(compare_docs)
-	output = output + "Monkey Result:{}\nAE result: {}".format(compare_docs.monkey_results,\
+	output = output + "Monkey Result:{}\nAE result: {}".format(\
+												   compare_docs.monkey_results,\
 												   compare_docs.letters_ae_results)
+	
 	result_letters_ae = True if compare_docs.letters_ae_results['result'] == 'Same' else False	
 	# gui_output = gui_output + "Letters AE Result:\n<{} Author>\ncount_same: {}\ncount_diff: {}"\
 	# 	.format(compare_docs.letters_ae_results['result'],\
@@ -250,14 +241,23 @@ def main_app(doc_name1, doc_name2, queue=None, test_mode=False):
 	print(output)
 	gui_output += "Algo1: Monkey Result:\n\t<{0}> [Confident: {1:.2f}%]\n".format(compare_docs.monkey_results['result'],\
 														  compare_docs.monkey_results['precent']*100)
-	gui_output += "Algo2: AutoEncoder Letters Result:\n\t<{0}> [Confident: {1:.2f}%]\n".format(\
+	gui_output += "Algo2: AutoEncoder Letters Result:\n\t<{}> [Confident: {:.2f}%]\n\tResult By Predictions:\n\t<{}> [Confident: {:.2f}%]\n".format(\
 														compare_docs.letters_ae_results['result'],\
-														compare_docs.letters_ae_results['precent']*100)
-	conclusion = "\n\nFinal Result:\n\t<"
-	conclusion += compare_docs.monkey_results['result'] + ">" if\
-				 compare_docs.monkey_results['result'] == compare_docs.letters_ae_results['result']\
-				 else "Conflict>"
+														compare_docs.letters_ae_results['precent']*100,
+														compare_docs.letters_ae_results['result_by_predictions'],\
+														compare_docs.letters_ae_results['precent_by_predictions']*100)
+	gui_output += "\n\nFinal Result:\n\t<"
+	conclusion = compare_docs.monkey_results['result'] + ">" if\
+				  compare_docs.monkey_results['result'] == compare_docs.letters_ae_results['result']\
+				  else "Conflict>"
+
 	gui_output += conclusion
+
+	conclusion2 = "\n\tWith AE by predictions:\n\t<"
+	conclusion2 += compare_docs.monkey_results['result'] + ">" if\
+				  compare_docs.monkey_results['result'] == compare_docs.letters_ae_results['result_by_predictions']\
+				  else "Conflict>" 
+	# return gui_output
 	if queue is not None: #and queue.empty():
 		queue.put(gui_output)
 
@@ -404,4 +404,4 @@ if __name__ == "__main__":
 	# test_all_same(106)
 	# test_all_pairs()
 	# save_all_pairs_docs_letters()
-	main_app('300.tiff', '1b.tiff', test_mode=True)
+	main_app('15.tiff', '15b.tiff', test_mode=True)

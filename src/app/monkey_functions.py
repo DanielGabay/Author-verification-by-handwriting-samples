@@ -90,11 +90,19 @@ def _get_identified_letters(letters):
 		result = _global.lettersClassifier.predict((test_image/255))
 		if max(result[0]) > 0.995:
 			letter_index = result[0].tolist().index(max(result[0]))
-			selected_letter = _global.lang_letters.get(result[0].tolist().index(max(result[0])))
+			selected_letter = _global.lang_letters.get(letter_index)
 			if selected_letter == "ץ":
 				continue
+			if selected_letter in _global.ae_trained_letters.values():
+				improved_result = _global.lettersImprovedClassifier.predict((test_image/255))
+				if max(improved_result[0]) < 0.8:
+					save_name = "filtered_letters/{}_{}_{:.2f}.jpeg".format(letter_index+1, count, max(improved_result[0]))
+					cv2.imwrite(save_name,letter)
+				else:
+					save_name = "filtered_letters/good/{}_{}_{:.2f}.jpeg".format(letter_index+1, count, max(improved_result[0]))
+					cv2.imwrite(save_name,letter)
 			count += 1
-			Id_Letters.append(IdLetter(letter,selected_letter, letter_index+1))
+			Id_Letters.append(IdLetter(letter,selected_letter, letter_index))
 	return Id_Letters
 
 def create_diff_vector(list_1,list_2):

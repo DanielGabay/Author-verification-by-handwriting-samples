@@ -20,6 +20,7 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	global DATA_PATH
 	global MODELS_PATH
 	global LETTERS_MODEL
+	global LETTERS_IMPROVED_MODEL
 	global WORDS_MODEL
 	global MONKEY_MODEL
 	global LETTERS_SIZE
@@ -30,9 +31,13 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	global monkeyClassifier
 	global aeLettersClassifier
 	global lettersClassifier
+	global lettersImprovedClassifier
 	global wordsClassifier
 	global DEFAULT_LETTERS_AE
 	global CONCAT_AS_ONE_IMAGE
+	global AE_LETTERS_RESULT_BY_PRECENT
+	global AE_SUM_PRED_THRESH
+
 
 	'''
 	use this try block to check wether this init function was
@@ -57,13 +62,15 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	
 	TEST_MODE = test_mode # True if we want to use DATA_PATH to load docs
 	DEFAULT_LETTERS_AE = default_letters_ae # True if we use 1 AutoEncoder for all letters
-
+	AE_LETTERS_RESULT_BY_PRECENT = True # True if we want to sum precents instead of counting same/diff letters
+	AE_SUM_PRED_THRESH = 0.5 # threshold to determine Same/Diff by sum predictions
 
 	lang_letters = {}
 	lang_words = {}
 	ae_trained_letters = {}
 	if language == 'hebrew':
 		LETTERS_MODEL = 'hebLettersModel'
+		LETTERS_IMPROVED_MODEL = 'hebLettersImprovedModel'
 		WORDS_MODEL = 'hebWordsModel'
 		AE_LETTERS_MODEL = 'hebAutoEncoderDiffVecModel.sav'
 		if monkey_by_vectors:
@@ -78,6 +85,7 @@ def init(language='hebrew', monkey_by_vectors=False,\
 
 		aeLettersClassifier = joblib.load(MODELS_PATH + AE_LETTERS_MODEL)
 		lettersClassifier = load_and_compile_model(LETTERS_MODEL, MODELS_PATH)
+		lettersImprovedClassifier = load_and_compile_model(LETTERS_IMPROVED_MODEL, MODELS_PATH) 
 		wordsClassifier = load_and_compile_model(WORDS_MODEL, MODELS_PATH)
 		monkeyClassifier = joblib.load(MODELS_PATH + MONKEY_MODEL)
 
@@ -126,7 +134,6 @@ def get_lang_words_ditc(lang):
 					8: 'יש',\
 					9: 'לדעתי',\
 					10: 'אני',\
-					11: 'לסיכום'
 					}
 	return lang_dict
 
