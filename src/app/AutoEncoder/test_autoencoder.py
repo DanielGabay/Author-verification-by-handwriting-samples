@@ -60,11 +60,26 @@ def get_encoders():
 		encoders.update({letter : load_and_compile_ae(path_weights+'/encoder_encoder_32_{}'.format(letter))})
 	return encoders
 
+def main_get_letter_ae_features(letters):
+	path_weights = 'AutoEncoder/weights'
+	if not _global.DEFAULT_LETTERS_AE:
+		encoders = get_encoders()
+	default_encoder = load_and_compile_ae(path_weights+'/encoder_encoder_32')
+
+	for letter in letters:
+		encoder = None
+		if letter.letter_name in _global.ae_trained_letters.values():
+			if _global.DEFAULT_LETTERS_AE:
+				encoder = default_encoder
+			else:
+				encoder = encoders[str(letter.letter_index)]
+			letter.ae_features = encoder.predict(letter.letter_img).ravel()
+
 def get_letters_ae_features(letters):
 	path_weights = 'AutoEncoder/weights'
 	if not _global.DEFAULT_LETTERS_AE:
 		encoders = get_encoders()
-	# default_encoder = load_and_compile_ae(path_weights+'/encoder_full_32')
+	default_encoder = load_and_compile_ae(path_weights+'/encoder_full_32')
 	default_encoder = load_and_compile_ae(path_weights+'/encoder_encoder_32')
 
 	for letter in letters:
@@ -77,7 +92,7 @@ def get_letters_ae_features(letters):
 				encoder = default_encoder
 			else:
 				encoder = encoders[str(letter.letter_index)]
-			letter.ae_features = encoder.predict(img).ravel()
+			letter.ae_features = encoder.predict(letter.letter_img).ravel()
 
 def test(name):
 	path = os.path.dirname(os.path.abspath(__file__))

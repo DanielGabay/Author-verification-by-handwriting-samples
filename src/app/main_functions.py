@@ -6,6 +6,7 @@ import numpy as np
 from keras.preprocessing import image
 
 import _global
+from classes import IdLetter, LetterImgPredict
 from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.detectWords import get_words
@@ -13,6 +14,28 @@ from extractComparisonFeatures.our_utils.prepare_document import \
     get_prepared_doc
 import pickle
 import joblib
+
+
+
+def get_identified_letters(letters):
+	id_letters = []
+	basic_letters_model = LetterImgPredict(_global.lettersClassifier)
+	improved_letters_model = LetterImgPredict(_global.lettersImprovedClassifier)
+
+	for letter in letters:
+		basic_result, id_letter = basic_letters_model.predict(letter)
+		if basic_result > _global.BASIC_LETTER_THESHOLD:
+			if id_letter.letter_name == "ץ":
+				continue
+			if id_letter.letter_name in _global.ae_trained_letters.values():
+				improved_result, id_letter_improved = improved_letters_model.predict(letter)
+				if improved_result < _global.IMPROVED_LETTER_THESHOLD:
+					continue
+				if id_letter_improved.letter_index == 30: # dont save it if its garbage
+					continue
+			id_letters.append(id_letter)
+
+	return id_letters
 
 def main_save_all():
 	for root, dirs, files in os.walk(_global.DATA_PATH):

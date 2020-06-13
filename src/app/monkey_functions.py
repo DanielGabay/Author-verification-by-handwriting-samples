@@ -25,63 +25,14 @@ def counter_list(found_letters):
 	counter_list_precent = [i * (100/length) for i in count_list]
 	return counter_list_precent
 
-def get_identified_letters_testing(letters, from_main=False, doc_name="", interactive=False):
-	# for main use only:
-	Id_Letters = []
-	if doc_name is not "": # for testing
-		if not os.path.exists("letters_out"):
-			os.mkdir("letters_out")
-	count = 0
-	for letter in letters:
-		letter = cv2.resize(letter, (_global.LETTERS_SIZE, _global.LETTERS_SIZE))
-		letter = letter.reshape((_global.LETTERS_SIZE, _global.LETTERS_SIZE, 1))
-		test_letter = image.img_to_array(letter)
-		test_image = np.expand_dims(test_letter, axis=0)
-		result = _global.lettersClassifier.predict((test_image/255))
-		if max(result[0]) > 0.995:
-			letter_index = result[0].tolist().index(max(result[0]))
-			selected_letter = _global.lang_letters.get(result[0].tolist().index(max(result[0])))
-			if selected_letter == "ץ":
-				continue
-			count += 1
-			
-			if doc_name and selected_letter in _global.ae_trained_letters.values(): # for testing
-				out_path = "{}/{}".format("letters_out", doc_name)
-				if not os.path.exists(out_path):
-					os.mkdir(out_path)
-				inner_folder = "{}/{}".format(out_path,letter_index+1)
-				if not os.path.exists(inner_folder):   # create folder to contain the line's img
-					os.mkdir(inner_folder)
-				save_name = "{}/{}.jpeg".format(inner_folder,count)
-				cv2.imwrite(save_name,letter)
-			
-			if not doc_name:
-				Id_Letters.append(IdLetter(letter,selected_letter, letter_index+1))
-
-	if doc_name is not "": # for testing
-		if interactive:
-			print("filter manually letters in {} and press ENTER".format(doc_name))
-			input()
-		out_p = "letters_out/{}".format(doc_name)
-		for _, dirs, _ in os.walk(out_p):
-			for _dir in dirs:
-				in_p = "{}/{}".format(out_p,_dir)
-				files = os.listdir(in_p)
-				for f in files:
-					f_p = "{}/{}".format(in_p, f)
-					Id_Letters.append(IdLetter(cv2.imread(f_p,0), _global.lang_letters.get(int(_dir)-1)))
-	return Id_Letters
-
-def get_identified_letters(letters, doc_name="", interactive=False):
-	if doc_name is not "":
-		return get_identified_letters_testing(letters, doc_name, interactive)
-	else:
-		return _get_identified_letters(letters)
+def get_identified_letters(letters):
+	return _get_identified_letters(letters)
 	
 def _get_identified_letters(letters):
 	# for main use only:
 	Id_Letters = []
 	count = 0
+	letter_index_improved = 0
 	for letter in letters:
 		letter = cv2.resize(letter, (_global.LETTERS_SIZE, _global.LETTERS_SIZE))
 		letter = letter.reshape((_global.LETTERS_SIZE, _global.LETTERS_SIZE, 1))
@@ -95,14 +46,21 @@ def _get_identified_letters(letters):
 				continue
 			if selected_letter in _global.ae_trained_letters.values():
 				improved_result = _global.lettersImprovedClassifier.predict((test_image/255))
+				letter_index_improved = improved_result[0].tolist().index(max(improved_result[0]))
 				if max(improved_result[0]) < 0.8:
-					save_name = "filtered_letters/{}_{}_{:.2f}.jpeg".format(letter_index+1, count, max(improved_result[0]))
-					cv2.imwrite(save_name,letter)
+					pass
+					# save_name = "filtered_letters/{}_{}_{:.2f}.jpeg".format(letter_index_improved, count, max(improved_result[0]))
+					# cv2.imwrite(save_name,letter)
 				else:
-					save_name = "filtered_letters/good/{}_{}_{:.2f}.jpeg".format(letter_index+1, count, max(improved_result[0]))
-					cv2.imwrite(save_name,letter)
-			count += 1
-			Id_Letters.append(IdLetter(letter,selected_letter, letter_index))
+					# save_name = "filtered_letters/good/{}_{}_{:.2f}.jpeg".format(letter_index_improved, count, max(improved_result[0]))
+					# cv2.imwrite(save_name,letter)
+					if letter_index_improved != 30:
+						Id_Letters.append(IdLetter(letter,selected_letter, letter_index))
+						count += 1
+			else:
+				count += 1
+				Id_Letters.append(IdLetter(letter,selected_letter, letter_index))
+		
 	return Id_Letters
 
 def create_diff_vector(list_1,list_2):
@@ -124,7 +82,7 @@ def get_monkey_result(feature_vec1, feature_vec2):
 	return prediction_monkey(diff_vector)
 
 
-def prediction_monkey(diff_vec, alpha = 0, print_pred=False):
+def prediction_monkey(diff_vec, alpha = 0, print_pred=True):
 	diff_vec = np.asarray(diff_vec)
 	result = _global.monkeyClassifier.predict_proba(diff_vec.reshape(1,-1))
 	if print_pred:

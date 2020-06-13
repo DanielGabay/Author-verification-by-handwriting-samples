@@ -38,7 +38,7 @@ def get_compared_docs_ae_letters_results(compare_docs):
 		precent = count_diff / (count_same + count_diff)
 
 	precent_by_predictions = sum_predictions/(count_same+count_diff)
-	result_by_predictions = 'Same' if precent_by_predictions > _global.AE_SUM_PRED_THRESH else 'Diff'	
+	result_by_predictions = 'Same' if precent_by_predictions > _global.AE_SUM_PRED_THRESH else 'Different'	
 	compare_docs.letters_ae_results = {'result': result,\
 								       'precent': precent,\
 									   'count_same': count_same,\

@@ -12,16 +12,15 @@ import numpy as np
 from keras.preprocessing import image
 import _global
 from ae_letters_functions import get_compared_docs_ae_letters_results
-from AutoEncoder.test_autoencoder import get_letters_ae_features
+from AutoEncoder.test_autoencoder import get_letters_ae_features, main_get_letter_ae_features
 from classes import CompareDocuments, Document, IdLetter, IdWord, Stats
 from extractComparisonFeatures.detectLetters import get_letters
 from extractComparisonFeatures.detectLines import get_lines
 from extractComparisonFeatures.detectWords import get_words
 from extractComparisonFeatures.our_utils.prepare_document import \
 	get_prepared_doc
-from monkey_functions import (get_compared_docs_monkey_results,
-							  get_identified_letters, get_monkey_features)
-from main_functions import createOutputDirs
+from monkey_functions import (get_compared_docs_monkey_results, get_monkey_features)
+from main_functions import get_identified_letters
 
 def calc_stats(s, result_monkey, result_letters_ae):
 	if result_monkey and result_letters_ae and s.same_author:
@@ -71,11 +70,14 @@ def get_ae_monkey_results(s, compare_docs):
 	get_compared_docs_ae_letters_results(compare_docs)
 	result_monkey = True if compare_docs.monkey_results['result'] == 'Same' else False
 	precent_monkey = compare_docs.monkey_results['precent'] * 100
-	result_letters_ae = True if compare_docs.letters_ae_results['result'] == 'Same' else False
+	# result_letters_ae = True if compare_docs.letters_ae_results['result'] == 'Same' else False
+	result_letters_ae = True if compare_docs.letters_ae_results['result_by_predictions'] == 'Same' else False
 	
 	calc_stats(s, result_monkey, result_letters_ae)
-	print("Letters AE Result:\n<{} Author>\ncount_same: {}\ncount_diff: {}"\
-		.format(compare_docs.letters_ae_results['result'],\
+	print("Letters AE Result:\n<{} Author>\nsum_predictions:{}\nprecent_by_predictions:{}\ncount_same: {}\ncount_diff: {}"\
+		.format(compare_docs.letters_ae_results['result_by_predictions'],\
+				compare_docs.letters_ae_results['sum_predictions'],\
+				compare_docs.letters_ae_results['precent_by_predictions'],\
 				compare_docs.letters_ae_results['count_same'],\
 				compare_docs.letters_ae_results['count_diff']))
 	print("Real: {}\n{}".format(s.same_author, s.mark_as)) 	# FOR EASY NAVIGATION IN FILE
@@ -147,44 +149,6 @@ def test_all_same(test_random_different=0):
 
 	print_ae_monkey_results(s, len(b_files))
 
-def improve_images(img):
-	kernel = np.ones((2,2),np.uint8)
-	retval, thresh_for_large = cv2.threshold(img, 220, 255, cv2.THRESH_BINARY)
-	opening = cv2.morphologyEx(thresh_for_large, cv2.MORPH_OPEN, kernel)
-	opening = np.expand_dims(opening, axis=0)
-	opening = opening.transpose((1, 2, 0)) 
-	img = np.expand_dims(opening, axis=0)
-
-	return img
-
-def get_identified_words(words, doc_name):
-	# for main use only:
-	Id_Words = []
-	count = 0
-	out_path = createOutputDirs(doc_name.split(".")[0])
-	for word in words:
-		_word = word
-		# _word = cv2.resize(word, (_global.WORDS_SIZE, _global.WORDS_SIZE))
-		# _word = improve_images(word, _global.WORDS_SIZE)
-		word = _word.reshape((_global.WORDS_SIZE, _global.WORDS_SIZE, 1))
-		test_word = image.img_to_array(word)
-		test_word = np.expand_dims(test_word, axis=0)
-		# test_word = improve_images(test_word)
-
-		result = _global.wordsClassifier.predict((test_word/255))
-		if max(result[0]) > 0.995:
-			word_index = result[0].tolist().index(max(result[0]))
-			selected_word = _global.lang_words.get(word_index)
-			count += 1
-			Id_Words.append(IdWord(word, selected_word, word_index))
-			inner_folder = "{}/{}".format(out_path, word_index)
-			if not os.path.exists(inner_folder):   # create folder to contain the line's img
-				os.mkdir(inner_folder)
-			save_name = "{}/{}.jpeg".format(inner_folder,count)
-			print(save_name)
-			cv2.imwrite(save_name,_word)
-	return Id_Words
-
 def init_doc(doc, only_save_letters=False):
 	if _global.TEST_MODE:
 		path = _global.DATA_PATH
@@ -192,22 +156,22 @@ def init_doc(doc, only_save_letters=False):
 	else:
 		doc.doc_img = get_prepared_doc(doc.name)
 
-	# ---> Detection Phase
+	'''
+	Detection Phase
+	'''
 	detected_lines = get_lines(doc.doc_img, doc.name)
-	# detected_words = get_words(detected_lines) # uncomment after testing
 	detected_letters = get_letters(detected_lines)
 
-	if only_save_letters:
-		_, doc.id_letters = get_identified_letters(detected_letters, doc.name.split(".")[0], False)
-		return
-
 	# ---> Recognition Phase
-	# doc.id_words = get_identified_words(detected_words, doc.name)
 	doc.id_letters = get_identified_letters(detected_letters)
 	doc.monkey_features = get_monkey_features(doc.id_letters)
-	get_letters_ae_features(doc.id_letters)
+	# TODO: fix in one function (get_letters_ae_features())
+	main_get_letter_ae_features(doc.id_letters)
 	return doc
 
+'''
+entry point for GUI
+'''
 def _main_app(doc_name1, doc_name2, queue=None, test_mode=False):
 	try:
 		main_app(doc_name1, doc_name2, queue, test_mode)
@@ -217,18 +181,22 @@ def _main_app(doc_name1, doc_name2, queue=None, test_mode=False):
 
 def main_app(doc_name1, doc_name2, queue=None, test_mode=False):
 	_global.init('hebrew', test_mode=test_mode)
-	doc1, doc2 = Document(doc_name1), Document(doc_name2)
-	gui_output = ""
 	output = ""
-	# prepare Documents
-	# ---> Detection Phase
-	doc1 = init_doc(doc1)
-	doc2 = init_doc(doc2)
-	# ---> Verification Phase
-	compare_docs = CompareDocuments(doc1, doc2)
+	gui_output = ""
 
-	get_compared_docs_monkey_results(compare_docs)
-	get_compared_docs_ae_letters_results(compare_docs)
+	'''
+	Prepare Documents, Detection & Recognition Phases
+	'''
+	doc1 = init_doc(Document(doc_name1))
+	doc2 = init_doc(Document(doc_name2))
+
+	'''
+	Verification Phase
+	'''
+	compare_docs = CompareDocuments(doc1, doc2)
+	compare_docs.monkey_results()
+	compare_docs.letters_autoencoder_results()
+
 	output = output + "Monkey Result:{}\nAE result: {}".format(\
 												   compare_docs.monkey_results,\
 												   compare_docs.letters_ae_results)
@@ -303,7 +271,8 @@ def test_all_pairs():
 			get_compared_docs_ae_letters_results(compare_docs)
 			result_monkey = True if compare_docs.monkey_results['result'] == 'Same' else False
 			precent_monkey = compare_docs.monkey_results['precent'] * 100
-			result_letters_ae = True if compare_docs.letters_ae_results['result'] == 'Same' else False
+			# result_letters_ae = True if compare_docs.letters_ae_results['result'] == 'Same' else False
+			result_letters_ae = True if compare_docs.letters_ae_results['result_by_predictions'] == 'Same' else False
 			if result_monkey and result_letters_ae and same_author:
 				# all results 'Same author'
 				tp += 1
@@ -332,7 +301,6 @@ def test_all_pairs():
 					conflict_while_diff += 1
 				mark_as = "Conflict/Mistake"
 
-			
 			if result_letters_ae and same_author:
 				ae_tp += 1
 			elif not result_letters_ae and same_author:
@@ -404,4 +372,4 @@ if __name__ == "__main__":
 	# test_all_same(106)
 	# test_all_pairs()
 	# save_all_pairs_docs_letters()
-	main_app('15.tiff', '15b.tiff', test_mode=True)
+	main_app('1.tiff', '2.tiff', test_mode=True)
