@@ -20,6 +20,7 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	global DATA_PATH
 	global MODELS_PATH
 	global LETTERS_MODEL
+	global ENCODER_MODEL
 	global LETTERS_IMPROVED_MODEL
 	global WORDS_MODEL
 	global MONKEY_MODEL
@@ -30,6 +31,7 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	global TEST_MODE
 	global monkeyClassifier
 	global aeLettersClassifier
+	global encoder
 	global lettersClassifier
 	global lettersImprovedClassifier
 	global wordsClassifier
@@ -75,6 +77,7 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	ae_trained_letters = {}
 	if language == 'hebrew':
 		LETTERS_MODEL = 'hebLettersModel'
+		ENCODER_MODEL = 'heb_encoder_32'
 		LETTERS_IMPROVED_MODEL = 'hebLettersImprovedModel'
 		WORDS_MODEL = 'hebWordsModel'
 		AE_LETTERS_MODEL = 'hebAutoEncoderDiffVecModel.sav'
@@ -93,6 +96,7 @@ def init(language='hebrew', monkey_by_vectors=False,\
 		lettersImprovedClassifier = load_and_compile_model(LETTERS_IMPROVED_MODEL, MODELS_PATH) 
 		# wordsClassifier = load_and_compile_model(WORDS_MODEL, MODELS_PATH)
 		monkeyClassifier = joblib.load(MODELS_PATH + MONKEY_MODEL)
+		encoder = load_and_compile_model(ENCODER_MODEL, MODELS_PATH)
 
 def load_and_compile_model(model, models_path):
 	'''

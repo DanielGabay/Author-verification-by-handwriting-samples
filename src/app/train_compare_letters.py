@@ -16,6 +16,9 @@ import matplotlib.pyplot as plt
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
+
+
+
 def split_train_test(X, y, train_percent=0.75):
 	size = int(len(X) * train_percent)
 	X_train = X[:size]
@@ -74,7 +77,8 @@ def get_same_x(df , SIZE):
 	else: #  As much as possible  of the outcomes will be with 'b' author
 		rows = random.choices(rows, k=SIZE - len(rows_author_is_b))  # 
 		total = rows_author_is_b + rows
-		np.asarray(total)
+		return np.asarray(total)
+		
 
 	rows = random.choices(rows, k=SIZE)  # select only K random vectors from the rows list
 	return np.asarray(rows)

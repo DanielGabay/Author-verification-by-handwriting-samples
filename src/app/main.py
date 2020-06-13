@@ -6,21 +6,27 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.filterwarnings("ignore")
 
 import cv2
-import joblib
 import numpy as np
+import _global
 
 from keras.preprocessing import image
-import _global
 from ae_letters_functions import get_compared_docs_ae_letters_results
-from AutoEncoder.test_autoencoder import get_letters_ae_features, main_get_letter_ae_features
 from classes import CompareDocuments, Document, IdLetter, IdWord, Stats
-from extractComparisonFeatures.detectLetters import get_letters
-from extractComparisonFeatures.detectLines import get_lines
-from extractComparisonFeatures.detectWords import get_words
 from extractComparisonFeatures.our_utils.prepare_document import \
 	get_prepared_doc
-from monkey_functions import (get_compared_docs_monkey_results, get_monkey_features)
-from main_functions import get_identified_letters
+
+
+#Detection Phase
+from detection_functions import detect_Lines
+from detection_functions import get_letters
+
+#Recognition Phase
+from recognition_functions import get_identified_letters
+from recognition_functions import get_letter_ae_features
+from recognition_functions import get_monkey_features
+
+from monkey_functions import (get_compared_docs_monkey_results)
+
 
 def calc_stats(s, result_monkey, result_letters_ae):
 	if result_monkey and result_letters_ae and s.same_author:
@@ -149,24 +155,61 @@ def test_all_same(test_random_different=0):
 
 	print_ae_monkey_results(s, len(b_files))
 
+def improve_images(img):
+	kernel = np.ones((2,2),np.uint8)
+	retval, thresh_for_large = cv2.threshold(img, 220, 255, cv2.THRESH_BINARY)
+	opening = cv2.morphologyEx(thresh_for_large, cv2.MORPH_OPEN, kernel)
+	opening = np.expand_dims(opening, axis=0)
+	opening = opening.transpose((1, 2, 0)) 
+	img = np.expand_dims(opening, axis=0)
+
+	return img
+
+def get_identified_words(words, doc_name):
+	# for main use only:
+	Id_Words = []
+	count = 0
+	out_path = createOutputDirs(doc_name.split(".")[0])
+	for word in words:
+		_word = word
+		# _word = cv2.resize(word, (_global.WORDS_SIZE, _global.WORDS_SIZE))
+		# _word = improve_images(word, _global.WORDS_SIZE)
+		word = _word.reshape((_global.WORDS_SIZE, _global.WORDS_SIZE, 1))
+		test_word = image.img_to_array(word)
+		test_word = np.expand_dims(test_word, axis=0)
+		# test_word = improve_images(test_word)
+
+		result = _global.wordsClassifier.predict((test_word/255))
+		if max(result[0]) > 0.2:
+			word_index = result[0].tolist().index(max(result[0]))
+			selected_word = _global.lang_words.get(word_index)
+			count += 1
+			Id_Words.append(IdWord(word, selected_word, word_index))
+			inner_folder = "{}/{}".format(out_path, word_index)
+			if not os.path.exists(inner_folder):   # create folder to contain the line's img
+				os.mkdir(inner_folder)
+			save_name = "{}/{}.jpeg".format(inner_folder,count)
+			print(save_name)
+			cv2.imwrite(save_name,_word)
+	return Id_Words
+
 def init_doc(doc, only_save_letters=False):
-	if _global.TEST_MODE:
-		path = _global.DATA_PATH
-		doc.doc_img = get_prepared_doc(path+doc.name)
-	else:
-		doc.doc_img = get_prepared_doc(doc.name)
 
 	'''
 	Detection Phase
 	'''
-	detected_lines = get_lines(doc.doc_img, doc.name)
+
+	doc.doc_img = get_prepared_doc(_global.DATA_PATH + doc.name) if _global.TEST_MODE else get_prepared_doc(doc.name)
+	detected_lines = detect_Lines(doc.doc_img)
 	detected_letters = get_letters(detected_lines)
 
-	# ---> Recognition Phase
+	'''
+	Recognition Phase
+	'''
 	doc.id_letters = get_identified_letters(detected_letters)
 	doc.monkey_features = get_monkey_features(doc.id_letters)
-	# TODO: fix in one function (get_letters_ae_features())
-	main_get_letter_ae_features(doc.id_letters)
+	get_letter_ae_features(doc.id_letters)
+
 	return doc
 
 '''
@@ -364,6 +407,8 @@ def save_all_pairs_docs_letters():
 		doc = init_doc(doc, True)
 
 if __name__ == "__main__":
+
+	
 	# if(len(sys.argv) < 2):
 	# 	print("Usage: python main.py <[save_all]/[file_name]> ")
 	# 	sys.exit(1)

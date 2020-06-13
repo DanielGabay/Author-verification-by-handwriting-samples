@@ -12,7 +12,6 @@ IMG_SIZE = 64
 
 training_data = []
 
-
 def improve_images(img):
     kernel = np.ones((3,3),np.uint8)
     retval, thresh_for_large = cv2.threshold(img, 220, 255, cv2.THRESH_BINARY)
@@ -40,11 +39,11 @@ def create_training_data():
         for img in os.listdir(path):
             try:
                 img_array = cv2.imread(os.path.join(path,img), 0)
-                #new_array = improve_images(img_array)
-                if new_array is None:
+                img_array = improve_images(img_array)
+                if img_array is None:
                     continue
                 # new_array = img_array #cv2.resize(img_array, (IMG_SIZE,IMG_SIZE))
-                training_data.append([new_array, category])
+                training_data.append([img_array, category])
             except Exception as e:
                 pass
 
@@ -57,13 +56,17 @@ def append_random_categorie():
         for file in files:
             #with open(os.path.join(root, file), "r") as auto:
             img_array = cv2.imread(os.path.join(root,file), 0)
-            new_array = improve_images(img_array)
-            #showImages(new_array,new_array)
-            if new_array is None:
+            print(os.path.join(root,file))
+            #new_array = improve_images(img_array)
+            showImages(img_array,img_array)
+            if img_array is None:
+                print("err")
                 continue
-            training_data.append([new_array, 12])
+            training_data.append([img_array, 12])
             count+=1
+            print(count)
             if count > 11000:
+                print("done 11000")
                 return
 
 
@@ -72,8 +75,8 @@ def showImages(img,img1, str = ''):
 	plt.subplot(122), plt.imshow(img1.squeeze(),cmap='gray')
 	plt.show()
 
-create_training_data()
 append_random_categorie()
+create_training_data()
 random.shuffle(training_data)
 
 X = []

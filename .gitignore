@@ -11,3 +11,4 @@
 *.pyo
 *.sav
 *.csv
+*.pickle

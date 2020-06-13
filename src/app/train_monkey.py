@@ -8,13 +8,19 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import StandardScaler
-
-import _global
-from extractComparisonFeatures.detectLetters import get_letters
+from sklearn.neural_network import MLPClassifier
 from monkey_collect_data import create_diff_vector
 import matplotlib.pyplot as plt
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+
+def print_result(model,X_test,y_test,X_train,y_train,str = ""):
+	print(">>result of {}:".format(str))
+	print(">>>X_test-y_test score: {}".format(model.score(X_test, y_test)))
+	print(confusion_matrix(y_test, model.predict(X_test)))
+	print(">>>X_train-y_train score: {}".format(model.score(X_train, y_train)))
+	print(confusion_matrix(y_train, model.predict(X_train)))
 
 def split_train_test(X, y, train_percent=0.75):
 	size = int(len(X) * train_percent)
@@ -98,14 +104,14 @@ def train_model(by_vectors):
 	else:
 		X, y = get_xy_by_sums('equal2.csv', 'count_vectors2.csv')
 	X_train, X_test, y_train, y_test = split_train_test(X,y,0.70)
-	clf = LogisticRegression(random_state=0,max_iter=1000).fit(X_train, y_train)
-	joblib.dump(clf, _global.MONKEY_MODEL) 	# save trained model
-	# print(y_test[0])
-	# print(clf.predict(X_test[0].reshape(1,-1)))
-	print(clf.score(X_test, y_test))
-	print(clf.score(X_train, y_train))
-	print(confusion_matrix(y_test, clf.predict(X_test)))
-	# print(clf.coef_)
+	
+	lr_model = LogisticRegression(random_state=0,max_iter=1000).fit(X_train, y_train)
+	mlp_model = MLPClassifier()
+	mlp_model.fit(X_train, y_train)
+	print_result(lr_model,X_test,y_test,X_train,y_train,"Logistic")
+	print_result(mlp_model,X_test,y_test,X_train,y_train,"CNN")
+	joblib.dump(mlp_model, 'new_monkey.sav') 	# save trained model
+
 
 def rescale(data):
 	# built in function to rescale data
@@ -113,14 +119,14 @@ def rescale(data):
 	return scaler.fit_transform(data)
 
 if __name__ == "__main__":
-	if(len(sys.argv) < 2):
-		print("Usage: python train_monkey.py <by_vectors/by_sum>")
-		sys.exit(1)
-	if(sys.argv[1] == 'by_vectors'):
-		# by_vectors
-		_global.init(monkey_by_vectors=True)
+	# if(len(sys.argv) < 2):
+	# 	print("Usage: python train_monkey.py <by_vectors/by_sum>")
+	# 	sys.exit(1)
+	# if(sys.argv[1] == 'by_vectors'):
+	# 	# by_vectors
+	# 	_global.init(monkey_by_vectors=True)
+	# 	train_model(True)
+	# else:
+	# 	# by_sum
+		#_global.init(monkey_by_vectors=False)
 		train_model(True)
-	else:
-		# by_sum
-		_global.init(monkey_by_vectors=False)
-		train_model(False)
