@@ -89,9 +89,19 @@ class AlgoPredict():
 class CompareDocuments():
 	'''
 	This class hold pair of documents that we are currently comparing.
+	at run time we'll add the following fields:
+	self.monkey_results -> dict: {<result>: <value1>, <precent>: <value2>}/
+								*	value1: String -> 'Same'/'Different'
+						  		* 	value2: algo result, number between (0-1)
+	self.letters_ae_results -> dict: same as above
+	self.words_ae_results -> dict: same as above
+	self.final_result -> dict: same as above, after summarize all algos results
 	'''
+
 	# @doc1 -> Document object representing the first doc
 	# @doc2 -> Document object representing the second doc
+	# @monkey -> handle prediction for monkey algorithm
+	# @ae_letters -> handle prediction for AutoEncoder letters algorithm
 	def __init__(self, doc1, doc2):
 		self.doc1 = doc1
 		self.doc2 = doc2
@@ -99,13 +109,11 @@ class CompareDocuments():
 		self.ae_letters = AlgoPredict(_global.aeLettersClassifier)
 
 	def monkey_results(self):
-		# from monkey_functions import get_monkey_result
-		# monkey_res, monkey_precent = get_monkey_result(self.doc1.monkey_features, self.doc2.monkey_features)
 		by_sum = True if 'Sum' in _global.MONKEY_MODEL else False
 		is_same, is_same_precent = self.monkey.predict(self.doc1.monkey_features,\
-														 self.doc2.monkey_features,\
-													     by_sum=True,\
-														 is_monkey=True)
+													   self.doc2.monkey_features,\
+													   by_sum=True,\
+													   is_monkey=True)
 		self.monkey_results = {'result': 'Same' if is_same is True else 'Different',\
 								   'precent' : is_same_precent}
 
@@ -115,15 +123,11 @@ class CompareDocuments():
 	def letters_autoencoder_results(self):
 		count_same, count_diff = 0, 0
 		sum_predictions = 0
-		# doc1_letters = self.filter_ae_trained_letters(self.doc1.id_letters)
-		# doc2_letters = self.filter_ae_trained_letters(self.doc2.id_letters)
-		doc1_letters = self.doc1.id_letters
-		doc2_letters = self.doc2.id_letters
+		doc1_letters = self.filter_ae_trained_letters(self.doc1.id_letters)
+		doc2_letters = self.filter_ae_trained_letters(self.doc2.id_letters)
 		for letter1 in doc1_letters:
 			for letter2 in doc2_letters:
-				if letter1.letter_name == letter2.letter_name and letter1.letter_name in _global.ae_trained_letters.values():
-					# diff_vector = create_diff_vector(letter1.ae_features, letter2.ae_features)
-					# is_same, predict_prec = prediction_ae_letters(diff_vector)
+				if letter1.letter_name == letter2.letter_name:
 					is_same, predict_prec = self.ae_letters.predict(letter1.ae_features, letter2.ae_features, by_sum=False)
 					if(is_same):
 						count_same += 1
@@ -147,16 +151,6 @@ class CompareDocuments():
 										'sum_predictions': sum_predictions,
 										'precent_by_predictions': precent_by_predictions,
 										'result_by_predictions': result_by_predictions}
-
-	'''
-	at run time we'll add the following fields:
-	self.monkey_results -> dict: {<result>: <value1>, <precent>: <value2>}/
-								*	value1: String -> 'Same'/'Different'
-						  		* 	value2: algo result, number between (0-1)
-	self.letters_ae_results -> dict: same as above
-	self.words_ae_results -> dict: same as above
-	self.final_result -> dict: same as above, after summarize all algos results
-	'''
 class Stats():
 	def __init__(self):
 		self.tp = 0

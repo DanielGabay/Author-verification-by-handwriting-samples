@@ -24,21 +24,21 @@ def get_identified_letters(letters):
 
 	return id_letters
 
-
 def get_monkey_features(found_letters):
 	'''
 	returns the 'feature vector' for a given found_letters
 	'''
-	count_list = [0] * 27
+	features = [0] * 27
 	for letter in found_letters:
-		count_list[letter.letter_index]+=1
+		features[letter.letter_index] += 1
 	length = len(found_letters)
-	counter_list_precent = [i * (100/length) for i in count_list]
-	return counter_list_precent
+	features_in_precent = [i * (100/length) for i in features]
+	return features_in_precent
 
 
 def get_letter_ae_features(letters):
-
 	for letter in letters:
+		# add ae_features field for each letter in trained AutoEncoder letters
 		if letter.letter_name in _global.ae_trained_letters.values():
 			letter.ae_features = _global.encoder.predict(letter.letter_img).ravel()
+

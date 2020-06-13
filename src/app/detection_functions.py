@@ -5,8 +5,7 @@ from scipy.signal import argrelextrema, savgol_filter
 import cv2
 
 
-def detect_Lines(original):
-
+def detect_lines(original):
 	_ , thresh = cv2.threshold(original, 127, 255, cv2.THRESH_BINARY_INV)
 	hight, width = thresh.shape[:2]
 
@@ -124,11 +123,11 @@ def union_left_ctr(cur_ctr, next_ctr,canvas):
 def find_letters(line_image):
 	"""
 		this function is the main function in this algorithm,
-		the function cut each letter from the word image by using findconturs function
+		the function cut each letter from the line image by using findconturs function
 		each contur is part of the line image that contain a letter.
 		also the function is handling few cases to get each letter without a noise around.
-	:param line_image: the word image
-	:return: a list of objects , each object contain the letter image and info about the image
+	:param line_image: the line image
+	:return: a list of objects, each object contain the letter image and info about the image
 	"""
 
 	if line_image.shape[0] < 40:
@@ -191,7 +190,7 @@ def find_letters(line_image):
 			letter = np.pad(roiriginal, pad_width=10, mode='constant', constant_values=255)
 
 			letters_images.append(letter)
-		i+=1
+		i += 1
 	return letters_images
 
 

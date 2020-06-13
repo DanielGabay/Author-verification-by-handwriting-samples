@@ -15,17 +15,14 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	'''
 	os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 	global lang_letters
-	global lang_words
 	global ae_letters
 	global DATA_PATH
 	global MODELS_PATH
 	global LETTERS_MODEL
 	global ENCODER_MODEL
 	global LETTERS_IMPROVED_MODEL
-	global WORDS_MODEL
 	global MONKEY_MODEL
 	global LETTERS_SIZE
-	global WORDS_SIZE
 	global AE_LETTERS_MODEL
 	global ae_trained_letters
 	global TEST_MODE
@@ -34,7 +31,6 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	global encoder
 	global lettersClassifier
 	global lettersImprovedClassifier
-	global wordsClassifier
 	global DEFAULT_LETTERS_AE
 	global CONCAT_AS_ONE_IMAGE
 	global AE_LETTERS_RESULT_BY_PRECENT
@@ -61,7 +57,6 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	MODELS_PATH = 'models/'
 
 	LETTERS_SIZE = 28
-	WORDS_SIZE = 64
 	CONCAT_AS_ONE_IMAGE = 'tiff_as_one_img.png'
 	
 	TEST_MODE = test_mode # True if we want to use DATA_PATH to load docs
@@ -73,43 +68,40 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	IMPROVED_LETTER_THESHOLD = 0.8
 
 	lang_letters = {}
-	lang_words = {}
 	ae_trained_letters = {}
 	if language == 'hebrew':
 		LETTERS_MODEL = 'hebLettersModel'
-		ENCODER_MODEL = 'heb_encoder_32'
+		ENCODER_MODEL = 'hebLettersEncoder32'
 		LETTERS_IMPROVED_MODEL = 'hebLettersImprovedModel'
-		WORDS_MODEL = 'hebWordsModel'
 		AE_LETTERS_MODEL = 'hebAutoEncoderDiffVecModel.sav'
 		if monkey_by_vectors:
 			MONKEY_MODEL = 'hebMonkeyLettersByVectors.sav'
 		else:
 			MONKEY_MODEL = 'hebMonkeyLettersBySum.sav'
 		lang_letters = get_lang_letters_dict(language)
-		lang_words = get_lang_words_ditc(language)
 		ae_trained_letters = get_ae_trained_letters(language)
-	
-		#TODO: add trained words model to Model diractory
 
+		'''
+		load & compile all models
+		'''
 		aeLettersClassifier = joblib.load(MODELS_PATH + AE_LETTERS_MODEL)
-		lettersClassifier = load_and_compile_model(LETTERS_MODEL, MODELS_PATH)
-		lettersImprovedClassifier = load_and_compile_model(LETTERS_IMPROVED_MODEL, MODELS_PATH) 
-		# wordsClassifier = load_and_compile_model(WORDS_MODEL, MODELS_PATH)
 		monkeyClassifier = joblib.load(MODELS_PATH + MONKEY_MODEL)
-		encoder = load_and_compile_model(ENCODER_MODEL, MODELS_PATH)
+		lettersClassifier = load_and_compile_model(MODELS_PATH, LETTERS_MODEL)
+		lettersImprovedClassifier = load_and_compile_model(MODELS_PATH, LETTERS_IMPROVED_MODEL) 
+		encoder = load_and_compile_model(MODELS_PATH, ENCODER_MODEL)
 
-def load_and_compile_model(model, models_path):
+def load_and_compile_model(models_path, model_name):
 	'''
 	Load the model .h5 and .json files and compile it.
 	add lettersClassifier into _globals
 	'''
-	json_file = open('{}{}.json'.format(models_path, model), 'r')
+	json_file = open('{}{}.json'.format(models_path, model_name), 'r')
 	loaded_model_json = json_file.read()
 	json_file.close()
 	classifier = model_from_json(loaded_model_json)
-	classifier.load_weights("{}{}.h5".format(models_path, model))
+	classifier.load_weights("{}{}.h5".format(models_path, model_name))
 	classifier.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-	print("Loaded & compiled model from disk")
+	print("Loaded & compiled {} from disk".format(model_name))
 	return classifier
 
 def get_ae_trained_letters(lang):
@@ -126,24 +118,6 @@ def get_ae_trained_letters(lang):
 					16: 'פ',\
 					23: 'ם',\
 					30: 'זבל'
-					}
-	return lang_dict
-
-def get_lang_words_ditc(lang):
-	lang_dict = {}
-	if lang is 'hebrew':
-		lang_dict = {
-					0: 'של',\
-					1: 'לא',\
-					2: 'את',\
-					3: 'גם',\
-					4: 'לסיכום',\
-					5: 'כי',\
-					6: 'זה',\
-					7: 'זו',\
-					8: 'יש',\
-					9: 'לדעתי',\
-					10: 'אני',\
 					}
 	return lang_dict
 
