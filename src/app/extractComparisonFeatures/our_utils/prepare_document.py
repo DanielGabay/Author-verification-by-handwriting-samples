@@ -92,5 +92,7 @@ def get_prepared_doc(name='data/500.tiff'):
 		shutil.rmtree('./temp/')
 	if extantion == 'png' or extantion == 'jpeg':
 		image_to_png(img)
-	return cv2.imread(_global.CONCAT_AS_ONE_IMAGE,0)
+	img = cv2.imread(_global.CONCAT_AS_ONE_IMAGE,0)
+	os.remove(_global.CONCAT_AS_ONE_IMAGE)
+	return img
 	

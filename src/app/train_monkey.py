@@ -1,6 +1,5 @@
 import os
 import sys
-
 import cv2
 import joblib
 import numpy as np
@@ -13,7 +12,6 @@ from monkey_collect_data import create_diff_vector
 import matplotlib.pyplot as plt
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
 
 def print_result(model,X_test,y_test,X_train,y_train,str = ""):
 	print(">>result of {}:".format(str))
@@ -30,10 +28,34 @@ def split_train_test(X, y, train_percent=0.75):
 	y_test = y[size:]
 	return (X_train, X_test, y_train, y_test)
 
+def add_equal_rows_b(X_equal,count_vec_file):
+	df = pd.read_csv(count_vec_file)
+	data_len = len(df)
+	rows = []
+	print(X_equal.shape)
+	for i in range(data_len-1):
+		for j in range(i+1,data_len):
+			if is_same_author(df.iloc[i],df.iloc[j]) == False:
+				break
+			if not author_is_b(df.iloc[i])  and author_is_b(df.iloc[j]):
+				row_1, row_2 = list(df.iloc[i])[1:] , list(df.iloc[j])[1:]  # take only the features.
+				diff_vector = create_diff_vector(row_1,row_2)
+				diff_vector.append(1) # for the y vector (sign that this vector is same vectors)
+				rows.append(diff_vector)
+	X_equal = np.asarray(X_equal)
+	rows = np.asarray(rows)
+	print(rows)
+	equal = np.vstack((X_equal,rows))
+	print(equal.shape)
+	return equal
+
 def get_xy_by_vectors(equal_file, count_vec_file):
 	df_euqal = pd.read_csv(equal_file)
-	X_equal = np.asarray(df_euqal.drop('Vector',1))
-	X_diff = get_diff_x(count_vec_file)
+	X_equal = np.asarray(add_equal_rows_b(df_euqal.drop('Vector',1),count_vec_file))
+	print(X_equal.shape)
+	# add_equal_rows_b(X_equal,count_vec_file)
+	print(len(X_equal))
+	X_diff = get_diff_x(count_vec_file,len(X_equal))
 	X = np.concatenate((X_equal, X_diff), axis=0)
 	np.random.shuffle(X)
 	y = X[:,-1]
@@ -62,14 +84,16 @@ def print_mean_std(X_equal, X_diff):
     print("Diff-> mean: {} std: {}".format(np.mean(X_diff[:,0]), np.std(X_diff[:,0])))
 
 def get_xy_by_sums(equal_file, count_vec_file):
+
 	df_euqal = pd.read_csv(equal_file)
-	X_equal = get_x_by_sums(np.asarray(df_euqal.drop('Vector',1)), 1)
-	X_diff = get_x_by_sums(get_diff_x(count_vec_file), 0)
+	X_equal = get_x_by_sums(np.asarray(add_equal_rows_b(df_euqal.drop('Vector',1),count_vec_file)), 1)
+	X_diff = get_x_by_sums(get_diff_x(count_vec_file,len(X_equal)), 0)
 	data = np.concatenate((X_equal, X_diff), axis=0)
 	# print_mean_std(X_equal, X_diff)
-	# plot_sums_data(data)
+	plot_sums_data(data)
 	np.random.shuffle(data)
 	y = data[:,-1]
+	print(len(y))
 	X = np.delete(data, -1, 1)
 	# X = rescale(X)
 	return (X, y)
@@ -82,15 +106,17 @@ def get_x_by_sums(X, y_val):
 		x_sums.append(element)
 	return np.asarray(x_sums)
 
-def get_diff_x(filename):
+def get_diff_x(filename,SIZE):
 	df_diff = pd.read_csv(filename)
+
 	df_diff = df_diff.drop('Vector',1)
 	data_len = len(df_diff)
 	rand1 ,rand2 = -1, -1
 	rows = []
-	for i in range(500):
+	for i in range(SIZE):
 		# check that the random numbers are not equal and not successors
-		while rand1 == rand2 or rand1 + 1 == rand2 or rand2 + 1 == rand1:
+		# while rand1 == rand2 or rand1 + 1 == rand2 or rand2 + 1 == rand1: # before we used the 'b' authors
+		while abs(rand1-rand2) < 4 : # to select only diffrenet authers
 			rand1, rand2 = np.random.randint(data_len), np.random.randint(data_len)
 		diff_vector = create_diff_vector(list(df_diff.iloc[rand1]), list(df_diff.iloc[rand2]))
 		diff_vector.append(0) # for the y vector (sign that this vector is diff vectors)
@@ -103,15 +129,23 @@ def train_model(by_vectors):
 		X, y = get_xy_by_vectors('equal2.csv', 'count_vectors2.csv')
 	else:
 		X, y = get_xy_by_sums('equal2.csv', 'count_vectors2.csv')
-	X_train, X_test, y_train, y_test = split_train_test(X,y,0.70)
+	X_train, X_test, y_train, y_test = split_train_test(X,y,0.80)
 	
 	lr_model = LogisticRegression(random_state=0,max_iter=1000).fit(X_train, y_train)
-	mlp_model = MLPClassifier()
-	mlp_model.fit(X_train, y_train)
+	mlp_model = MLPClassifier(random_state=0,max_iter=300).fit(X_train, y_train)
+
 	print_result(lr_model,X_test,y_test,X_train,y_train,"Logistic")
 	print_result(mlp_model,X_test,y_test,X_train,y_train,"CNN")
-	joblib.dump(mlp_model, 'new_monkey.sav') 	# save trained model
 
+	joblib.dump(lr_model, 'hebMonkeyLettersByVectors_lr.sav') 	# save trained model
+	joblib.dump(mlp_model, 'hebMonkeyLettersByVectors_mlp.sav') 	# save trained model
+
+def is_same_author(row1,row2):
+	author1 ,author2 = row1[0].split("_")[0] ,row2[0].split("_")[0]  # get the autor name 
+	return True if author1 == author2 else False
+	
+def author_is_b(row):
+	return row[0].split("_")[1] == 'b' 
 
 def rescale(data):
 	# built in function to rescale data
@@ -119,14 +153,4 @@ def rescale(data):
 	return scaler.fit_transform(data)
 
 if __name__ == "__main__":
-	# if(len(sys.argv) < 2):
-	# 	print("Usage: python train_monkey.py <by_vectors/by_sum>")
-	# 	sys.exit(1)
-	# if(sys.argv[1] == 'by_vectors'):
-	# 	# by_vectors
-	# 	_global.init(monkey_by_vectors=True)
-	# 	train_model(True)
-	# else:
-	# 	# by_sum
-		#_global.init(monkey_by_vectors=False)
-		train_model(True)
+	train_model(True)
