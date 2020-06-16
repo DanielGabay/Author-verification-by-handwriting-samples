@@ -9,9 +9,9 @@ from tkinter import messagebox
 from tkinter.filedialog import askopenfile, asksaveasfilename
 from tkinter.ttk import *
 from multiprocessing import Process, Queue
+from main import _main_app
 
 import _global
-from main import _main_app
 import threading
 
 class MainApplication(Frame):
@@ -79,13 +79,14 @@ class MainApplication(Frame):
 		# creating a queue and pass it to main.
 		# the output will be written into the queue.
 		queue = Queue(maxsize=1)
-		p = Process(target=_main_app, args=(self.file_name1, self.file_name2, queue, False))
-		p.start()
+		_main_app(self.file_name1, self.file_name2,queue=queue,test_mode= False)
+		# p = Process(target=_main_app, args=(self.file_name1, self.file_name2, queue, False))
+		# p.start()
 
 		# code is block until the output from main is ready in queue.
 		# because its running on another thread, the mainloop window is still running.
 		output = queue.get()
-		p.terminate()
+		# p.terminate()
 		self.prog_bar.destroy()
 		self.print_output(output)
 		self.is_running = False

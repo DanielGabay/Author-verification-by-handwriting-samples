@@ -4,6 +4,7 @@ import cv2
 import joblib
 import numpy as np
 from keras.preprocessing import image
+from extractComparisonFeatures.detectLetters import get_letters
 
 import _global
 from classes import CompareDocuments, Document, IdLetter, IdWord

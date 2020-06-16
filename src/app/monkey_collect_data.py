@@ -72,7 +72,7 @@ def write_to_csv(dfName,vecName,vector):
 def already_done(doc_name):
 	df = pd.read_csv(EQUAL_FILE)
 			
-	if int(doc_name) in df['Vector'].values.tolist():
+	if (doc_name) in df['Vector'].values.tolist():
 		print('Element exists in Dataframe!')
 		return True
 	return False

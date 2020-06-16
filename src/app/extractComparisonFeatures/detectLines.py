@@ -87,7 +87,6 @@ def detect_lines(original, thresh, out_folder=None):
         min = img_row_sum[max_points[j]]
         j += 1
 
-  
     # finding the last minimum point, so we could find the last lower line.
     last_max_point = max_points[len(max_points)-1]
     last_min_point = img_row_sum[last_max_point]
@@ -106,11 +105,11 @@ def detect_lines(original, thresh, out_folder=None):
     for v in range(len(lines_upper)): 
         if lines_upper[v] > lines_lower[v + 1]:
             continue
-        # TODO: return list of [lines_upper:lines_lower] at the end of the function?
+
         roi = original[lines_upper[v]:lines_lower[v + 1], 0:width]
         if roi.shape[0] > 0:    
             lines.append(roi)
-            # uncomment to save_lines
+            
             if out_folder is not None:
                 cv2.imwrite(out_folder + "/" + str(v) + ".png", roi)
     return lines
