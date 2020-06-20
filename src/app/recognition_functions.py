@@ -3,7 +3,6 @@ import numpy as np
 import _global
 from classes import IdLetter, LetterImgPredict
 
-
 def get_identified_letters(letters):
 	id_letters = []
 	basic_letters_model = LetterImgPredict(_global.lettersClassifier)

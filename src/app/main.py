@@ -1,14 +1,12 @@
 import os
 import random
-import sys
 import warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 warnings.filterwarnings("ignore")
 
 import _global
-from classes import CompareDocuments, Document, IdLetter, IdWord, Stats
+from classes import CompareDocuments, Document, Stats
 from prepare_document import get_prepared_doc
-from monkey_functions import get_compared_docs_monkey_results
 
 #Recognition Phase
 from recognition_functions import (get_identified_letters,
@@ -61,7 +59,6 @@ def main_app(doc_name1, doc_name2, test_mode=False):
 	'''
 	compare_docs = CompareDocuments(doc1, doc2)
 	compare_docs.verify()
-
 
 	output = output + "Monkey Result: {}\nAE result: {}\nSSIM Result: {}".format(\
 												   compare_docs.monkey_results,\
@@ -159,7 +156,7 @@ def calc_stats(s, result_monkey, result_letters_ae, result_ssim):
 def get_ae_monkey_results(s, compare_docs):
 	compare_docs.verify()
 	result_monkey = True if compare_docs.monkey_results['result'] == 'Same' else False
-	precent_monkey = compare_docs.monkey_results['precent'] * 100
+	compare_docs.monkey_results['precent'] * 100
 	result_ssim = True if compare_docs.ssim_results['result'] == 'Same' else False
 	ssim_pred = compare_docs.ssim_results['precent'] * 100
 	if _global.AE_LETTERS_RESULT_BY_PRECENT:

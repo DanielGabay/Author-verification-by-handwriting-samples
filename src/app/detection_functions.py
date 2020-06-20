@@ -74,8 +74,6 @@ def detect_lines(original):
 
 	# cut's each line
 	lines = list()
-	min_line_hight = 20
-	count_lines_min_hight = 0
 	for v in range(len(lines_upper)): 
 		if lines_upper[v] > lines_lower[v + 1]:
 			continue
