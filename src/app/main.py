@@ -21,7 +21,8 @@ def init_doc(doc, only_save_letters=False):
 	'''
 	Detection Phase
 	'''
-	doc.doc_img = get_prepared_doc(_global.DATA_PATH + doc.name) if _global.TEST_MODE else get_prepared_doc(doc.name)
+	path = _global.DATA_PATH + doc.name if _global.TEST_MODE else doc.name
+	doc.doc_img = get_prepared_doc(path)
 	detected_lines = detect_lines(doc.doc_img)
 	detected_letters = get_letters(detected_lines)
 
@@ -34,17 +35,17 @@ def init_doc(doc, only_save_letters=False):
 
 	return doc
 
-'''
-entry point for GUI
-'''
-def _main_app(doc_name1, doc_name2, queue=None, test_mode=False):
+def _gui_entry(doc_name1, doc_name2):
 	try:
-		main_app(doc_name1, doc_name2, queue, test_mode)
-	except:
-		print("error")
-		queue.put('Error occured')
+		result = main_app(doc_name1, doc_name2, test_mode=True)
+		return result
+	except FileNotFoundError:
+		return "File not found on data folder"
+	except Exception as e:
+		print(e)
+	return "Error"
 
-def main_app(doc_name1, doc_name2, queue=None, test_mode=False):
+def main_app(doc_name1, doc_name2, test_mode=False):
 	_global.init('hebrew', test_mode=test_mode)
 	output = ""
 	gui_output = ""
@@ -59,15 +60,14 @@ def main_app(doc_name1, doc_name2, queue=None, test_mode=False):
 	Verification Phase
 	'''
 	compare_docs = CompareDocuments(doc1, doc2)
-	compare_docs.monkey_results()
-	compare_docs.letters_autoencoder_results()
-	s_count = compare_docs.ssim_count
-	s_pred = s_count / compare_docs.ssim_total
-	print("ssim: count: {}, pred: {}".format(s_count, s_pred))
-	output = output + "Monkey Result:{}\nAE result: {}".format(\
-												   compare_docs.monkey_results,\
-												   compare_docs.letters_ae_results)
+	compare_docs.verify()
 
+
+	output = output + "Monkey Result: {}\nAE result: {}\nSSIM Result: {}".format(\
+												   compare_docs.monkey_results,\
+												   compare_docs.letters_ae_results,\
+												   compare_docs.ssim_results)
+	
 	gui_output += "Algo1: Monkey Result:\n\t<{0}> [Confident: {1:.2f}%]\n".format(compare_docs.monkey_results['result'],\
 														 						  compare_docs.monkey_results['precent']*100)
 	gui_output += "Algo2: AutoEncoder Letters Result:\n\t<{}> [Confident: {:.2f}%]\n\tResult By Predictions:\n\t<{}> [Confident: {:.2f}%]\n".format(\
@@ -87,11 +87,9 @@ def main_app(doc_name1, doc_name2, queue=None, test_mode=False):
 				  compare_docs.monkey_results['result'] == compare_docs.letters_ae_results['result_by_predictions']\
 				  else "Conflict>" 
 
-	gui_output += conclusion2
-	if queue is not None:
-		queue.put(gui_output)
-
+	gui_output += conclusion
 	print(output)
+	return gui_output
 
 def print_conf_matrix(title, tn, tp, fn, fp):
 	recall, precision, f1_score = 0, 0, 0
@@ -130,48 +128,6 @@ def calc_stats(s, result_monkey, result_letters_ae, result_ssim):
 		s.tn += 1
 		s.mark_as = "Mark: Different"
 
-	# if result_monkey and result_letters_ae and s.same_author:
-	# 	# all results 'Same author'
-	# 	s.tp += 1
-	# 	s.mark_as = "Mark: Same"
-	# elif not result_monkey and not result_letters_ae and s.same_author:
-	# 	# both monkey and ae call 'diff' while same
-	# 	s.fn += 1
-	# 	s.mark_as = "Mark: Different while Same"
-	# elif not result_monkey and not result_letters_ae and not s.same_author:
-	# 	# all results 'Different author'
-	# 	s.tn += 1
-	# 	s.mark_as = "Mark: Different"
-	# elif result_monkey and result_letters_ae and not s.same_author:
-	# 	# both monkey and ae call 'same' while diff
-	# 	s.fp += 1
-	# 	s.mark_as = "Mark: Same while Different"
-
-
-	# if result_monkey and result_letters_ae and s.same_author:
-	# 	# all results 'Same author'
-	# 	s.tp += 1
-	# 	s.mark_as = "Mark: Same"
-	# elif not result_monkey and not result_letters_ae and s.same_author:
-	# 	# both monkey and ae call 'diff' while same
-	# 	s.fn += 1
-	# 	s.mark_as = "Mark: Different while Same"
-	# elif not result_monkey and not result_letters_ae and not s.same_author:
-	# 	# all results 'Different author'
-	# 	s.tn += 1
-	# 	s.mark_as = "Mark: Different"
-	# elif result_monkey and result_letters_ae and not s.same_author:
-	# 	# both monkey and ae call 'same' while diff
-	# 	s.fp += 1
-	# 	s.mark_as = "Mark: Same while Different"
-	# else:
-	# 	s.conflict += 1
-	# 	if s.same_author:
-	# 		s.conflict_while_same += 1
-	# 	else:
-	# 		s.conflict_while_diff += 1
-	# 	s.mark_as = "Conflict/Mistake"
-
 	if result_letters_ae and s.same_author:
 		s.ae_tp += 1
 	elif not result_letters_ae and s.same_author:
@@ -200,12 +156,11 @@ def calc_stats(s, result_monkey, result_letters_ae, result_ssim):
 		s.ssim_fp += 1
 
 def get_ae_monkey_results(s, compare_docs):
-	compare_docs.monkey_results()
-	compare_docs.letters_autoencoder_results()
+	compare_docs.verify()
 	result_monkey = True if compare_docs.monkey_results['result'] == 'Same' else False
 	precent_monkey = compare_docs.monkey_results['precent'] * 100
-	ssim_pred = compare_docs.ssim_count / compare_docs.ssim_total
-	result_ssim = True if ssim_pred > 0.45 else False
+	result_ssim = True if compare_docs.ssim_results['result'] == 'Same' else False
+	ssim_pred = compare_docs.ssim_results['precent'] * 100
 	if _global.AE_LETTERS_RESULT_BY_PRECENT:
 		result_letters_ae = True if compare_docs.letters_ae_results['result_by_predictions'] == 'Same' else False
 	else:
@@ -309,5 +264,5 @@ if __name__ == "__main__":
 	# 	sys.exit(1)
 	#TODO: think how to determine monkey algo by_sum/by_vectors
 	_global.init('hebrew',monkey_by_vectors=True, print_globals=True)
-	test_all_same(106)
-	# main_app('10.tiff', '14.tiff', test_mode=True)
+	# test_all_same(106)
+	main_app('10.tiff', '60.tiff', test_mode=True)

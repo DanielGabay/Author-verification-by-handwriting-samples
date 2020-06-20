@@ -13,7 +13,6 @@ def init(language='hebrew', monkey_by_vectors=True,\
 		True: by_vectors
 		False: by_sum
 	'''
-	os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 	global lang_letters
 	global ae_letters
 	global DATA_PATH
@@ -36,6 +35,7 @@ def init(language='hebrew', monkey_by_vectors=True,\
 	global AE_SUM_PRED_THRESH
 	global BASIC_LETTER_THESHOLD
 	global IMPROVED_LETTER_THESHOLD
+	global SSIM_THRESHOLD
 
 
 	'''
@@ -66,6 +66,8 @@ def init(language='hebrew', monkey_by_vectors=True,\
 
 	BASIC_LETTER_THESHOLD = 0.995
 	IMPROVED_LETTER_THESHOLD = 0.8
+
+	SSIM_THRESHOLD = 0.45
 
 	lang_letters = {}
 	ae_trained_letters = {}

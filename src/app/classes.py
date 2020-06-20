@@ -110,8 +110,6 @@ class CompareDocuments():
 		self.doc2 = doc2
 		self.monkey = AlgoPredict(_global.monkeyClassifier)
 		self.ae_letters = AlgoPredict(_global.aeLettersClassifier)
-		self.ssim_count = 0
-		self.ssim_total = 0
 
 	def monkey_results(self):
 		by_sum = True if 'Sum' in _global.MONKEY_MODEL else False
@@ -132,30 +130,45 @@ class CompareDocuments():
 		plt.title('prediction: {}'.format(prec)) 
 		plt.show()
 
+	'''
+	This function handle all verifiction algos:
+		1) Monkey
+		2) AutoEncoder
+		3) SSIM
+	'''
+	def verify(self):
+		# Run Monkey
+		self.monkey_results()
+		self.autoencoder_and_ssim_results()
 
-	def _ssim(self, letter1, letter2):
-		s = measure.compare_ssim(cv2.resize(letter1, (28,28)), cv2.resize(letter2, (28,28)))
-		self.showImages(letter1, letter2, s)
+	'''
+	Loop through each pair of identified letters (that in trained_autoencoder)
+	from both docs (only same letters), and run AutoEncoder and SSIM comparision.
 
-	
-	def letters_autoencoder_results(self):
+	'''
+	def autoencoder_and_ssim_results(self):
 		count_same, count_diff, total_count = 0, 0, 0
 		sum_predictions, precent, precent_by_predictions = 0, 0, 0
+
+		ssim_count, ssim_total, s_precent = 0, 0, 0
 		doc1_letters = self.filter_ae_trained_letters(self.doc1.id_letters)
 		doc2_letters = self.filter_ae_trained_letters(self.doc2.id_letters)
 		for letter1 in doc1_letters:
 			for letter2 in doc2_letters:
 				if letter1.letter_name == letter2.letter_name:
-					self.ssim_count += measure.compare_ssim(letter1.img_resized, letter2.img_resized)
-					self.ssim_total += 1
+					# AutoEncoder
 					is_same, predict_prec = self.ae_letters.predict(letter1.ae_features, letter2.ae_features, by_sum=False)
 					if is_same:
 						count_same += 1
 					else:
 						count_diff += 1
 					sum_predictions += predict_prec
+					
+					#SSIM
+					ssim_count += measure.compare_ssim(letter1.img_resized, letter2.img_resized)
+					ssim_total += 1
 
-					# self.showImages(letter1.img, letter2.img, predict_prec)
+		# AutoEncoder results
 		total_count = count_same + count_diff
 		result = 'Same' if count_same > count_diff else 'Different'
 
@@ -175,6 +188,13 @@ class CompareDocuments():
 									'precent_by_predictions': precent_by_predictions,\
 									'result_by_predictions': result_by_predictions
 									}
+		# SSIM results
+		if ssim_total != 0:
+			s_precent = ssim_count / ssim_total
+		s_result = 'Same' if s_precent > _global.SSIM_THRESHOLD else 'Different'
+		self.ssim_results = {'result': s_result,
+							'precent': s_precent}
+
 class Stats():
 	def __init__(self):
 		self.tp = 0
