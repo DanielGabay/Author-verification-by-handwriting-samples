@@ -19,7 +19,7 @@ def init_doc(doc, only_save_letters=False):
 	'''
 	Detection Phase
 	'''
-	path = _global.DATA_PATH + doc.name if _global.TEST_MODE else doc.name
+	path = os.path.join(_global.DATA_PATH, doc.name) if _global.TEST_MODE else doc.name
 	doc.doc_img = get_prepared_doc(path)
 	detected_lines = detect_lines(doc.doc_img)
 	detected_letters = get_letters(detected_lines)
@@ -41,7 +41,7 @@ def _gui_entry(doc_name1, doc_name2):
 		return "File not found on data folder"
 	except Exception as e:
 		print(e)
-	return "Error: {}".format(e)
+		return "Error: {}".format(e)
 
 def main_app(doc_name1, doc_name2, test_mode=False):
 	_global.init('hebrew', test_mode=test_mode)

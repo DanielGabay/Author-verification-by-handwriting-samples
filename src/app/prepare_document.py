@@ -84,7 +84,7 @@ def get_prepared_doc(name='data/500.tiff'):
 		img = Image.open(name)
 	except FileNotFoundError:
 			print("ERROR: {}: file not found".format(name))
-			sys.exit(1)
+			raise
 	if extantion == 'tiff' or extantion == 'tif':
 		tiff_to_jpeg(img)
 		shutil.rmtree('./temp/')

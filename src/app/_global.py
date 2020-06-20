@@ -52,12 +52,12 @@ def init(language='hebrew', monkey_by_vectors=True,\
 		return
 	
 	BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-	DATA_PATH = os.path.join(BASE_DIR, "data/")
+	DATA_PATH = os.path.join(BASE_DIR, "data\\")
 	# DATA_PATH = "data/"
 	# MODELS_PATH = "models/"
 	# DATA_PATH = 'data2/'
 	# DATA_PATH = 'newData/'
-	MODELS_PATH = os.path.join(BASE_DIR, "models/")
+	MODELS_PATH = os.path.join(BASE_DIR, "models\\")
 
 	LETTERS_SIZE = 28
 	CONCAT_AS_ONE_IMAGE = 'concat_img.png'
@@ -70,7 +70,6 @@ def init(language='hebrew', monkey_by_vectors=True,\
 	IMPROVED_LETTER_THESHOLD = 0.8
 
 	SSIM_THRESHOLD = 0.45
-
 	lang_letters = {}
 	ae_trained_letters = {}
 	if language == 'hebrew':
@@ -96,21 +95,20 @@ def init(language='hebrew', monkey_by_vectors=True,\
 		lettersImprovedClassifier = load_and_compile_model(MODELS_PATH, LETTERS_IMPROVED_MODEL) 
 		encoder = load_and_compile_model(MODELS_PATH, ENCODER_MODEL)
 	if print_globals:
-		print("Monkey:{}\nAutoEncoder by predictions:{}".format(MONKEY_MODEL, AE_LETTERS_RESULT_BY_PRECENT))
-		print("AutoEncoder threshold:{}".format(AE_SUM_PRED_THRESH))
+		print("Monkey: {}\nAutoEncoder by predictions: {}".format(MONKEY_MODEL, AE_LETTERS_RESULT_BY_PRECENT))
+		print("AutoEncoder threshold: {}".format(AE_SUM_PRED_THRESH))
 
 def load_and_compile_model(models_path, model_name):
 	'''
 	Load the model .h5 and .json files and compile it.
 	add lettersClassifier into _globals
 	'''
-	json_file = open('{}{}.json'.format(models_path, model_name), 'r')
+	json_file = open(os.path.join(models_path, model_name + ".json"), 'r')
 	loaded_model_json = json_file.read()
 	json_file.close()
 	classifier = model_from_json(loaded_model_json)
-	classifier.load_weights("{}{}.h5".format(models_path, model_name))
-	classifier.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-	print("Loaded & compiled {} from disk".format(model_name))
+	classifier.load_weights(os.path.join(models_path, model_name + ".h5"))
+	print("Loaded: {} from disk".format(model_name))
 	return classifier
 
 def get_ae_trained_letters(lang):
