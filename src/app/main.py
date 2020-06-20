@@ -7,13 +7,13 @@ warnings.filterwarnings("ignore")
 import _global
 from classes import CompareDocuments, Document, Stats
 from prepare_document import get_prepared_doc
+from create_output import generate_conclusion,generate_gui_output,generate_output
 
 #Recognition Phase
 from recognition_functions import (get_identified_letters,
                                    get_letter_ae_features, get_monkey_features)
 #Detection Phase
 from detection_functions import detect_lines, get_letters
-
 
 def init_doc(doc, only_save_letters=False):
 	'''
@@ -44,9 +44,10 @@ def _gui_entry(doc_name1, doc_name2):
 	return "Error: {}".format(e)
 
 def main_app(doc_name1, doc_name2, test_mode=False):
+	"""
+	Initialize Variable& Settings
+	"""
 	_global.init('hebrew', test_mode=test_mode)
-	output = ""
-	gui_output = ""
 
 	'''
 	Prepare Documents, Detection & Recognition Phases
@@ -60,31 +61,13 @@ def main_app(doc_name1, doc_name2, test_mode=False):
 	compare_docs = CompareDocuments(doc1, doc2)
 	compare_docs.verify()
 
-	output = output + "Monkey Result: {}\nAE result: {}\nSSIM Result: {}".format(\
-												   compare_docs.monkey_results,\
-												   compare_docs.letters_ae_results,\
-												   compare_docs.ssim_results)
+	"""
+	Create Output
+	"""
+	output = generate_output(compare_docs)
 	
-	gui_output += "Algo1: Monkey Result:\n\t<{0}> [Confident: {1:.2f}%]\n".format(compare_docs.monkey_results['result'],\
-														 						  compare_docs.monkey_results['precent']*100)
-	gui_output += "Algo2: AutoEncoder Letters Result:\n\t<{}> [Confident: {:.2f}%]\n\tResult By Predictions:\n\t<{}> [Confident: {:.2f}%]\n".format(\
-														compare_docs.letters_ae_results['result'],\
-														compare_docs.letters_ae_results['precent']*100,
-														compare_docs.letters_ae_results['result_by_predictions'],\
-														compare_docs.letters_ae_results['precent_by_predictions']*100)
-	gui_output += "\n\nFinal Result:\n\t<"
-	conclusion = compare_docs.monkey_results['result'] + ">" if\
-				  compare_docs.monkey_results['result'] == compare_docs.letters_ae_results['result']\
-				  else "Conflict>"
+	gui_output = generate_gui_output(compare_docs) + generate_conclusion(compare_docs)
 
-	gui_output += conclusion
-
-	conclusion2 = "\n\tWith AE by predictions:\n\t<"
-	conclusion2 += compare_docs.monkey_results['result'] + ">" if\
-				  compare_docs.monkey_results['result'] == compare_docs.letters_ae_results['result_by_predictions']\
-				  else "Conflict>" 
-
-	gui_output += conclusion
 	print(output)
 	# return gui_output
 	return output
