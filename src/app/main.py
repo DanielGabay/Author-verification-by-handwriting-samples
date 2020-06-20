@@ -89,7 +89,8 @@ def main_app(doc_name1, doc_name2, test_mode=False):
 
 	gui_output += conclusion
 	print(output)
-	return gui_output
+	# return gui_output
+	return output
 
 def print_conf_matrix(title, tn, tp, fn, fp):
 	recall, precision, f1_score = 0, 0, 0
