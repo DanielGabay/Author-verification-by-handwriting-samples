@@ -41,7 +41,7 @@ def _gui_entry(doc_name1, doc_name2):
 		return "File not found on data folder"
 	except Exception as e:
 		print(e)
-	return "Error"
+	return "Error: {}".format(e)
 
 def main_app(doc_name1, doc_name2, test_mode=False):
 	_global.init('hebrew', test_mode=test_mode)

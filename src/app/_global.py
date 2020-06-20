@@ -1,5 +1,6 @@
 import joblib
 from keras.models import model_from_json
+import os
 
 def init(language='hebrew', monkey_by_vectors=True,\
 		test_mode=True, print_globals=False):
@@ -49,12 +50,14 @@ def init(language='hebrew', monkey_by_vectors=True,\
 		pass
 	else:
 		return
-
 	
-	DATA_PATH = 'data/'
+	BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+	DATA_PATH = os.path.join(BASE_DIR, "data/")
+	# DATA_PATH = "data/"
+	# MODELS_PATH = "models/"
 	# DATA_PATH = 'data2/'
 	# DATA_PATH = 'newData/'
-	MODELS_PATH = 'models/'
+	MODELS_PATH = os.path.join(BASE_DIR, "models/")
 
 	LETTERS_SIZE = 28
 	CONCAT_AS_ONE_IMAGE = 'concat_img.png'

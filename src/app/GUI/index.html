@@ -21,7 +21,7 @@
                     <div class="wellcome-heading">
                         <h2>Auther Verification</h2>
                         <!-- <h3>AV</h3> -->
-                        <p>Comparing between two handwritten documents to determine<br/>if
+                        <p>Comparing between two handwritten documents to determine<br />if
                             they were written by the same person.
                         </p>
                     </div>
@@ -46,14 +46,30 @@
                                     alert("Choose only two files")
                                     return;
                                 }
+
                                 f1 = document.getElementById("filename1")
                                 f2 = document.getElementById("filename2")
-                                f1.innerHTML = input.files[0].name
-                                f1.classList.add("email")
-                                f2.innerHTML = input.files[1].name
-                                f2.classList.add("email")
+
+                                if (input.files.length > 1) {
+                                    f1.innerHTML = input.files[0].name
+                                    f1.classList.add("email")
+                                    f2.innerHTML = input.files[1].name
+                                    f2.classList.add("email")
+                                }
+                                else {
+                                    if (f1.innerHTML === "") {
+                                        f1.innerHTML = input.files[0].name
+                                        f1.classList.add("email")
+                                        
+                                    }
+                                    else {
+                                        f2.innerHTML = input.files[0].name
+                                        f2.classList.add("email")
+                                    }
+                                }
+
                             };
-                            </script>
+                        </script>
                     </div>
                 </div>
             </div>

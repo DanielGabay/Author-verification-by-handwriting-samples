@@ -9,5 +9,4 @@ def gui_entry(path1, path2):
     output = _gui_entry(path1, path2)
     return output
 
-
 eel.start('index.html', size=(1000, 600))
