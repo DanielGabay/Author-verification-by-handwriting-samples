@@ -1,4 +1,11 @@
+let is_running = false
+let file1 = ""
+let file2 = ""
+
 function main_linker() {
+	if (is_running)
+		return
+	
 	file1 = document.getElementById("filename1").innerHTML
 	file2 = document.getElementById("filename2").innerHTML
 	
@@ -6,6 +13,7 @@ function main_linker() {
 		// TODO: sanity check? pop up error
 		return
 	document.getElementById("loader").style.display = "block"
+	is_running = true
 	eel.gui_entry(file1, file2)(display_result)
 }
 
@@ -13,8 +21,6 @@ function main_linker() {
 function plot() {
 	//TODO: get preds to display from display_result
 	let preds = [70, 30]
-	file1 = document.getElementById("filename1").innerHTML
-	file2 = document.getElementById("filename2").innerHTML
 	text = "Comparing: " + file1 + " " + file2
 	let chart = new CanvasJS.Chart("chartContainer", {
 		theme: "light1", // "light1", "light2", "dark1", "dark2"
@@ -42,6 +48,7 @@ function plot() {
 
 function display_result(result) {
 	document.getElementById("loader").style.display = "none"
+	is_running = false
 	// let preds = parseFloat(result[1]) * 100
 	// plot_preds = [100-preds, preds]
 	// plot(plot_preds)
