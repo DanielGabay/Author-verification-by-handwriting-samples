@@ -61,11 +61,13 @@ def main_app(doc_name1, doc_name2, queue=None, test_mode=False):
 	compare_docs = CompareDocuments(doc1, doc2)
 	compare_docs.monkey_results()
 	compare_docs.letters_autoencoder_results()
-
+	s_count = compare_docs.ssim_count
+	s_pred = s_count / compare_docs.ssim_total
+	print("ssim: count: {}, pred: {}".format(s_count, s_pred))
 	output = output + "Monkey Result:{}\nAE result: {}".format(\
 												   compare_docs.monkey_results,\
 												   compare_docs.letters_ae_results)
-	
+
 	gui_output += "Algo1: Monkey Result:\n\t<{0}> [Confident: {1:.2f}%]\n".format(compare_docs.monkey_results['result'],\
 														 						  compare_docs.monkey_results['precent']*100)
 	gui_output += "Algo2: AutoEncoder Letters Result:\n\t<{}> [Confident: {:.2f}%]\n\tResult By Predictions:\n\t<{}> [Confident: {:.2f}%]\n".format(\
@@ -92,39 +94,83 @@ def main_app(doc_name1, doc_name2, queue=None, test_mode=False):
 	print(output)
 
 def print_conf_matrix(title, tn, tp, fn, fp):
+	recall, precision, f1_score = 0, 0, 0
 	print(title)
 	print("True-Positive: {}\tFalse-Negative: {}".format(tp, fn))
 	print("False-Positive: {}\tTrue-Negative: {}".format(fp, tn))
-	recall = tp/(tp+fn)
-	precision = tp/(tp+fp)
-	f1_score = (2)/((1/recall)+(1/precision))
+	if tp+fn != 0:
+		recall = tp/(tp+fn)
+		
+	if tp+fp != 0:
+		precision = tp/(tp+fp)
+	if recall != 0 and precision != 0:
+		f1_score = (2)/((1/recall)+(1/precision))
 	print("Recall: {0:.2f}%\nPrecision: {1:.2f}%\nF1-Score: {2:.2f}%".format(recall*100,precision*100, f1_score*100))
 
 
-def calc_stats(s, result_monkey, result_letters_ae):
-	if result_monkey and result_letters_ae and s.same_author:
-		# all results 'Same author'
+def calc_stats(s, result_monkey, result_letters_ae, result_ssim):
+	count_algos = 0
+	if result_monkey:
+		count_algos += 1
+	if result_letters_ae:
+		count_algos += 1
+	if result_ssim:
+		count_algos += 1
+	
+	if count_algos >= 2 and s.same_author:
 		s.tp += 1
 		s.mark_as = "Mark: Same"
-	elif not result_monkey and not result_letters_ae and s.same_author:
-		# both monkey and ae call 'diff' while same
-		s.fn += 1
-		s.mark_as = "Mark: Different while Same"
-	elif not result_monkey and not result_letters_ae and not s.same_author:
-		# all results 'Different author'
-		s.tn += 1
-		s.mark_as = "Mark: Different"
-	elif result_monkey and result_letters_ae and not s.same_author:
-		# both monkey and ae call 'same' while diff
+	elif count_algos >= 2 and not s.same_author:
 		s.fp += 1
 		s.mark_as = "Mark: Same while Different"
-	else:
-		s.conflict += 1
-		if s.same_author:
-			s.conflict_while_same += 1
-		else:
-			s.conflict_while_diff += 1
-		s.mark_as = "Conflict/Mistake"
+	elif count_algos < 2 and s.same_author:
+		s.fn += 1
+		s.mark_as = "Mark: Different while Same"
+	elif count_algos < 2 and not s.same_author:
+		s.tn += 1
+		s.mark_as = "Mark: Different"
+
+	# if result_monkey and result_letters_ae and s.same_author:
+	# 	# all results 'Same author'
+	# 	s.tp += 1
+	# 	s.mark_as = "Mark: Same"
+	# elif not result_monkey and not result_letters_ae and s.same_author:
+	# 	# both monkey and ae call 'diff' while same
+	# 	s.fn += 1
+	# 	s.mark_as = "Mark: Different while Same"
+	# elif not result_monkey and not result_letters_ae and not s.same_author:
+	# 	# all results 'Different author'
+	# 	s.tn += 1
+	# 	s.mark_as = "Mark: Different"
+	# elif result_monkey and result_letters_ae and not s.same_author:
+	# 	# both monkey and ae call 'same' while diff
+	# 	s.fp += 1
+	# 	s.mark_as = "Mark: Same while Different"
+
+
+	# if result_monkey and result_letters_ae and s.same_author:
+	# 	# all results 'Same author'
+	# 	s.tp += 1
+	# 	s.mark_as = "Mark: Same"
+	# elif not result_monkey and not result_letters_ae and s.same_author:
+	# 	# both monkey and ae call 'diff' while same
+	# 	s.fn += 1
+	# 	s.mark_as = "Mark: Different while Same"
+	# elif not result_monkey and not result_letters_ae and not s.same_author:
+	# 	# all results 'Different author'
+	# 	s.tn += 1
+	# 	s.mark_as = "Mark: Different"
+	# elif result_monkey and result_letters_ae and not s.same_author:
+	# 	# both monkey and ae call 'same' while diff
+	# 	s.fp += 1
+	# 	s.mark_as = "Mark: Same while Different"
+	# else:
+	# 	s.conflict += 1
+	# 	if s.same_author:
+	# 		s.conflict_while_same += 1
+	# 	else:
+	# 		s.conflict_while_diff += 1
+	# 	s.mark_as = "Conflict/Mistake"
 
 	if result_letters_ae and s.same_author:
 		s.ae_tp += 1
@@ -143,42 +189,67 @@ def calc_stats(s, result_monkey, result_letters_ae):
 		s.monkey_tn += 1
 	elif result_monkey and not s.same_author:
 		s.monkey_fp += 1
+	
+	if result_ssim and s.same_author:
+		s.ssim_tp += 1
+	elif not result_ssim and s.same_author:
+		s.ssim_fn += 1
+	elif not result_ssim and not s.same_author:
+		s.ssim_tn += 1
+	elif result_ssim and not s.same_author:
+		s.ssim_fp += 1
 
 def get_ae_monkey_results(s, compare_docs):
 	compare_docs.monkey_results()
 	compare_docs.letters_autoencoder_results()
 	result_monkey = True if compare_docs.monkey_results['result'] == 'Same' else False
 	precent_monkey = compare_docs.monkey_results['precent'] * 100
+	ssim_pred = compare_docs.ssim_count / compare_docs.ssim_total
+	result_ssim = True if ssim_pred > 0.45 else False
+	if _global.AE_LETTERS_RESULT_BY_PRECENT:
+		result_letters_ae = True if compare_docs.letters_ae_results['result_by_predictions'] == 'Same' else False
+	else:
+		result_letters_ae = True if compare_docs.letters_ae_results['result'] == 'Same' else False
 	
-	# result_letters_ae = True if compare_docs.letters_ae_results['result'] == 'Same' else False
-	result_letters_ae = True if compare_docs.letters_ae_results['result_by_predictions'] == 'Same' else False
-	
-	calc_stats(s, result_monkey, result_letters_ae)
-	print("Monkey Result:\n\t<{0}> [Confident: {1:.2f}%]\n".format(compare_docs.monkey_results['result'],\
+	calc_stats(s, result_monkey, result_letters_ae, result_ssim)
+	print("Monkey Result:\n<{0}> [Confident: {1:.2f}%]".format(compare_docs.monkey_results['result'],\
 														 		   compare_docs.monkey_results['precent']*100))
-	print("Letters AE Result:\n<{} Author>\nsum_predictions:{}\nprecent_by_predictions:{}\ncount_same: {}\ncount_diff: {}"\
+	print("Letters AE Result:\n<{}>\ncount_same: {}\ncount_diff: {}\nsum_predictions: {}\nprecent_by_predictions: {}"\
 		.format(compare_docs.letters_ae_results['result_by_predictions'],\
-				compare_docs.letters_ae_results['sum_predictions'],\
-				compare_docs.letters_ae_results['precent_by_predictions'],\
 				compare_docs.letters_ae_results['count_same'],\
-				compare_docs.letters_ae_results['count_diff']))
+				compare_docs.letters_ae_results['count_diff'],\
+				compare_docs.letters_ae_results['sum_predictions'],\
+				compare_docs.letters_ae_results['precent_by_predictions']))
+	ssim_print = "Same" if result_ssim else "Different"
+	print("ssim result:\n<{}>\npred: {}".format(ssim_print, ssim_pred))
 	print("Real: {}\n{}".format(s.same_author, s.mark_as)) 	# FOR EASY NAVIGATION IN FILE
+
+def model_acc(tn, tp, fn, fp):
+	total = tn+tp+fn+fp
+	if total == 0:
+		return 0
+	return (tn+tp)/(total) * 100
 
 def print_ae_monkey_results(s, len_b):
 	print("\n------------------")
 	print("Number of same pairs checked:{}".format(len_b))
 	print("Sum of al pairs checked: {}".format(s.count_num_of_tests))
 	print("\n------------------")
-	print_conf_matrix("Monkey & letter AE Conf Matrix:", s.tn, s.tp, s.fn, s.fp)
-	print("Model accuracy: {0:.2f}% (*NOTE: not includes Undecided results!)".format((s.tn+s.tp)/(s.tn+s.tp+s.fn+s.fp)*100))
-	print("Undecided Results:\n->conflict:{}\n-->conflict_while_same:{}\n-->conflict_while_diff:{}"\
-		.format(s.conflict, s.conflict_while_same,s.conflict_while_diff))
+	print_conf_matrix("Monkey & letter AE Conf & ssim Matrix:", s.tn, s.tp, s.fn, s.fp)
+	print("Model accuracy: {0:.2f}%".format(model_acc(s.tn, s.tp, s.fn, s.fp)))
+	# print_conf_matrix("Monkey & letter AE Conf Matrix:", s.tn, s.tp, s.fn, s.fp)
+	# print("Model accuracy: {0:.2f}% (*NOTE: not includes Undecided results!)".format(model_acc(s.tn, s.tp, s.fn, s.fp)))
+	# print("Undecided Results:\n->conflict:{}\n-->conflict_while_same:{}\n-->conflict_while_diff:{}"\
+		# .format(s.conflict, s.conflict_while_same,s.conflict_while_diff))
 	print("\n------------------")
-	print_conf_matrix("Only letter AE Conf Matrix:", s.ae_tn,s.ae_tp, s.ae_fn, s.ae_fp)
-	print("Model accuracy: {0:.2f}%".format((s.ae_tn+s.ae_tp)/(s.ae_tn+s.ae_tp+s.ae_fn+s.ae_fp)*100))
+	print_conf_matrix("Only letter AE Conf Matrix:", s.ae_tn, s.ae_tp, s.ae_fn, s.ae_fp)
+	print("Model accuracy: {0:.2f}%".format(model_acc(s.ae_tn, s.ae_tp, s.ae_fn, s.ae_fp)))
 	print("\n------------------")
 	print_conf_matrix("Only Monkey Conf Matrix:", s.monkey_tn, s.monkey_tp, s.monkey_fn, s.monkey_fp)
-	print("Model accuracy: {0:.2f}%".format((s.monkey_tn+s.monkey_tp)/(s.monkey_tn+s.monkey_tp+s.monkey_fn+s.monkey_fp)*100))
+	print("Model accuracy: {0:.2f}%".format(model_acc(s.monkey_tn, s.monkey_tp, s.monkey_fn, s.monkey_fp)))
+	print("\n------------------")
+	print_conf_matrix("Only ssim Conf Matrix:", s.ssim_tn, s.ssim_tp, s.ssim_fn, s.ssim_fp)
+	print("Model accuracy: {0:.2f}%".format(model_acc(s.ssim_tn, s.ssim_tp, s.ssim_fn, s.ssim_fp)))
 
 def get_doc_by_name(all_docs, file_name):
 	for doc in all_docs:
@@ -187,8 +258,9 @@ def get_doc_by_name(all_docs, file_name):
 
 def test_all_same(test_random_different=0):
 	b_files = []
-	s = Stats()
 	all_docs = []
+	all_files = []
+	s = Stats()
 
 	for _, _, files in os.walk(_global.DATA_PATH):
 		b_files = [x for x in files if 'b' in x]
@@ -236,8 +308,6 @@ if __name__ == "__main__":
 	# 	print("Usage: python main.py <[save_all]/[file_name]> ")
 	# 	sys.exit(1)
 	#TODO: think how to determine monkey algo by_sum/by_vectors
-	_global.init('hebrew')
+	_global.init('hebrew',monkey_by_vectors=True, print_globals=True)
 	test_all_same(106)
-	# test_all_pairs()
-	# save_all_pairs_docs_letters()
-	# main_app('1.tiff', '2.tiff', test_mode=True)
+	# main_app('10.tiff', '14.tiff', test_mode=True)

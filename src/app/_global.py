@@ -2,8 +2,8 @@ import os
 import joblib
 from keras.models import model_from_json
 
-def init(language='hebrew', monkey_by_vectors=False,\
-		test_mode=True, default_letters_ae=True):
+def init(language='hebrew', monkey_by_vectors=True,\
+		test_mode=True, print_globals=False):
 	'''
 	@param: language:
 		Current version has the ability to process only hebrew docs.
@@ -31,7 +31,6 @@ def init(language='hebrew', monkey_by_vectors=False,\
 	global encoder
 	global lettersClassifier
 	global lettersImprovedClassifier
-	global DEFAULT_LETTERS_AE
 	global CONCAT_AS_ONE_IMAGE
 	global AE_LETTERS_RESULT_BY_PRECENT
 	global AE_SUM_PRED_THRESH
@@ -54,15 +53,16 @@ def init(language='hebrew', monkey_by_vectors=False,\
 
 	
 	DATA_PATH = 'data/'
+	# DATA_PATH = 'data2/'
+	# DATA_PATH = 'newData/'
 	MODELS_PATH = 'models/'
 
 	LETTERS_SIZE = 28
-	CONCAT_AS_ONE_IMAGE = 'tiff_as_one_img.png'
+	CONCAT_AS_ONE_IMAGE = 'concat_img.png'
 	
 	TEST_MODE = test_mode # True if we want to use DATA_PATH to load docs
-	DEFAULT_LETTERS_AE = default_letters_ae # True if we use 1 AutoEncoder for all letters
 	AE_LETTERS_RESULT_BY_PRECENT = True # True if we want to sum precents instead of counting same/diff letters
-	AE_SUM_PRED_THRESH = 0.55 # threshold to determine Same/Diff by sum predictions
+	AE_SUM_PRED_THRESH = 0.5 # threshold to determine Same/Diff by sum predictions
 
 	BASIC_LETTER_THESHOLD = 0.995
 	IMPROVED_LETTER_THESHOLD = 0.8
@@ -75,7 +75,9 @@ def init(language='hebrew', monkey_by_vectors=False,\
 		LETTERS_IMPROVED_MODEL = 'hebLettersImprovedModel'
 		AE_LETTERS_MODEL = 'hebAutoEncoderDiffVecModel.sav'
 		if monkey_by_vectors:
-			MONKEY_MODEL = 'hebMonkeyLettersByVectors.sav'
+			MONKEY_MODEL = 'hebMonkeyLettersByVectors_lr.sav'
+			# MONKEY_MODEL = 'hebMonkeyLettersByVectors_mlp.sav'
+			# MONKEY_MODEL = 'hebMonkeyLettersByVectors.sav'
 		else:
 			MONKEY_MODEL = 'hebMonkeyLettersBySum.sav'
 		lang_letters = get_lang_letters_dict(language)
@@ -89,6 +91,9 @@ def init(language='hebrew', monkey_by_vectors=False,\
 		lettersClassifier = load_and_compile_model(MODELS_PATH, LETTERS_MODEL)
 		lettersImprovedClassifier = load_and_compile_model(MODELS_PATH, LETTERS_IMPROVED_MODEL) 
 		encoder = load_and_compile_model(MODELS_PATH, ENCODER_MODEL)
+	if print_globals:
+		print("Monkey:{}\nAutoEncoder by predictions:{}".format(MONKEY_MODEL, AE_LETTERS_RESULT_BY_PRECENT))
+		print("AutoEncoder threshold:{}".format(AE_SUM_PRED_THRESH))
 
 def load_and_compile_model(models_path, model_name):
 	'''

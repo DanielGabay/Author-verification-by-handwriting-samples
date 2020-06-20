@@ -85,38 +85,42 @@ def getXY(data):
 	return X, y
 	
 
-def train_nn(data):
+def train_nn(data, filterd_data):
 	X, y = getXY(data)
-	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=3)
+	X1, y1 = getXY(filterd_data)
+	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=3)
+	X1_train, X1_test, y1_train, y1_test = train_test_split(X1, y1, test_size=0.9, random_state=3)
 	# lr = LogisticRegression()
 	# lr.fit(X_train,y_train)
 	mlp = MLPClassifier()
 	mlp.fit(X_train, y_train)
 	# _print_scores(lr, 'Basic Logistic-Regression', X_train, y_train, X_test, y_test)
 	# _print_test_proba(lr, 'Basic Logistic-Regression', X_test, y_test)
-	_print_scores(mlp, 'Basic Nueral-Network', X_train, y_train, X_test, y_test)
-	_print_test_proba(mlp, 'Basic Nueral-Network', X_test, y_test)
+	_print_test_proba(mlp, 'Basic Nueral-Network', X1_test, y1_test)
+	# _print_scores(mlp, 'Basic Nueral-Network', X_train, y_train, X_test, y_test)
 
 def _print_test_proba(model, model_name, X_test, y_test):
 	correct_same = 0
 	correct_diff = 0
 	for i in range(len(X_test)):
 		predict = model.predict(X_test[i].reshape(1,-1))[0]
+		predict_proba = model.predict_proba(X_test[i].reshape(1,-1))[0]
 		if predict == 1 and y_test[i] == 1:
 			correct_same += 1
-			print("[{0:.2f}, {1:.2f}] -> real: {2}, predicted: 1".format(X_test[i][0], X_test[i][1], y_test[i]))
+			# print("[{0:.2f}, {1:.2f}] -> real: {2}, predicted: 1".format(X_test[i][0], X_test[i][1], y_test[i]))
 		elif predict == 0 and y_test[i] == 0:
-			print("[{0:.2f}, {1:.2f}] -> real: {2}, predicted: 0".format(X_test[i][0], X_test[i][1], y_test[i]))
+			# print("[{0:.2f}, {1:.2f}] -> real: {2}, predicted: 0".format(X_test[i][0], X_test[i][1], y_test[i]))
 			correct_diff += 1
-		else:
-			print("[{0:.2f}, {1:.2f}] -> real: {2}, predicted: conflict".format(X_test[i][0], X_test[i][1], y_test[i]))
+		# else:
+		print("Monkey: {0:.2f}\nAE: {1:.2f}\nExcpected: {2}\npredicted: {3}\nproba: {4}".format(\
+			X_test[i][0], X_test[i][1], y_test[i], predict, predict_proba))
 
 		# print("predict: {}".format(model.predict(X_test[i].reshape(1,-1))))
 		# print("predict proba: {}".format(model.predict_proba(X_test[i].reshape(1,-1))))
 		print("______")
-	print("correct_same: {} correct_diff:{}".format(correct_same, correct_diff))
 	c = Counter(y_test)
-	print("test_same: {} test_diff: {}".format(c[1], c[0]))
+	print("correct_same:{}/{} correct_diff:{}/{}".format(correct_same, c[1], correct_diff, c[0]))
+	# print("test_same: {} test_diff: {}".format(c[1], c[0]))
 
 def _print_scores(model, model_name, X_train, y_train, X_test, y_test):
 	print(model_name)
@@ -223,12 +227,16 @@ def print_conf_matrix(title, tn, tp, fn, fp):
 
 
 if __name__ == "__main__":
-	filename = 'ae_no_0.4__monkey_log.txt'
-	# filename = 'ae_monkey-bySum_106_diff_same_pairs_no_alef_results.txt'
+	# filename = 'ae_no_0.4__monkey_log.txt'
+	filename = 'ae_monkey-bySum_106_diff_same_pairs_no_alef_results.txt'
 	if len(sys.argv) > 1:
 		filename = sys.argv[1]
 	data = parse_log(filename)
-	conf_matrix_by_thresholds(data, monkey_threshold=0.5, ae_threshold=0.4)
+	random.shuffle(data)
+	filterd_data = filter_only_conflicts(data, 50, 1000)
+	random.shuffle(filterd_data)
+	train_nn(data,filterd_data)
+	# conf_matrix_by_thresholds(data, monkey_threshold=0.5, ae_threshold=0.4)
 	# print(data)
 	# plot_features(data)
 	# filterd_data = filter_only_conflicts(data, 50, 1000)

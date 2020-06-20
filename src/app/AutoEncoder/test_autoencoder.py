@@ -13,7 +13,6 @@ import _global
 FEATUERS_FILE ='save_features.csv'
 
 def already_done(doc_name):
-
 	with open(FEATUERS_FILE, "r") as f:
 		csvreader = csv.reader(f, delimiter=",")
 		for row in csvreader:
@@ -44,7 +43,6 @@ def load_and_compile_ae(name):
 	return classifier
 
 def write_vec_to_exel(df_name,file,letter,count,encoded_states):
-	
 	row = [file,letter,count]
 	row.extend(encoded_states)
 
@@ -52,16 +50,7 @@ def write_vec_to_exel(df_name,file,letter,count,encoded_states):
 		wr = csv.writer(fp, dialect='excel')
 		wr.writerow(row)
 
-def get_encoders():
-	letters = ['1','2','4','5','8','12','13','15','17','24']
-	path_weights = 'AutoEncoder/weights'
-	encoders = {}
-	for letter in letters:
-		encoders.update({letter : load_and_compile_ae(path_weights+'/encoder_encoder_32_{}'.format(letter))})
-	return encoders
-
 def main_get_letter_ae_features(letters):
-
 	for letter in letters:
 		if letter.letter_name in _global.ae_trained_letters.values():
 			letter.ae_features = _global.encoder.predict(letter.letter_img).ravel()
@@ -70,21 +59,13 @@ def main_get_letter_ae_features(letters):
 
 def get_letters_ae_features(letters):
 	path_weights = 'AutoEncoder/weights'
-	if not _global.DEFAULT_LETTERS_AE:
-		encoders = get_encoders()
-	default_encoder = load_and_compile_ae(path_weights+'/encoder_full_32')
-	default_encoder = load_and_compile_ae(path_weights+'/encoder_encoder_32')
+	encoder = load_and_compile_ae(path_weights+'/encoder_encoder_32')
 
 	for letter in letters:
 		img = np.asarray(np.array(letter.letter_img))
 		img = img.astype('float32') / 255.
 		img = np.reshape(img, (1, 28, 28, 1))  # adapt this if using `channels_first` image data format
-		encoder = None
 		if letter.letter_name in _global.ae_trained_letters.values():
-			if _global.DEFAULT_LETTERS_AE:
-				encoder = default_encoder
-			else:
-				encoder = encoders[str(letter.letter_index)]
 			letter.ae_features = encoder.predict(letter.letter_img).ravel()
 
 def test(name):
@@ -117,8 +98,6 @@ def test(name):
 
 
 if __name__ == '__main__':
-
-
 	print(already_done('1'))
 	print('#@@@@')
 	path = os.path.dirname(os.path.abspath(__file__))
