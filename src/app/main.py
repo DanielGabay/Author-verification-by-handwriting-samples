@@ -53,6 +53,7 @@ def _gui_entry(doc_name1, doc_name2):
 		print(e)
 		return "Error: {}".format(e)
 
+
 def main_app(doc_name1, doc_name2, test_mode=False):
 	"""
 	Initialize Variable& Settings
@@ -76,27 +77,11 @@ def main_app(doc_name1, doc_name2, test_mode=False):
 	Create Output
 	"""
 	output = generate_output(compare_docs)
-	
 	gui_output = generate_gui_output(compare_docs) + generate_conclusion(compare_docs)
 
 	print(output)
 	# return gui_output
 	return output
-
-def print_conf_matrix(title, tn, tp, fn, fp):
-	recall, precision, f1_score = 0, 0, 0
-	print(title)
-	print("True-Positive: {}\tFalse-Negative: {}".format(tp, fn))
-	print("False-Positive: {}\tTrue-Negative: {}".format(fp, tn))
-	if tp+fn != 0:
-		recall = tp/(tp+fn)
-		
-	if tp+fp != 0:
-		precision = tp/(tp+fp)
-	if recall != 0 and precision != 0:
-		f1_score = (2)/((1/recall)+(1/precision))
-	print("Recall: {0:.2f}%\nPrecision: {1:.2f}%\nF1-Score: {2:.2f}%".format(recall*100,precision*100, f1_score*100))
-
 
 def calc_stats(s, result_monkey, result_letters_ae, result_ssim):
 	count_algos = 0
@@ -171,12 +156,6 @@ def get_ae_monkey_results(s, compare_docs):
 	print("ssim result:\n<{}>\npred: {}".format(ssim_print, ssim_pred))
 	print("Real: {}\n{}".format(s.same_author, s.mark_as)) 	# FOR EASY NAVIGATION IN FILE
 
-def model_acc(tn, tp, fn, fp):
-	total = tn+tp+fn+fp
-	if total == 0:
-		return 0
-	return (tn+tp)/(total) * 100
-
 
 def get_doc_by_name(all_docs, file_name):
 	for doc in all_docs:
@@ -211,7 +190,6 @@ def test_all_same(test_random_different=0):
 		compare_docs = CompareDocuments(doc1, doc2)
 		get_ae_monkey_results(s, compare_docs)
 		s.count_num_of_tests += 1
-
 
 	if test_random_different != 0:
 		for i in range(test_random_different):

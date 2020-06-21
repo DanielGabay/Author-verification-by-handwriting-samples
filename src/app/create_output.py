@@ -1,15 +1,12 @@
 
 def generate_output(compare_docs):
-
 	output =  "Monkey Result: {}\nAE result: {}\nSSIM Result: {}".format(\
 												   compare_docs.monkey_results,\
 												   compare_docs.letters_ae_results,\
 												   compare_docs.ssim_results)
 	return output
 
-
 def generate_gui_output(compare_docs): 
-
 	gui_output = "Algo1: Monkey Result:\n\t<{0}> [Confident: {1:.2f}%]\n".format(compare_docs.monkey_results['result'],\
 														 						  compare_docs.monkey_results['precent']*100)
 	gui_output += "Algo2: AutoEncoder Letters Result:\n\t<{}> [Confident: {:.2f}%]\n\tResult By Predictions:\n\t<{}> [Confident: {:.2f}%]\n".format(\
@@ -27,14 +24,11 @@ def generate_conclusion(compare_docs):
 				  compare_docs.monkey_results['result'] == compare_docs.letters_ae_results['result']\
 				  else "Conflict>"
 	return conclusion
-	
-
 
 	# conclusion2 = "\n\tWith AE by predictions:\n\t<"
 	# conclusion2 += compare_docs.monkey_results['result'] + ">" if\
 	# 			  compare_docs.monkey_results['result'] == compare_docs.letters_ae_results['result_by_predictions']\
 	# 			  else "Conflict>" 
-
 
 def print_ae_monkey_results(s, len_b):
 	print("\n------------------")
@@ -56,3 +50,23 @@ def print_ae_monkey_results(s, len_b):
 	print("\n------------------")
 	print_conf_matrix("Only ssim Conf Matrix:", s.ssim_tn, s.ssim_tp, s.ssim_fn, s.ssim_fp)
 	print("Model accuracy: {0:.2f}%".format(model_acc(s.ssim_tn, s.ssim_tp, s.ssim_fn, s.ssim_fp)))
+
+def model_acc(tn, tp, fn, fp):
+	total = tn+tp+fn+fp
+	if total == 0:
+		return 0
+	return (tn+tp)/(total) * 100
+
+def print_conf_matrix(title, tn, tp, fn, fp):
+	recall, precision, f1_score = 0, 0, 0
+	print(title)
+	print("True-Positive: {}\tFalse-Negative: {}".format(tp, fn))
+	print("False-Positive: {}\tTrue-Negative: {}".format(fp, tn))
+	if tp+fn != 0:
+		recall = tp/(tp+fn)
+		
+	if tp+fp != 0:
+		precision = tp/(tp+fp)
+	if recall != 0 and precision != 0:
+		f1_score = (2)/((1/recall)+(1/precision))
+	print("Recall: {0:.2f}%\nPrecision: {1:.2f}%\nF1-Score: {2:.2f}%".format(recall*100,precision*100, f1_score*100))
