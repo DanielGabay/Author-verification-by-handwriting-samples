@@ -3,7 +3,7 @@ import random
 import warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 warnings.filterwarnings("ignore")
-
+import eel
 import _global
 from classes import CompareDocuments, Document, Stats
 from prepare_document import get_prepared_doc
@@ -15,11 +15,18 @@ from recognition_functions import (get_identified_letters,
 #Detection Phase
 from detection_functions import detect_lines, get_letters
 
+py_print_to_gui = True
+
+def print_to_gui(str):
+	if py_print_to_gui:
+		eel.print_from_py(str)()
+
 def init_doc(doc, only_save_letters=False):
 	'''
 	Detection Phase
 	'''
 	path = os.path.join(_global.DATA_PATH, doc.name) if _global.TEST_MODE else doc.name
+	print_to_gui(path) # can be removed later
 	doc.doc_img = get_prepared_doc(path)
 	detected_lines = detect_lines(doc.doc_img)
 	detected_letters = get_letters(detected_lines)
@@ -27,8 +34,11 @@ def init_doc(doc, only_save_letters=False):
 	'''
 	Recognition Phase
 	'''
+	print_to_gui("Identify Letters") # can be removed later
 	doc.id_letters = get_identified_letters(detected_letters)
+	print_to_gui("Getting Monkey Features") # can be removed later
 	doc.monkey_features = get_monkey_features(doc.id_letters)
+	print_to_gui("Getting AutoEncoder Features") # can be removed later
 	get_letter_ae_features(doc.id_letters)
 
 	return doc
@@ -59,6 +69,7 @@ def main_app(doc_name1, doc_name2, test_mode=False):
 	Verification Phase
 	'''
 	compare_docs = CompareDocuments(doc1, doc2)
+	print_to_gui("Verifying") # can be removed later
 	compare_docs.verify()
 
 	"""

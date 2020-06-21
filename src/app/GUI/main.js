@@ -2,6 +2,11 @@ let is_running = false
 let file1 = ""
 let file2 = ""
 
+eel.expose(print_from_py);
+function print_from_py(data) {
+  console.log(data)
+}
+
 function main_linker() {
 	if (is_running)
 		return

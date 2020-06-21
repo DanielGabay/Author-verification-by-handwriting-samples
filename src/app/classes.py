@@ -2,7 +2,8 @@ import _global
 import numpy as np
 import cv2
 from keras.preprocessing import image
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt # comment to not import when using pyinstaller
+# uncomment if want to use showImages()
 from skimage import measure
 
 class IdWord():
@@ -124,11 +125,11 @@ class CompareDocuments():
 		return [x for x in letters if x.letter_name in _global.ae_trained_letters.values()]
 
 
-	def showImages(self, img1,img2, prec):
-		plt.subplot(121), plt.imshow(img1,cmap='gray')
-		plt.subplot(122), plt.imshow(img2,cmap='gray')
-		plt.title('prediction: {}'.format(prec)) 
-		plt.show()
+	# def showImages(self, img1,img2, prec):
+	# 	plt.subplot(121), plt.imshow(img1,cmap='gray')
+	# 	plt.subplot(122), plt.imshow(img2,cmap='gray')
+	# 	plt.title('prediction: {}'.format(prec)) 
+	# 	plt.show()
 
 	'''
 	This function handle all verifiction algos:
