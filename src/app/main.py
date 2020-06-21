@@ -15,7 +15,7 @@ from recognition_functions import (get_identified_letters,
 #Detection Phase
 from detection_functions import detect_lines, get_letters
 
-py_print_to_gui = True
+py_print_to_gui = False
 
 def print_to_gui(str):
 	if py_print_to_gui:
