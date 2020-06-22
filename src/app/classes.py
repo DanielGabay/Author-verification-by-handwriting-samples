@@ -142,6 +142,31 @@ class CompareDocuments():
 		self.monkey_results()
 		self.autoencoder_and_ssim_results()
 
+		algos_results = self.get_alogs_results()
+		predict_proba = _global.finalResultClassifier.predict_proba(algos_results.reshape(1,-1))[0]
+		proba = [round(predict_proba[0], 2), round(predict_proba[1],2)]
+		if proba[0] > 0.5:
+			self.final_result = {"result": "Different", 'precent': predict_proba[0], "proba": proba}
+		else:
+			self.final_result = {"result": "Same", 'precent': predict_proba[1], "proba": proba}
+		return self.final_result['proba'], self.final_result['result'], self.final_result['precent']
+
+	def get_alogs_results(self):
+		return np.asarray([self.monkey_pred(), self.ae_letters_pred(), self.ssim_pred()])
+
+	def monkey_pred(self):
+		if self.monkey_results['result'] == 'Same':
+			return self.monkey_results['precent']
+		return 1 - self.monkey_results['precent']
+
+	def ae_letters_pred(self):
+		if _global.AE_LETTERS_RESULT_BY_PRECENT:
+			return self.letters_ae_results['precent_by_predictions']
+		return self.letters_ae_results['precent']
+	
+	def ssim_pred(self):
+		return self.ssim_results['precent']
+	
 	'''
 	Loop through each pair of identified letters (that in trained_autoencoder)
 	from both docs (only same letters), and run AutoEncoder and SSIM comparision.
@@ -214,6 +239,10 @@ class Stats():
 		self.ssim_fp = 0
 		self.ssim_tn = 0
 		self.ssim_fn = 0
+		self.final_tp = 0
+		self.final_fp = 0
+		self.final_tn = 0
+		self.final_fn = 0
 		self.conflict = 0
 		self.conflict_while_same = 0
 		self.conflict_while_diff = 0

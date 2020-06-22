@@ -7,14 +7,18 @@ def generate_output(compare_docs):
 	return output
 
 def generate_gui_output(compare_docs): 
-	gui_output = "Algo1: Monkey Result:\n\t<{0}> [Confident: {1:.2f}%]\n".format(compare_docs.monkey_results['result'],\
-														 						  compare_docs.monkey_results['precent']*100)
-	gui_output += "Algo2: AutoEncoder Letters Result:\n\t<{}> [Confident: {:.2f}%]\n\tResult By Predictions:\n\t<{}> [Confident: {:.2f}%]\n".format(\
-														compare_docs.letters_ae_results['result'],\
-														compare_docs.letters_ae_results['precent']*100,
-														compare_docs.letters_ae_results['result_by_predictions'],\
-														compare_docs.letters_ae_results['precent_by_predictions']*100)
-	gui_output += "\n\nFinal Result:\n\t<"
+	monkey_res = compare_docs.monkey_results['result']
+	monkey_pred = compare_docs.monkey_results['precent'] * 100
+	ae_res = compare_docs.letters_ae_results['result_by_predictions']
+	ae_pred = compare_docs.letters_ae_results['precent_by_predictions'] * 100
+	ssim_res = compare_docs.ssim_results['result']
+	ssim_pred = compare_docs.ssim_results['precent'] * 100
+	final_result = compare_docs.final_result['result']
+	final_pred = compare_docs.final_result['precent'] * 100
+	gui_output = "Algo1: Monkey Result:\n\t{0} [Confident: {1:.2f}%]".format(monkey_res, monkey_pred)
+	gui_output += "\nAlgo2: AutoEncoder Letters Result:\n\t{0} [Confident: {1:.2f}%]".format(ae_res, ae_pred)
+	gui_output += "\nAlgo3: SSIM Result:\n\t{0} [Confident: {1:.2f}%]".format(ssim_res, ssim_pred)
+	gui_output += "\n\nFinal Result:\n\t{0} [Confident: {1:.2f}%]".format(final_result, final_pred)
 	
 	return gui_output
 

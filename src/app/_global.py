@@ -5,7 +5,7 @@ import os
 import sys
 
 def init(language='hebrew', monkey_by_vectors=True,\
-		test_mode=True, print_globals=False):
+		test_mode=True, data_path=None, print_globals=False):
 	'''
 	@param: language:
 		Current version has the ability to process only hebrew docs.
@@ -15,30 +15,36 @@ def init(language='hebrew', monkey_by_vectors=True,\
 		True: by_vectors
 		False: by_sum
 	'''
-	global lang_letters
-	global ae_letters
 	global DATA_PATH
 	global MODELS_PATH
+
+	global lang_letters
+	global ae_letters
+	global ae_trained_letters
+
+	global LETTERS_SIZE
+	global TEST_MODE
+
+	global AE_LETTERS_RESULT_BY_PRECENT
+	global SSIM_THRESHOLD
+	global BASIC_LETTER_THESHOLD
+	global IMPROVED_LETTER_THESHOLD
+	global AE_SUM_PRED_THRESH
+	global CONCAT_AS_ONE_IMAGE
+
+	global monkeyClassifier
+	global aeLettersClassifier
+	global lettersImprovedClassifier
+	global lettersClassifier
+	global encoder
+	global finalResultClassifier
+
+	global AE_LETTERS_MODEL
+	global FINAL_RESULT_MODEL
 	global LETTERS_MODEL
 	global ENCODER_MODEL
 	global LETTERS_IMPROVED_MODEL
 	global MONKEY_MODEL
-	global LETTERS_SIZE
-	global AE_LETTERS_MODEL
-	global ae_trained_letters
-	global TEST_MODE
-	global monkeyClassifier
-	global aeLettersClassifier
-	global encoder
-	global lettersClassifier
-	global lettersImprovedClassifier
-	global CONCAT_AS_ONE_IMAGE
-	global AE_LETTERS_RESULT_BY_PRECENT
-	global AE_SUM_PRED_THRESH
-	global BASIC_LETTER_THESHOLD
-	global IMPROVED_LETTER_THESHOLD
-	global SSIM_THRESHOLD
-
 
 	'''
 	use this try block to check wether this init function was
@@ -53,7 +59,6 @@ def init(language='hebrew', monkey_by_vectors=True,\
 	else:
 		return
 
-	# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 	BASE_DIR = ""
 	if getattr(sys, 'frozen', False):
 		BASE_DIR = os.path.dirname(sys.executable)
@@ -62,6 +67,9 @@ def init(language='hebrew', monkey_by_vectors=True,\
 	
 	MODELS_PATH = os.path.join(BASE_DIR, "models\\")
 	DATA_PATH = os.path.join(BASE_DIR, "data\\")
+
+	if data_path is not None:
+		DATA_PATH = os.path.join(BASE_DIR, "{}\\".format(data_path))
 
 	LETTERS_SIZE = 28
 	CONCAT_AS_ONE_IMAGE = 'concat_img.png'
@@ -80,6 +88,7 @@ def init(language='hebrew', monkey_by_vectors=True,\
 		ENCODER_MODEL = 'hebLettersEncoder32'
 		LETTERS_IMPROVED_MODEL = 'hebLettersImprovedModel'
 		AE_LETTERS_MODEL = 'hebAutoEncoderDiffVecModel.sav'
+		FINAL_RESULT_MODEL = 'hebFinalResult_mlp.sav'
 		if monkey_by_vectors:
 			MONKEY_MODEL = 'hebMonkeyLettersByVectors_lr.sav'
 			# MONKEY_MODEL = 'hebMonkeyLettersByVectors_mlp.sav'
@@ -94,6 +103,7 @@ def init(language='hebrew', monkey_by_vectors=True,\
 		'''
 		aeLettersClassifier = joblib.load(MODELS_PATH + AE_LETTERS_MODEL)
 		monkeyClassifier = joblib.load(MODELS_PATH + MONKEY_MODEL)
+		finalResultClassifier = joblib.load(MODELS_PATH + FINAL_RESULT_MODEL)
 		lettersClassifier = load_model(MODELS_PATH, LETTERS_MODEL)
 		lettersImprovedClassifier = load_model(MODELS_PATH, LETTERS_IMPROVED_MODEL)
 		encoder = load_model(MODELS_PATH, ENCODER_MODEL)

@@ -25,20 +25,13 @@ h6 {
 
 p {
     color: #726a84;
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 300;
-    margin-top: 0;
+    margin-top: 10px;
 }
 
 .heading-text > p {
     font-size: 16px;
-}
-
-.section-heading > h2 {
-    font-weight: 200;
-    color: #5b32b4;
-    font-size: 48px;
-    margin: 0;
 }
 
 
@@ -67,9 +60,8 @@ p {
     color: white;
 }
 
-
 .wellcome-heading > h2 {
-    font-size: 80px;
+    font-size: 72px;
     color: #ffffff;
     font-weight: 700;
     position: relative;
@@ -126,6 +118,7 @@ p {
     text-align: center;
     border-radius: 24px 24px 24px 0px;
     margin-left: 10px;
+    outline:none;
 }
 
 .get-start-area .submit:hover {
@@ -154,7 +147,7 @@ p {
 }
 
 .wellcome-heading {
-    margin-bottom: 100px;
+    margin-bottom: 80px;
 }
 
 input[type="file"]{
