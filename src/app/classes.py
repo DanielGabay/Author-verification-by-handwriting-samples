@@ -145,7 +145,7 @@ class CompareDocuments():
 
 		algos_results = self.get_alogs_results()
 		predict_proba = _global.finalResultClassifier.predict_proba(algos_results.reshape(1,-1))[0]
-		proba = [round(predict_proba[0], 2), round(predict_proba[1],2)]
+		proba = [round(predict_proba[0], 4), round(predict_proba[1], 4)]
 		if proba[0] > 0.5:
 			self.final_result = {"result": "Different", 'precent': predict_proba[0], "proba": proba}
 		else:
