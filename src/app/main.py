@@ -83,6 +83,8 @@ def main_app(doc_name1, doc_name2, test_mode=False):
 	# gui_output = generate_gui_output(compare_docs) + generate_conclusion(compare_docs)
 
 	print(output)
+	print("-----")
+	print(gui_output)
 	return gui_output, compare_docs.final_result['proba']
 
 def print_conf_matrix(title, tn, tp, fn, fp):
@@ -266,6 +268,6 @@ def test_all_same(test_random_different=0):
 	print_ae_monkey_results(s, len(b_files))
 
 if __name__ == "__main__":
-	_global.init('hebrew',monkey_by_vectors=True, print_globals=True, data_path="data")
-	# test_all_same(97)
-	main_app('1.tiff', '1b.tiff', test_mode=True)
+	_global.init('hebrew',monkey_by_vectors=True, print_globals=True, data_path="newData")
+	# test_all_same(1000)
+	main_app('9.tiff', '8.tiff', test_mode=True)

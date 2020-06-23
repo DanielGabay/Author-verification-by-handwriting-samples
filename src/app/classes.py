@@ -2,8 +2,9 @@ import _global
 import numpy as np
 import cv2
 from keras.preprocessing import image
-# import matplotlib.pyplot as plt # comment to not import when using pyinstaller
+
 # uncomment if want to use showImages()
+# import matplotlib.pyplot as plt # comment to not import when using pyinstaller
 from skimage import measure
 
 class IdWord():

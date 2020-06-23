@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from classes import Stats
 import joblib
 
+import csv
 '''
 test log example:
 
@@ -51,24 +52,31 @@ new_log_normalize_predictions = False
 new_log_ssim_thresh = 0.5
 new_log_ae_thresh = 0.5
 
-if not new_log_normalize_predictions:
+if new_log_by_majority:
 	new_log_ae_thresh = 0.55
 	new_log_ssim_thresh = 0.44
 
 # [monkey_res, letters_ae_res, same/diff {1/0}]
-def parse_log(filename, old_log=False):
+def parse_log(filename, old_log=False, to_excel=False):
 	data = list()
+	test_names = list()
 	with open(filename) as fp:
 		lines = fp.readlines()
 		for line_idx in range(len(lines)):
-			# print(lines[line_idx])
 			if 'Test:' in lines[line_idx]:
+				l = lines[line_idx].split(" ") # ["Test:", "A.tiff", "B.tiff"] -> will take only names
+				test_names.append([l[1], l[2].replace("\n","")])
 				test_data = None
-				if old_log:
-					test_data = get_old_log_test_data(lines, line_idx)
+				if not to_excel:
+					if old_log:
+						test_data = get_old_log_test_data(lines, line_idx)
+					else:
+						test_data = get_new_log_test_data(lines, line_idx)
 				else:
-					test_data = get_new_log_test_data(lines, line_idx)
+					test_data = get_new_log_test_data_to_excel(lines, line_idx)
 				data.append(test_data)
+	if to_excel:
+		return data, test_names
 	return data
 
 def get_old_log_test_data(lines, line_idx):
@@ -87,6 +95,30 @@ def get_new_log_test_data(lines, line_idx):
 		test_data.append(get_letters_ae_by_count_data(lines, line_idx+5))
 	test_data.append(get_ssim_data(lines, line_idx+10))
 	test_data.append(get_real_data(lines, line_idx+12))
+	return test_data
+
+def predict_data_features(data):
+	np_data = np.array(data)
+	X = np_data[:3]
+	model = joblib.load("models/hebFinalResult_mlp.sav")
+	proba = model.predict_proba(X.reshape(1,-1))[0]
+	if proba[0] > proba[1]:
+		return 0, float('{:.2f}'.format(proba[0])) # predicted diff
+	else:
+		return 1, float('{:.2f}'.format(proba[1])) # predicted same
+
+def get_new_log_test_data_to_excel(lines, line_idx):
+	test_data = []
+	test_data.append(get_monkey_data(lines,line_idx+2))
+	test_data.append(get_letters_ae_by_pred_data(lines, line_idx+8))
+	test_data.append(get_ssim_data(lines, line_idx+10))
+	test_data.append(get_real_data(lines, line_idx+12))
+	predicted, proba = predict_data_features(test_data)
+	test_data.append(predicted)
+	test_data.append(proba)
+	cnt_same, cnt_diff = get_letters_ae_by_count_data_to_excel(lines, line_idx+5)
+	test_data.append(cnt_same)
+	test_data.append(cnt_diff)
 	return test_data
 
 def get_monkey_data(lines, line_idx):
@@ -109,22 +141,27 @@ def get_letters_ae_by_count_data(lines, line_idx):
 		return 1 if cnt_same > cnt_diff else 0
 	return res
 
+def get_letters_ae_by_count_data_to_excel(lines, line_idx):
+	cnt_same = int(lines[line_idx].split(':')[1])
+	cnt_diff = int(lines[line_idx+1].split(':')[1])
+	return cnt_same, cnt_diff
+
 def get_letters_ae_by_pred_data(lines, line_idx):
 	prec = float(lines[line_idx].split(" ")[-1])
 	if new_log_normalize_predictions:
-		prec /= 0.7
+		prec = (prec - 0.139)/(0.778 - 0.139)
 	if new_log_by_majority:
 		return 1 if prec > new_log_ae_thresh else 0
 	return prec
-	
+
 def get_ssim_data(lines, line_idx):
 	prec = float(lines[line_idx+1].split(" ")[-1]) / 100
 	if new_log_normalize_predictions:
-		prec /= 0.6
+		prec = (prec - 0.124)/(0.566-0.124)
 	if new_log_by_majority:
 		return 1 if prec > new_log_ssim_thresh else 0
 	return prec
-	
+
 def get_real_data(lines, line_idx):
 	s = lines[line_idx].split(':')[1]
 	if 'True' in s:
@@ -151,7 +188,7 @@ def getXY(data, old_log=True):
 	X = data[:,features]
 	y = data[:,[length-1]].ravel()
 	return X, y
-	
+
 
 def train_nn(data, filterd_data):
 	X, y = getXY(data)
@@ -316,7 +353,7 @@ def old_log():
 	filename = 'ae_monkey-bySum_106_diff_same_pairs_no_alef_results.txt'
 	if len(sys.argv) > 1:
 		filename = sys.argv[1]
-	data = parse_log(filename, old_log=True)
+	data = parse_log(filename, old_log=True, to_excel=False)
 	random.shuffle(data)
 	filterd_data = filter_only_conflicts(data, 50, 1000)
 	random.shuffle(filterd_data)
@@ -338,23 +375,69 @@ def new_log_train_nn(data):
 		mlp.fit(X_train, y_train)
 		new_log_print_test_proba(mlp, 'Basic Nueral-Regression', X_test, y_test)
 		_print_scores(mlp, 'Basic Nueral-Network', X_train, y_train, X_test, y_test)
-		joblib.dump(mlp, 'hebFinalResult_mlp.sav') # save trained model
+		# joblib.dump(mlp, 'hebFinalResult_mlp.sav') # save trained model
 
 	else:
 		lr = LogisticRegression()
 		lr.fit(X_train,y_train)
 		new_log_print_test_proba(lr, 'Basic Logistic-Regression', X_test, y_test)
 		_print_scores(lr, 'Basic Logistic-Regression', X_train, y_train, X_test, y_test)
-	
+
 def new_log():
 	filename = 'ssim_old_data_106.txt'
 	if len(sys.argv) > 1:
 		filename = sys.argv[1]
-	data = parse_log(filename, old_log=False)
+	data = parse_log(filename, old_log=False, to_excel=False)
 	random.shuffle(data)
 	new_log_train_nn(data)
 	# print(data)
 
+
+def write_to_csv(csv_file, vector):
+	#write a new line to the csvfile.
+	csvWriter = csv.writer(csv_file,delimiter=',')
+	csvWriter.writerow(vector)
+
+def new_log_to_excel(plot=False):
+	filename = 'final_result_new_data97'
+	# filename = 'ssim_old_data_106'
+	if len(sys.argv) > 1:
+		filename = sys.argv[1]
+	data, test_names = parse_log(filename + '.txt', old_log=False, to_excel=True)
+	csv_name = filename + '.csv'
+	with open(csv_name, 'w', newline='') as csv_file:
+		header = ["File1", "File2", "Monkey", "AE", "SSIM", "Label", "Predicted","Proba", "Count Same", "Count Diff"]
+		write_to_csv(csv_file, header)
+		for i in range(len(data)):
+			vector = test_names[i] + data[i]
+			write_to_csv(csv_file, vector)
+	if plot:
+		plot_final_res(data)
+
+
+def plot_final_res(data):
+	colors = ['r', 'g']
+	fig, ax = plt.subplots()
+	for i in range(2):
+		points = np.array([[data[j][4], data[j][5]] for j in range(len(data)) if data[j][3] == i])
+		if i == 1:
+			ax.scatter(points[:, 0], points[:, 1], s=12, c=colors[i], marker='*', label='label: Same')
+		else:
+			ax.scatter(points[:, 0], points[:, 1], s=12, c=colors[i], label='label: Different')
+	plt.title('Final result prediction <-> label',loc='center')
+	plt.legend(loc="lower center")
+	plt.xlabel('Predicted as')
+	plt.ylabel('Prediction precent')
+	plt.show()
+
+
+def convet_utf16_utf8(old_name, new_name):
+	file_old = open(old_name, mode='r', encoding='utf-16-le')
+	file_new = open(new_name, mode='w', encoding='utf-8')
+	text = file_old.read()
+	file_new.write(text)
+
 if __name__ == "__main__":
 	# old_log()
-	new_log()
+	# new_log()
+	new_log_to_excel(plot=False)
