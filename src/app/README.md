@@ -1,5 +1,7 @@
-Create 'data' folder and put .tiff documents inside.
-Create models folder and put the .json .h5 files of the model
+How to use GUI:
+> Install requierment.txt
+> Create data folder with the document
+> Create models folder with the trained models
 
 Run:
-python main.py <file_name in data folder>
+python GUI_entry.py
