@@ -23,13 +23,6 @@ h6 {
     line-height: 1.2;
 }
 
-p {
-    color: #726a84;
-    font-size: 20px;
-    font-weight: 300;
-    margin-top: 10px;
-}
-
 .heading-text > p {
     font-size: 16px;
 }
@@ -68,11 +61,11 @@ p {
     z-index: 3;
 }
 
-.get-start-area .email {
+.email {
     background: #a093c0;
     color: white;
     height: 24px;
-    max-width: 170px;
+    max-width: 145px;
     margin-top: 5px;
     border: none;
     text-align: center;
@@ -100,7 +93,7 @@ p {
     opacity: 1;
 }
 
-.get-start-area .email:focus {
+.email:focus {
     border: none;
     outline-offset: transparent !important;
     border-radius: 30px;
@@ -112,13 +105,13 @@ p {
     font-weight: 500;
     display: inline-block;
     border: none;
-    height: 50px;
-    min-width: 167px;
+    height: 45px;
+    min-width: 95px;
     line-height: 46px;
     text-align: center;
-    border-radius: 24px 24px 24px 0px;
+    border-radius: 22px 22px 22px 0px;
     margin-left: 10px;
-    outline:none;
+    outline: none;
 }
 
 .get-start-area .submit:hover {
@@ -150,28 +143,23 @@ p {
     margin-bottom: 80px;
 }
 
-input[type="file"]{
-    display: none;
-}
-
-label{
+#load_file1, #load_file2{
     color: white;
-    height: 60px;
-    width: 170px;
+    height: 45px;
+    width: 150px;
     background-color: #35C3B8;
-    /* position: absolute; */
     margin-right: 10px;
     font-size: 20px;
-    display: flex;
+    /* display: flex; */
+    display: inline-block;
     justify-content: center;
     align-items: center;
-    /* min-width: 167px; */
-    /* line-height: 46px; */
     text-align: center;
-    border-radius: 5px 5px 5px 5px
-}
+    border-radius: 5px 5px 5px 5px;
+    outline: none;
+} 
 
-label:hover{
+ #load_file1:hover, #load_file2:hover{
     cursor: pointer;
     color: black;
 }

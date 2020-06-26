@@ -43,15 +43,15 @@ def init_doc(doc, only_save_letters=False):
 
 	return doc
 
-def _gui_entry(doc_name1, doc_name2):
+def _gui_entry(doc_name1, doc_name2, test_mode=False):
 	try:
-		result = main_app(doc_name1, doc_name2, test_mode=True)
-		return result
+		result = main_app(doc_name1, doc_name2, test_mode=test_mode)
+		return "", result
 	except FileNotFoundError:
-		return "File not found on data folder"
+		return "Error: File not found on data folder", None
 	except Exception as e:
 		print(e)
-		return "Error: {}".format(e)
+		return "Error {}".format(e), None
 
 
 def main_app(doc_name1, doc_name2, test_mode=False):

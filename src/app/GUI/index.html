@@ -6,7 +6,7 @@
     <meta name="description" content="">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Auther Verification Based On Handwritten Text Analysis</title>
+    <title>Author Verification Based On Handwritten Text Analysis</title>
     <link href="css/style.css" rel="stylesheet">
     <script type="text/javascript" src="eel.js"></script>
     <script type="text/javascript" src="main.js"></script>
@@ -21,58 +21,35 @@
                     <div class="wellcome-heading">
                         <h2>Author Verification</h2>
                         <p>Compare two handwritten documents and determine
-                                <br/>their similarity in precentage.
+                            <br />their similarity in precentage.
                         </p>
                     </div>
+
+
                     <div class="get-start-area">
-                        <form class="form-inline">
-                            <input type="file" id="files" accept="image/tiff,.tiff,png,jpeg" multiple />
-                            <label for=files>
+                        <div class="form-inline">
+                            <button type="button" id="load_file1" onclick="getFilePath(1)">
                                 <img src="img/file.svg" /> &nbsp;
-                                Open two files
-                            </label>
+                                Load file 1
+                            </button>
+
+                            <button type="button" id="load_file2" onclick="getFilePath(2)">
+                                <img src="img/file.svg" /> &nbsp;
+                                Load file 2
+                            </button>
                             <input type="button" class="submit" value="GO!" onclick="main_linker()">
                             <div class="loader" id="loader" style="display: none"></div>
-                        </form>
-                        <div>
-                            <p id="filename1"></p>
-                            <p id="filename2"></p>
                         </div>
-                        <script>
-                            input = document.getElementById("files")
-                            input.onchange = function (e) {
-                                if (input.files.length > 2) {
-                                    alert("Choose only two files")
-                                    return;
-                                }
-
-                                f1 = document.getElementById("filename1")
-                                f2 = document.getElementById("filename2")
-
-                                if (input.files.length > 1) {
-                                    f1.innerHTML = input.files[0].name
-                                    f1.classList.add("email")
-                                    f2.innerHTML = input.files[1].name
-                                    f2.classList.add("email")
-                                }
-                                else {
-                                    if (f1.innerHTML === "") {
-                                        f1.innerHTML = input.files[0].name
-                                        f1.classList.add("email")
-                                        
-                                    }
-                                    else {
-                                        f2.innerHTML = input.files[0].name
-                                        f2.classList.add("email")
-                                    }
-                                }
-
-                            };
-                        </script>
                     </div>
+                    <div>
+                        <p id="filename1"></p>
+                        <p id="filename2"></p>
+                    </div>
+
                 </div>
             </div>
-            <!-- <div class="loader" id="loader" style="display: none"></div> -->
+        </div>
+        <!-- <div class="loader" id="loader" style="display: none"></div> -->
         </div>
         <div id="chartContainer"></div>
         <!-- <div class="welcome-thumb">
