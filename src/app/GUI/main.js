@@ -19,7 +19,7 @@ function updateFile1(result) {
 		return
 
 	f1 = document.getElementById("filename1")
-	f1.classList.add("email")
+	f1.classList.add("fname_disp")
 	f1.innerHTML = result
 	file1 = result
 }
@@ -28,7 +28,7 @@ function updateFile2(result) {
 		return
 
 	f2 = document.getElementById("filename2")
-	f2.classList.add("email")
+	f2.classList.add("fname_disp")
 	f2.innerHTML = result
 	file2 = result
 }

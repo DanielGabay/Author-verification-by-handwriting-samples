@@ -26,15 +26,13 @@ def pyGetFilePath(file_num):
 	root = Tk()
 	root.withdraw()
 	root.wm_attributes('-topmost', 1)
-	f = askopenfile(mode ='r', filetypes =[('img', '*.tiff')])
+	f = askopenfile(mode ='r', filetypes =[('img', '*.tiff'), ('img', '*.tif'), ('img', '*.png')])
 	if f is None:
 		return ""
 	if file_num == 1:
 		path1 = f.name
-		print("1: {}".format(path1))
 	elif file_num == 2:
 		path2 = f.name
-		print("2: {}".format(path2))
 	return f.name.split("/")[-1]
 
 eel.start('index.html', size=(1000, 600))
