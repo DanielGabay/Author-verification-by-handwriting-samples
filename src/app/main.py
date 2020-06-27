@@ -63,7 +63,7 @@ def main_app(doc_name1, doc_name2, queue=None, test_mode=False):
 	compare_docs.letters_autoencoder_results()
 	s_count = compare_docs.ssim_count
 	s_pred = s_count / compare_docs.ssim_total
-	print("ssim: count: {}, pred: {}".format(s_count, s_pred))
+	print("Ssim: count: {}, pred: {}".format(s_count, s_pred))
 	output = output + "Monkey Result:{}\nAE result: {}".format(\
 												   compare_docs.monkey_results,\
 												   compare_docs.letters_ae_results)
