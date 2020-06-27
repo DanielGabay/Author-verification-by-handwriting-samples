@@ -4,7 +4,6 @@
 *.tiff
 *.pdf
 *.jpg
-*.docx
 *.h5
 *.json
 *.pyc
