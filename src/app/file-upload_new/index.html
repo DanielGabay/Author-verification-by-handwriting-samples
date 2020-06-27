@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compare Tests</title>
+    <link rel="stylesheet" href="./styles/main.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script type="text/javascript" src="eel.js"></script>
+    <script src="./main.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <script src="./libraries/canvasjs-2.3.2/canvasjs.min.js"></script>
+</head>
+
+<body>
+    <header class="header">
+        <aside>
+            <a href="#" class="header__icon" id="header__icon"></a>
+            <a href="#" class="header__logo">Logo</a>
+        </aside>
+        <h1> Author Verification</h1>
+        <nav class="menu">
+            <a href="#">Select Folder</a>
+            <a href="#">Compare Files</a>
+
+        </nav>
+
+    </header>
+    <main class="flex">
+            <div id="upload-1" class="upload card">
+                <div class="upload-files">
+                    <header>
+                        <p>
+                            <i class="fa fa-cloud-upload" aria-hidden="true"></i>
+                            <span class="up">Upload</span>
+                            <span class="load">&nbsp;files</span>
+                        </p>
+                    </header>
+                    <div class="body" id="trigger-file-1">
+                        <i class="fa fa-file-text-o pointer-none" aria-hidden="true"></i>
+                        <p class="pointer-none"><strong>Click</strong>
+                            to begin the upload</p>
+                    </div>
+                    <footer>
+                        <div class="divider">
+                            <span>
+                                <AR>FILES</AR>
+                            </span>
+                        </div>
+                        <div class="list-files">
+                            <!--   template   -->
+                        </div>
+                        <div class="controls">
+                            <button class="reset">Update New Files</button>
+                            <button id="compare">Compare</button>
+                            
+                        </div>
+
+                    </footer>
+                </div>
+            </div>
+
+            <div id = "text">
+
+                
+                <h1>   <br/>Author Verification<br/></h1>
+                <h2><br/><br/>Compare two handwritten documents<br/> &<br/> determine
+                    their similarity in precentage.</h2>
+                <h2 style="color:red;"><br/><br/>need to add here maybe more details</h2>
+            </div>
+            <div id="graph-container" class="chart card hide">
+                
+                <header>
+                    <p>
+                        <i class="fa fa-file-text" aria-hidden="true"></i>
+                        
+                        <span class="up">Results</span>
+                        <!-- <span class="load">&nbsp;one</span> -->
+                    </p>
+                </header>
+                <div id="chartContainer" class="chart-container"></div>
+            </div>
+    </main>
+    <footer class="footer">
+
+        <p>© by Shachar Israeli & Daniel Gabay. All rights reserved.</p>
+    </footer>
+    <div class="overlay hide">
+        <div class="wrap">
+            <div class="center">
+                <div class="document-loader">
+                    <span class="heading short"></span>
+                    <span class="line short"></span>
+                    <span class="line"></span>
+                    <span class="line"></span>
+                    <span class="line"></span>
+                    <span class="line short"></span>
+                    <span class="line"></span>
+                    <span class="line"></span>
+                    <span class="line short"></span>
+                    <span class="heading"></span>
+                    <span class="line"></span>
+                    <span class="line"></span>
+                    <span class="line short"></span>
+                    <span class="line"></span>
+                    <span class="line"></span>
+                    <span class="line"></span>
+                    <span class="line"></span>
+                    <span class="line short"></span>
+                </div>
+                <p>Please be patient (takes a few moments)</p>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+</html>

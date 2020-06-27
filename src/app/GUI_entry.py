@@ -8,7 +8,7 @@ from tkinter.filedialog import askopenfile
 path1 = ""
 path2 = ""
 
-eel.init('file-upload')
+eel.init('file-upload_new')
 @eel.expose
 def gui_entry():
 	global path1
@@ -20,19 +20,20 @@ def gui_entry():
 	return res
 
 @eel.expose
-def pyGetFilePath(file_num):
+def pyGetFilePath():
 	global path1
 	global path2
 	root = Tk()
 	root.withdraw()
 	root.wm_attributes('-topmost', 1)
-	f = askopenfile(mode ='r', filetypes =[('img', '*.tiff'), ('img', '*.tif'), ('img', '*.png')])
-	if f is None:
-		return ""
-	if file_num == 1:
-		path1 = f.name
-	elif file_num == 2:
-		path2 = f.name
-	return f.name.split("/")[-1]
+	f = filedialog.askopenfilenames(parent=root,title='Choose 2 Files',filetypes =[('img', '*.tiff'), ('img', '*.tif'), ('img', '*.png')])
+	files = (root.tk.splitlist(f))
+	if len(files) > 1:
+		path1 = files[0]
+		path2 = files[1]	
+
+		return [files[0].split("/")[-1],files[1].split("/")[-1]]
+	else:
+		return "E"
 
 eel.start('index.html', size=(1000, 600))

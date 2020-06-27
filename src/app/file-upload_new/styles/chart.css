@@ -1,0 +1,13 @@
+.chart {
+	min-width: 400px;
+    min-height: 270px;
+    align-self: normal;
+    justify-self: stretch;
+	flex: 1;
+	margin-left: var(--spaces);
+}
+
+.chart-container {
+	height: 90%;
+	padding: 10px 0;
+}
