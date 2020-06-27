@@ -41,23 +41,32 @@ function handleFileSelect(fileName, fileNum) {
 	}, load);
 }
 
+function updateFile1(result) {
+	handleFileSelect(result, 1);
+}
+
+function updateFile2(result) {
+	handleFileSelect(result, 2);
+}
+
 // bind listeners functions
 function bindElementsEvents() {
 	// file browse events
 	$('#trigger-file-1').addEventListener('click', () => {
-		// this is the f-i-r-s-t input
+		eel.pyGetFilePath(1)(updateFile1);
 		// TODO: this needs to open python file explorer
-		handleFileSelect('test1', 1);
+		// handleFileSelect('test1', 1);
 	});
 
 	$('#trigger-file-2').addEventListener('click', (evt) => {
-		// this is the s-e-c-o-n-d input
-		// TODO: this needs to open python file explorer
-		handleFileSelect('test2', 2);
+		eel.pyGetFilePath(2)(updateFile2);
+		// handleFileSelect('test2', 2);
 	});
 
 	//reset for first element
 	$('#upload-1 .reset').addEventListener('click', (evnt) => {
+		
+		d3.select('.graph-container svg').remove();
 		const upload = evnt.currentTarget.closest('.upload');
 		updateAppState({ action: 'delete', fileNum: 1 });
 		upload.querySelector('.list-files').innerHTML = '';
@@ -65,7 +74,7 @@ function bindElementsEvents() {
 		upload.querySelector('.reset').classList.remove('active');
 		setTimeout(() => {
 			upload.querySelector('.body').classList.remove('hidden');
-		}, 500);
+		}, 200);
 	});
 
 	//reset for second element
@@ -78,21 +87,44 @@ function bindElementsEvents() {
 		upload.querySelector('.reset').classList.remove('active');
 		setTimeout(() => {
 			upload.querySelector('.body').classList.remove('hidden');
-		}, 500);
+		}, 200);
 	});
+
+
+eel.expose(print_from_py);
+function print_from_py(data) {
+	console.log(data)
+}
 
 	$('#compare').addEventListener('click', (evt) => {
 		// alert('starting comparing');
 
 		showLoader();
-		setTimeout(() => {
-			// remove timeout instead use python
-			hideLoader();
-			const compareScore = [ 50, 50 ];
-			buildGraph(compareScore);
-		}, 5000);
+		eel.gui_entry()(display_result)
+
+		// setTimeout(() => {
+		// 	// remove timeout instead use python
+		// 	hideLoader();
+		// 	const compareScore = [ 50, 50 ];
+		// 	buildGraph(compareScore);
+		// }, 5000);
 	});
 }
+
+function display_result(result) {
+	hideLoader();
+	console.log(result);
+
+	let preds = [(Math.round(result[1][0] * 100)).toFixed(1),(Math.round(result[1][1] * 100)).toFixed(1)]
+	console.log(preds)
+	// const compareScore = [ 50, 50 ];
+	buildGraph(preds);
+	result_text = (result[1][0] > result[1][1]) ? "Diffrent Author" : 'Same Author';
+	console.log(result_text)
+	document.getElementById("result").innerHTML = result_text;
+	// $("#result").text(result_text);  / not working?!
+}
+
 
 function showLoader() {
 	$('.overlay').classList.remove('hide');
@@ -135,18 +167,18 @@ function updateAppState(options) {
 function buildGraph(scoresPercents) {
 	// first element in the array is the same
 	// second element in the array is the different
-	const [ samePer, diffPer ] = scoresPercents;
+	const [ diffPer,samePer ] = scoresPercents;
 	$('.graph-container').classList.remove('hide');
 	// input data
 	const data = [
 		{
-			name: 'same',
+			name: 'Same',
 			percentage: samePer, // percentage
 			value: 100, // millions
 			color: '#0789F8'
 		},
 		{
-			name: 'diff',
+			name: 'Diff',
 			percentage: diffPer,
 			value: 100,
 			color: '#F9BA00'
@@ -155,7 +187,7 @@ function buildGraph(scoresPercents) {
 
 	// retrieve the svg in which to plot the viz
 	const svg = d3.select('.graph-container svg');
-	debugger;
+	
 
 	// identify the dimensions of the viewBox to establish the svg canvas
 	const viewBox = svg.attr('viewBox');

@@ -8,7 +8,7 @@ from tkinter.filedialog import askopenfile
 path1 = ""
 path2 = ""
 
-eel.init('GUI')
+eel.init('file-upload')
 @eel.expose
 def gui_entry():
 	global path1

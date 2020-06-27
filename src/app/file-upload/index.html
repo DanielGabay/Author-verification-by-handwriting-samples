@@ -13,8 +13,11 @@
     <script src="./main.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <script type="text/javascript" src="eel.js"></script>
 
 </head>
+
+
 
 <body>
     <header class="header">
@@ -22,11 +25,13 @@
             <a href="#" class="header__icon" id="header__icon"></a>
             <a href="#" class="header__logo">Logo</a>
         </aside>
+
+
         <nav class="menu">
-            <a href="#">Home</a>
-            <a href="#">About</a>
-            <a href="#">Blog</a>
-            <a href="#">Contact</a>
+            
+            <a href="#">Compare BY Files</a>
+            <a href="#">Comapre By Folder</a>
+
         </nav>
 
     </header>
@@ -37,7 +42,7 @@
                     <header>
                         <p>
                             <i class="fa fa-cloud-upload" aria-hidden="true"></i>
-                            <span class="up">test</span>
+                            <span class="up">Sample</span>
                             <span class="load">&nbsp;one</span>
                         </p>
                     </header>
@@ -61,6 +66,12 @@
                 </div>
             </div>
             <div class="controls">
+
+                <div>
+     <p>  Author Verification</p> 
+    <p> Compare two handwritten documents and determine
+     their similarity in precentage.</p>
+    </div>
                 <button id="compare" disabled>compare</button>
             </div>
             <div id="upload-2" class="upload" data>
@@ -94,7 +105,7 @@
         </div>
 
         <section class="graph-container hide">
-            <h1>Funding Structure</h1>
+            <h1 id="result"></h1>
             <svg viewBox="0 0 400 250">
                 <!-- viz here -->
             </svg>
@@ -103,7 +114,7 @@
     <footer class="footer">
         <aside>
         </aside>
-        <p>Created with love by Shachar Israeli and daniel bla</p>
+        <p>Created with love by Shachar Israeli and aniel Gabai</p>
     </footer>
     <div class="overlay hide">
         <div class="wrap">
