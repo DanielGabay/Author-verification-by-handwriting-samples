@@ -30,7 +30,8 @@ def gui_entry_folder():
 
 	for pair in pair_list:
 		err, res = _gui_entry(pair[0], pair[1], False)
-		res.append([pair[0]split("/")[-1],pair[1].indexsplit("/")[-1]])
+		# TODO: res is a tuple? cant append
+		res.append([pair[0].split("/")[-1], pair[1].index.split("/")[-1]])
 		eel.print_from_py(res)()
 
 		break
