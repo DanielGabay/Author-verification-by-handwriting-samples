@@ -267,7 +267,33 @@ def test_all_same(test_random_different=0):
 
 	print_ae_monkey_results(s, len(b_files))
 
+
+
+
+def get_pair_list(FOLDER_PATH , difference_sign = 'b'):
+
+	print("choose folder: {}".format(FOLDER_PATH))
+	b_files =  []
+	a_files = []
+	for _, _, files in os.walk(FOLDER_PATH):
+		b_files = [x for x in files if difference_sign in x]
+		a_files = [y for y in files if difference_sign not in y]
+	print(len(b_files))
+	print(len(a_files))
+
+	pair_list = []
+	for a_file in a_files:
+		for b_file in b_files:
+			if a_file == b_file.replace(difference_sign, ''):
+				# print("file to compare: {} with {}".format(a_file,b_file))
+				path1 = os.path.join(FOLDER_PATH, "{}".format(a_file))
+				path2 = os.path.join(FOLDER_PATH, "{}".format(b_file))
+				pair_list.append([path1,path2])
+
+	return pair_list		
+
 if __name__ == "__main__":
 	_global.init('hebrew',monkey_by_vectors=True, print_globals=True, data_path="newData")
 	# test_all_same(1000)
-	main_app('9.tiff', '8.tiff', test_mode=True)
+	#main_app('9.tiff', '8.tiff', test_mode=True)
+	result_from_folder(_global.DATA_PATH)
