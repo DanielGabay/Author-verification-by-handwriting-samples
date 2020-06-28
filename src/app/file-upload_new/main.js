@@ -2,14 +2,16 @@
 const $ = document.querySelector.bind(document);
 //APP
 let App = {
-	fileNames: [],
-	// dropDownResult = []
+	fileNames: []
 };
 
 // run/invoke initApp on startup
-initApp()
+initApp();   
+
+// run/invoke initApp on startup
 
 function initApp() {
+	
 	//Init
 	bindElementsEvents();
 }
@@ -17,13 +19,8 @@ function initApp() {
 function showSelectedFiles(fileNames = []) {
 
 	renderCompletedFiles(fileNames);
-	updateAppState({
-		action: 'reset'
-	});
-	updateAppState({
-		action: 'add',
-		fileNames: fileNames
-	});
+	updateAppState({ action: 'reset' });
+	updateAppState({ action: 'add', fileNames: fileNames });
 
 }
 
@@ -31,7 +28,7 @@ function renderCompletedFiles(fileNames) {
 	//files template
 	const upload = $(`#upload-1`);
 
-
+	
 	const template = `${fileNames
 		.map(fileName => `<div class="file file--${fileName.replace('.', '-')}">
      <div class="name"><span>${fileName}</span></div>
@@ -75,7 +72,7 @@ function bindElementsEvents() {
 	$('#trigger-file-1').addEventListener('click', uploadFiles);
 	$('#upload-1 .reset').addEventListener('click', resetUpload);
 	$('#compare').addEventListener('click', compareFiles);
-
+	
 	//for folder
 
 	$('#trigger-file-2').addEventListener('click', uploadFolder);
@@ -84,17 +81,20 @@ function bindElementsEvents() {
 
 }
 
-function compareFolder() {
-	console.log("here the folder startttt from python")
-	$('#graph-container').classList.remove('hide');
-	eel.gui_entry_folder()()
+function compareFolder()
+{
+console.log("here the folder startttt from python")
+$('#graph-container').classList.remove('hide');
+eel.gui_entry_folder()()
 }
 
-function uploadFolder() {
+function uploadFolder()
+{
 	eel.pyGetFolderPath()(updateFolder);
 }
 
 function uploadFiles() {
+
 	eel.pyGetFilePath()(updateFile);
 }
 
@@ -102,12 +102,13 @@ function uploadFiles() {
 
 function updateFolder(result) {
 	console.log(result)
-	if (result === "E") {
-		// Swal.fire({
-		// 	icon: 'error',
-		// 	title: 'Error!',
-		// 	text: 'Please select Folder',
-		// })
+	if (result === "E")
+	{
+		Swal.fire({
+			icon: 'error',
+			title: 'Error!',
+			text: 'Please select Folder',
+		  })
 		//alert("Please select two diffrenet files to compare")
 		return;
 	}
@@ -117,12 +118,13 @@ function updateFolder(result) {
 
 function updateFile(result) {
 	console.log(result)
-	if (result === "E") {
+	if (result === "E")
+	{
 		Swal.fire({
 			icon: 'error',
 			title: 'Error!',
 			text: 'Please select two diffrenet files to compare',
-		})
+		  })
 		//alert("Please select two diffrenet files to compare")
 		return;
 	}
@@ -131,9 +133,7 @@ function updateFile(result) {
 
 function resetUpload(evnt) {
 	const upload = evnt.currentTarget.closest('.upload');
-	updateAppState({
-		action: 'reset'
-	});
+	updateAppState({ action: 'reset' });
 	upload.querySelector('.list-files').innerHTML = '';
 	upload.querySelector('footer').classList.remove('hasFiles');
 	upload.querySelector('.reset').classList.remove('active');
@@ -146,9 +146,7 @@ function resetUpload(evnt) {
 
 function resetUploadFolder(evnt) {
 	const upload = evnt.currentTarget.closest('.upload');
-	updateAppState({
-		action: 'reset'
-	});
+	updateAppState({ action: 'reset' });
 	upload.querySelector('.list-files').innerHTML = '';
 	upload.querySelector('footer').classList.remove('hasFiles');
 	upload.querySelector('.reset').classList.remove('active');
@@ -174,15 +172,15 @@ function compareFiles() {
 
 function display_result(result) {
 	hideLoader();
-
+	
 	console.log(result);
 
-	let preds = [(Math.round(result[1][0] * 100)).toFixed(1), (Math.round(result[1][1] * 100)).toFixed(1)]
+	let preds = [(Math.round(result[1][0] * 100)).toFixed(1),(Math.round(result[1][1] * 100)).toFixed(1)]
 	console.log(preds)
 	preds = preds.map(Number);
 	console.log(preds)
 	debugger
-	const compareScore = [99.0, 1.0];
+	const compareScore = [ 99.0, 1.0 ];
 	buildGraph(preds);
 
 
@@ -199,10 +197,7 @@ function hideLoader() {
 }
 
 function updateAppState(options) {
-	const {
-		action,
-		fileNames
-	} = options;
+	const { action, fileNames } = options;
 
 	if (action === 'add') {
 		App.fileNames = fileNames;
@@ -247,16 +242,9 @@ function buildGraph(scoresPercents) {
 			indexLabelFontSize: 17,
 			indexLabel: "{label} - #percent%",
 			toolTipContent: "<strong>{label}:</strong> (#percent%)",
-			dataPoints: [{
-					y: diffPer,
-					label: "Different Author",
-					color: secondaryColor
-				},
-				{
-					y: samePer,
-					label: "Same Author",
-					color: quaternaryColor
-				},
+			dataPoints: [
+				{ y: diffPer, label: "Different Author", color: secondaryColor },
+				{ y: samePer, label: "Same Author", color: quaternaryColor },
 
 			]
 		}]
@@ -268,14 +256,8 @@ function buildGraph(scoresPercents) {
 
 
 function handleFolderSelect(fileName, fileNum) {
-	updateAppState({
-		action: 'delete',
-		fileNum: fileNum
-	});
-	updateAppState({
-		action: 'add',
-		fileNum: fileNum
-	});
+	updateAppState({ action: 'delete', fileNum: fileNum });
+	updateAppState({ action: 'add', fileNum: fileNum });
 
 	const upload = $('#upload-2');
 
@@ -295,7 +277,7 @@ function handleFolderSelect(fileName, fileNum) {
 	upload.querySelector('#compare-folder').classList.add('active');
 	upload.querySelector('.list-files').innerHTML = template;
 
-	const load = 3000;
+	const load = 1500;
 	setTimeout(() => {
 		upload.querySelector('.progress').classList.remove('active');
 		upload.querySelector('.done').classList.add('anim');
@@ -304,13 +286,12 @@ function handleFolderSelect(fileName, fileNum) {
 
 
 eel.expose(print_from_py);
-
-function print_from_py(result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] ]
+function print_from_py(result) {   /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] ]
 	console.log(result)
-	let preds = [(Math.round(result[1][0] * 100)).toFixed(1), (Math.round(result[1][1] * 100)).toFixed(1)]
-	let pair = result[2]; // the names of the files
-
-	add_to_drop_down(pair, preds)
+	let preds = [(Math.round(result[1][0] * 100)).toFixed(1),(Math.round(result[1][1] * 100)).toFixed(1)]
+	let pair = result[2];  // the names of the files
+	
+	add_to_drop_down(pair,preds)
 
 	// var node = document.createElement("LI");
 	// var textnode = document.createTextNode(resultsTitle + ":" + preds);
@@ -319,9 +300,11 @@ function print_from_py(result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] ]
 
 }
 
-function add_to_drop_down(pair, preds) {
+function add_to_drop_down(pair,preds){
+
 
 	id = App.dropDownResult.push(pair)
 
 
 }
+
