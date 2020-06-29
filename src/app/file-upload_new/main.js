@@ -94,29 +94,42 @@ function bindElementsEvents() {
 
 }
 
-function saveResults()
-{
-	if (Array.isArray(dropDownArray) && dropDownArray.length )
-	{
-		console.log("in save")
-		eel.save_result_to_excel(dropDownArray,FOLDER_NAME)(function(){
+function saveResults() {
 
-			Swal.fire({
-				position: 'top-end',
-				icon: 'success',
-				title: 'Results has been saved at your folder path',
-				showConfirmButton: false,
-				timer: 1500
-			  })
-		})
+	if (Array.isArray(dropDownArray) && dropDownArray.length) {
+	
+	Swal.fire({
+		title: 'Save Results?',
+		text: "You won't be able to revert this!",
+		icon: 'question',
+		showCancelButton: true,
+		confirmButtonColor: '#3085d6',
+		cancelButtonColor: '#d33',
+		confirmButtonText: 'Yes, Save it!'
+	}).then((result) => {
+		if (result.value) {
+
+			eel.save_result_to_excel(dropDownArray, FOLDER_NAME)(function () {
+
+				Swal.fire({
+					position: 'top-end',
+					icon: 'success',
+					title: 'Results has been saved at your folder path',
+					showConfirmButton: false,
+					timer: 1500
+				})
+			})
+		}
+	})
+
 	}
-
 }
 
+
 function compareFolder() {
-	changeSubTitle("")
+	changeSubTitle(FOLDER_NAME)
 	DQ('#graph-container').classList.remove('hide');
-	eel.gui_entry_folder()(function ()  {
+	eel.gui_entry_folder()(function () {
 
 		$('#save-results').addClass('active');
 
@@ -129,17 +142,19 @@ function compareFolder() {
 }
 
 function uploadFolder() {
-	eel.pyGetFolderPath()(function(result){
+	eel.pyGetFolderPath()(function (result) {
+
+		if (result ==="E")
+			return;
 		handleFolderSelect(result);
 	});
 }
 
 function uploadFiles() {
-	eel.pyGetFilePath()(function(result){
+	eel.pyGetFilePath()(function (result) {
 		showSelectedFiles(result);
 	});
 }
-
 
 function resetUpload(evnt) {
 	const upload = evnt.currentTarget.closest('.upload');
@@ -170,33 +185,23 @@ function resetUploadFolder(evnt) {
 
 function compareFiles() {
 	showLoader();
-	eel.gui_entry()(display_result_files)
-	// setTimeout(() => {
-	// 	// remove timeout instead use python
-	// 	hideLoader();
-	// 	const compareScore = [50, 50];
-	// 	buildGraph(compareScore);
-	// }, 5000);
+	eel.gui_entry()(function (result) {
+
+		hideLoader();
+		changeSubTitle(result[2][0] + " & " + result[2][1]);
+		console.log(result);
+
+		let preds = [(Math.round(result[1][0] * 100)).toFixed(1), (Math.round(result[1][1] * 100)).toFixed(1)]
+		console.log(preds)
+		preds = preds.map(Number);
+		console.log(preds)
+		debugger
+		const compareScore = [99.0, 1.0];
+		buildGraph(preds);
+	})
+
 }
 
-
-
-function display_result_files(result) {
-	hideLoader();
-	changeSubTitle(result[2][0] + " & " + result[2][1]);
-	console.log(result);
-
-	let preds = [(Math.round(result[1][0] * 100)).toFixed(1), (Math.round(result[1][1] * 100)).toFixed(1)]
-	console.log(preds)
-	preds = preds.map(Number);
-	console.log(preds)
-	debugger
-	const compareScore = [99.0, 1.0];
-	buildGraph(preds);
-
-
-	// DQ("#result").text(result_text);  / not working?!
-}
 
 function showLoader() {
 	DQ('.overlay').classList.remove('hide');
@@ -256,14 +261,12 @@ function buildGraph(scoresPercents) {
 			dataPoints: [
 				{ y: diffPer, label: "Different Author", color: secondaryColor },
 				{ y: samePer, label: "Same Author", color: quaternaryColor },
-
 			]
 		}]
 
 	});
 	chart.render();
 }
-
 
 function handleFolderSelect(folderName, folderNum) {
 	updateAppState({ action: 'delete', folderNum: folderNum });
@@ -294,7 +297,6 @@ function handleFolderSelect(folderName, folderNum) {
 	}, load);
 }
 
-
 eel.expose(print_from_py);
 function print_from_py(result) {   /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] ]
 	console.log(result)
@@ -303,12 +305,9 @@ function print_from_py(result) {   /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] ]
 	let pair = result[2];  // the names of the files
 
 	add_to_drop_down(pair, preds)
-
-
 }
 
 function add_to_drop_down(pair, preds) {
-
 	let index = dropDownArray.push({
 		file1: pair[0],
 		file2: pair[1],
@@ -325,17 +324,14 @@ function add_to_drop_down(pair, preds) {
 	str += "</div>";
 
 	var div = document.getElementById('drop-menu');
-
 	div.innerHTML += str;
-
 }
-
 
 function selectedPair(value, text, $choise) {
 
 	//buildGraph([50,50])
 
-	console.log("selcted: " + $choise.attr('id'))
+	console.log("selected: " + $choise.attr('id'))
 	let itemId = $choise.attr('id');
 	let index = itemId.split("_")[1]
 	console.log("index is: " + index)
@@ -344,8 +340,7 @@ function selectedPair(value, text, $choise) {
 	buildGraph(preds)
 }
 
-function changeSubTitle(title){
-	
+function changeSubTitle(title) {
 	var div = document.getElementById('result-sub-title');
 	div.innerHTML = "&nbsp;" + title;
 }
