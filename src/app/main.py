@@ -81,11 +81,14 @@ def main_app(doc_name1, doc_name2, test_mode=False):
 	
 	gui_output = generate_gui_output(compare_docs)
 	# gui_output = generate_gui_output(compare_docs) + generate_conclusion(compare_docs)
-
+	result_list = []
+	result_list.append(gui_output)
+	result_list.append(compare_docs.final_result['proba'])
 	print(output)
 	print("-----")
 	print(gui_output)
-	return gui_output, compare_docs.final_result['proba']
+	
+	return result_list
 
 def print_conf_matrix(title, tn, tp, fn, fp):
 	recall, precision, f1_score = 0, 0, 0
@@ -266,7 +269,6 @@ def test_all_same(test_random_different=0):
 			get_ae_monkey_results(s, compare_docs)
 
 	print_ae_monkey_results(s, len(b_files))
-
 
 
 

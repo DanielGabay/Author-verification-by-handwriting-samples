@@ -18,6 +18,8 @@ def gui_entry():
 	if (path1 == "" or path2 == ""):
 		return
 	err, res = _gui_entry(path1, path2, False)
+	
+	res.append([path1.split("/")[-1], path2.split("/")[-1]])
 	# return err too?
 	return res
 
@@ -27,14 +29,15 @@ def gui_entry_folder():
 	if (folder == ""):
 		return
 	pair_list = get_pair_list(folder)
-
+	count = 0
 	for pair in pair_list:
 		err, res = _gui_entry(pair[0], pair[1], False)
 		# TODO: res is a tuple? cant append
-		res.append([pair[0].split("/")[-1], pair[1].index.split("/")[-1]])
+		res.append([pair[0].split("\\")[-1], pair[1].split("\\")[-1]])
 		eel.print_from_py(res)()
-
-		break
+		count+=1
+		if count == 2:
+			break
 
 def get_input_files(title):
 	root = Tk()
@@ -59,9 +62,7 @@ def pyGetFolderPath():
 	if folder is "":
 		print("E")
 		return 'E'
-	print(folder.split("/")[-1])
 	return folder.split("/")[-1]
-
 
 
 @eel.expose
@@ -84,6 +85,5 @@ def pyGetFilePath():
 	else:
 		return "E"
 	return [path1.split("/")[-1],path2.split("/")[-1]]
-
 
 eel.start('index.html', size=(1000, 600))
