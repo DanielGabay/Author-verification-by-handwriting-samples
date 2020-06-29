@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compare Tests</title>
-    <!-- <script src="./libraries/jquery-3.3.1.min.js"></script> -->
-    <!-- <link rel="stylesheet" href="./semantic/semantic.min.css"> -->
-    <!-- <script src="./semantic/semantic.min.js"></script> -->
+    <script src="./libraries/jquery-3.3.1.min.js"></script>
+    <link rel="stylesheet" href="./semantic/semantic.min.css">
+    <script src="./semantic/semantic.min.js"></script>
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <script type="text/javascript" src="eel.js"></script>
@@ -17,10 +17,10 @@
 </head>
 
 <body>
-    <header class="header">
+    <header class="_header">
         <aside>
-            <a href="#" class="header__icon" id="header__icon"></a>
-            <a href="#" class="header__logo">Logo</a>
+            <a href="#" class="_header__icon" id="header__icon"></a>
+            <a href="#" class="_header__logo">Logo</a>
         </aside>
         <h1> Author Verification</h1>
         <nav class="menu">
@@ -36,13 +36,13 @@
                 <div class="upload-files">
                     <header>
                         <p>
-                            <i class="fa fa-cloud-upload" aria-hidden="true"></i>
+                            <i class="paperclip icon" aria-hidden="true"></i>
                             <span class="up">Upload</span>
                             <span class="load">&nbsp;files</span>
                         </p>
                     </header>
                     <div class="body" id="trigger-file-1">
-                        <i class="fa fa-file-text-o pointer-none" aria-hidden="true"></i>
+                        <i class="file icon pointer-none" aria-hidden="true"></i>
                         <p class="pointer-none"><strong>Click</strong>
                             to begin the upload</p>
                     </div>
@@ -69,13 +69,13 @@
                 <div class="upload-files">
                     <header>
                         <p>
-                            <i class="fa fa-cloud-upload" aria-hidden="true"></i>
+                            <i class="paperclip icon" aria-hidden="true"></i>
                             <span class="up">Upload</span>
                             <span class="load">&nbsp;folder</span>
                         </p>
                     </header>
                     <div class="body" id="trigger-file-2">
-                        <i class="fa fa-folder-open-o pointer-none" aria-hidden="true"></i>
+                        <i class="folder open icon pointer-none" aria-hidden="true"></i>
                         <p class="pointer-none"><strong>Click</strong>
                             to begin the upload a Folder</p>
                     </div>
@@ -90,17 +90,9 @@
                         </div>
                         <div class="controls">
                             <button class="reset">Update New Folder</button>
+                            <button id="save-results">Save results</button>
                             <button id="compare-folder">Compare Folder</button>
-                            <!-- <div class="ui selection dropdown">
-                                <input type="hidden" name="gender">
-                                <i class="dropdown icon"></i>
-                                <div class="default text">Gender</div>
-                                <div class="menu">
-                                    <div class="item" data-value="1">Male</div>
-                                    <div class="item" data-value="0">Female</div>
-                                </div>
-                            </div> -->
-
+                            
                         </div>
 
                     </footer>
@@ -117,22 +109,46 @@
 
         <div id="folder-result"></div>
 
-        <div id="graph-container" class="chart card hide">
+        <div id="graph-container" class="chart card ">
 
             <header>
+
                 <p>
-                    <i class="fa fa-file-text" aria-hidden="true"></i>
-
-                    <span class="up">Results</span>
-                    <!-- <span class="load">&nbsp;one</span> -->
+                    
+                    <i class="list ul icon" aria-hidden="true"></i>
+                    <span class="up">Results
+                        
+    
+                    </span>
+                    <span id="result-sub-title" class="load "></span>
                 </p>
-
-
+                    <div class="ui floating scrolling dropdown button ">
+                        Comparing results <i class="dropdown icon"></i>
+                        <div id="drop-menu" class="menu">
+                            <div class="header">
+                                <i class="tags icon"></i>
+                                Comparing results
+                            </div>
+                            <div class="divider"></div>
+                            <div class="item">
+                                <i class="attention icon"></i>
+                                Important
+                            </div>
+                            <div class="item">
+                                <i class="attention icon"></i>
+                                Important
+                            </div>
+                            <div class="item">
+                                <i class="attention icon"></i>
+                                Important
+                            </div>
+                            
+                        </div>
+                    </div>
             </header>
 
             <div id="chartContainer" class="chart-container"></div>
-            <div id="folder-result">
-                <!-- <p>lololol</p> -->
+
             </div>
         </div>
     </main>

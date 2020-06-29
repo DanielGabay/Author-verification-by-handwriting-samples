@@ -1,19 +1,31 @@
 //DOM
-const $ = document.querySelector.bind(document);
+const DQ = document.querySelector.bind(document);
 //APP
 let App = {
 	fileNames: []
 };
 
+let dropDownArray = []
+let FOLDER_NAME = "";
+
 // run/invoke initApp on startup
-initApp();   
+initApp();
+
+
 
 // run/invoke initApp on startup
 
 function initApp() {
-	
+
 	//Init
 	bindElementsEvents();
+
+	$('.ui.dropdown')   // drop down settings
+		.dropdown({
+			on: 'hover',
+			onChange: selectedPair
+		});
+
 }
 
 function showSelectedFiles(fileNames = []) {
@@ -26,9 +38,9 @@ function showSelectedFiles(fileNames = []) {
 
 function renderCompletedFiles(fileNames) {
 	//files template
-	const upload = $(`#upload-1`);
+	const upload = DQ(`#upload-1`);
 
-	
+
 	const template = `${fileNames
 		.map(fileName => `<div class="file file--${fileName.replace('.', '-')}">
      <div class="name"><span>${fileName}</span></div>
@@ -55,8 +67,8 @@ function renderCompletedFiles(fileNames) {
 
 		let load = 1500 + (index * 1000); // fake load
 		setTimeout(() => {
-			$(`.file--${fileName.replace('.', '-')}`).querySelector(".progress").classList.remove("active");
-			$(`.file--${fileName.replace('.', '-')}`).querySelector(".done").classList.add("anim");
+			DQ(`.file--${fileName.replace('.', '-')}`).querySelector(".progress").classList.remove("active");
+			DQ(`.file--${fileName.replace('.', '-')}`).querySelector(".done").classList.add("anim");
 		}, load);
 	})
 
@@ -69,67 +81,65 @@ function bindElementsEvents() {
 
 	//for files
 
-	$('#trigger-file-1').addEventListener('click', uploadFiles);
-	$('#upload-1 .reset').addEventListener('click', resetUpload);
-	$('#compare').addEventListener('click', compareFiles);
-	
+	DQ('#trigger-file-1').addEventListener('click', uploadFiles);
+	DQ('#upload-1 .reset').addEventListener('click', resetUpload);
+	DQ('#compare').addEventListener('click', compareFiles);
+
 	//for folder
 
-	$('#trigger-file-2').addEventListener('click', uploadFolder);
-	$('#upload-2 .reset').addEventListener('click', resetUploadFolder);
-	$('#compare-folder').addEventListener('click', compareFolder);
+	DQ('#trigger-file-2').addEventListener('click', uploadFolder);
+	DQ('#upload-2 .reset').addEventListener('click', resetUploadFolder);
+	DQ('#compare-folder').addEventListener('click', compareFolder);
+	DQ('#save-results').addEventListener('click', saveResults);
 
 }
 
-function compareFolder()
+function saveResults()
 {
-console.log("here the folder startttt from python")
-$('#graph-container').classList.remove('hide');
-eel.gui_entry_folder()()
+	if (Array.isArray(dropDownArray) && dropDownArray.length )
+	{
+		console.log("in save")
+		eel.save_result_to_excel(dropDownArray,FOLDER_NAME)(function(){
+
+			Swal.fire({
+				position: 'top-end',
+				icon: 'success',
+				title: 'Results has been saved at your folder path',
+				showConfirmButton: false,
+				timer: 1500
+			  })
+		})
+	}
+
 }
 
-function uploadFolder()
-{
-	eel.pyGetFolderPath()(updateFolder);
+function compareFolder() {
+	changeSubTitle("")
+	DQ('#graph-container').classList.remove('hide');
+	eel.gui_entry_folder()(function ()  {
+
+		$('#save-results').addClass('active');
+
+		Swal.fire({
+			icon: 'success',
+			title: 'Folder Comparing Completed',
+			text: 'Save the result now to an excel file by clicking the save button',
+		})
+	})
+}
+
+function uploadFolder() {
+	eel.pyGetFolderPath()(function(result){
+		handleFolderSelect(result);
+	});
 }
 
 function uploadFiles() {
-
-	eel.pyGetFilePath()(updateFile);
+	eel.pyGetFilePath()(function(result){
+		showSelectedFiles(result);
+	});
 }
 
-
-
-function updateFolder(result) {
-	console.log(result)
-	if (result === "E")
-	{
-		Swal.fire({
-			icon: 'error',
-			title: 'Error!',
-			text: 'Please select Folder',
-		  })
-		//alert("Please select two diffrenet files to compare")
-		return;
-	}
-	handleFolderSelect(result);
-}
-
-
-function updateFile(result) {
-	console.log(result)
-	if (result === "E")
-	{
-		Swal.fire({
-			icon: 'error',
-			title: 'Error!',
-			text: 'Please select two diffrenet files to compare',
-		  })
-		//alert("Please select two diffrenet files to compare")
-		return;
-	}
-	showSelectedFiles(result);
-}
 
 function resetUpload(evnt) {
 	const upload = evnt.currentTarget.closest('.upload');
@@ -151,6 +161,7 @@ function resetUploadFolder(evnt) {
 	upload.querySelector('footer').classList.remove('hasFiles');
 	upload.querySelector('.reset').classList.remove('active');
 	upload.querySelector('#compare-folder').classList.remove('active');
+	upload.querySelector('#save-results').classList.remove('active');
 	// $('#text').classList.remove('hide');
 	setTimeout(() => {
 		upload.querySelector('.body').classList.remove('hidden');
@@ -159,7 +170,7 @@ function resetUploadFolder(evnt) {
 
 function compareFiles() {
 	showLoader();
-	eel.gui_entry()(display_result)
+	eel.gui_entry()(display_result_files)
 	// setTimeout(() => {
 	// 	// remove timeout instead use python
 	// 	hideLoader();
@@ -170,29 +181,29 @@ function compareFiles() {
 
 
 
-function display_result(result) {
+function display_result_files(result) {
 	hideLoader();
-	
+	changeSubTitle(result[2][0] + " & " + result[2][1]);
 	console.log(result);
 
-	let preds = [(Math.round(result[1][0] * 100)).toFixed(1),(Math.round(result[1][1] * 100)).toFixed(1)]
+	let preds = [(Math.round(result[1][0] * 100)).toFixed(1), (Math.round(result[1][1] * 100)).toFixed(1)]
 	console.log(preds)
 	preds = preds.map(Number);
 	console.log(preds)
 	debugger
-	const compareScore = [ 99.0, 1.0 ];
+	const compareScore = [99.0, 1.0];
 	buildGraph(preds);
 
 
-	// $("#result").text(result_text);  / not working?!
+	// DQ("#result").text(result_text);  / not working?!
 }
 
 function showLoader() {
-	$('.overlay').classList.remove('hide');
+	DQ('.overlay').classList.remove('hide');
 }
 
 function hideLoader() {
-	$('.overlay').classList.add('hide');
+	DQ('.overlay').classList.add('hide');
 	// $('#text').classList.add('hide');
 }
 
@@ -216,7 +227,7 @@ function buildGraph(scoresPercents) {
 
 	const resultsTitle = (diffPer > samePer) ? "Different Author" : "Same Author";
 
-	$('#graph-container').classList.remove('hide');
+	DQ('#graph-container').classList.remove('hide');
 	const secondaryColor = getComputedStyle(document.documentElement)
 		.getPropertyValue('--secondary-color');
 	const quaternaryColor = getComputedStyle(document.documentElement)
@@ -254,15 +265,14 @@ function buildGraph(scoresPercents) {
 }
 
 
-
-function handleFolderSelect(fileName, fileNum) {
-	updateAppState({ action: 'delete', fileNum: fileNum });
-	updateAppState({ action: 'add', fileNum: fileNum });
-
-	const upload = $('#upload-2');
+function handleFolderSelect(folderName, folderNum) {
+	updateAppState({ action: 'delete', folderNum: folderNum });
+	updateAppState({ action: 'add', folderNum: folderNum });
+	FOLDER_NAME = folderName;
+	const upload = DQ('#upload-2');
 
 	const template = `<div class="file file--2">
-				<div class="name"><span>${fileName}</span></div>
+				<div class="name"><span>${folderName}</span></div>
 				<div class="progress active"></div>
 				<div class="done">
 				 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 1000 1000">
@@ -288,23 +298,54 @@ function handleFolderSelect(fileName, fileNum) {
 eel.expose(print_from_py);
 function print_from_py(result) {   /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] ]
 	console.log(result)
-	let preds = [(Math.round(result[1][0] * 100)).toFixed(1),(Math.round(result[1][1] * 100)).toFixed(1)]
+	let preds = [(Math.round(result[1][0] * 100)).toFixed(1), (Math.round(result[1][1] * 100)).toFixed(1)]
+	preds = preds.map(Number);
 	let pair = result[2];  // the names of the files
+
+	add_to_drop_down(pair, preds)
+
+
+}
+
+function add_to_drop_down(pair, preds) {
+
+	let index = dropDownArray.push({
+		file1: pair[0],
+		file2: pair[1],
+		preds: preds
+	});
+
+	const [diffPer, samePer] = preds;
+	const resultsIcon = (diffPer > samePer) ? "times" : "check";
+
+	let str = "";
+	str += "<div id='item_" + (index - 1) + "' class='item'>";
+	str += " <i class='" + resultsIcon + " icon'></i>";
+	str += pair[0] + " & " + pair[1];
+	str += "</div>";
+
+	var div = document.getElementById('drop-menu');
+
+	div.innerHTML += str;
+
+}
+
+
+function selectedPair(value, text, $choise) {
+
+	//buildGraph([50,50])
+
+	console.log("selcted: " + $choise.attr('id'))
+	let itemId = $choise.attr('id');
+	let index = itemId.split("_")[1]
+	console.log("index is: " + index)
+	let preds = dropDownArray[index].preds
+	console.log(preds)
+	buildGraph(preds)
+}
+
+function changeSubTitle(title){
 	
-	add_to_drop_down(pair,preds)
-
-	// var node = document.createElement("LI");
-	// var textnode = document.createTextNode(resultsTitle + ":" + preds);
-	// node.appendChild(textnode);
-	// document.getElementById("folder-result").appendChild(node);
-
+	var div = document.getElementById('result-sub-title');
+	div.innerHTML = "&nbsp;" + title;
 }
-
-function add_to_drop_down(pair,preds){
-
-
-	id = App.dropDownResult.push(pair)
-
-
-}
-

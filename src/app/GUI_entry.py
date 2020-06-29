@@ -5,6 +5,8 @@ from tkinter import filedialog
 from tkinter import *
 from tkinter.filedialog import askopenfile
 import csv
+import time
+
 
 path1 = ""
 path2 = ""
@@ -87,11 +89,12 @@ def pyGetFilePath():
 		return "E"
 	return [path1.split("/")[-1],path2.split("/")[-1]]
 
-eel.start('index.html', size=(1000, 600))
 
 @eel.expose
-def save_result_to_excel(data):
-	csv_name = "data.csv"
+def save_result_to_excel(data,folderName = ""):
+	print(data)
+	timestr = time.strftime("%d-%m-%Y_%H-%M-%S")
+	csv_name = "{}_{}.csv".format(folderName,timestr)
 	with open(csv_name, 'w', newline='') as csv_file:
 		csvWriter = csv.writer(csv_file, delimiter=',')
 		header = ["file1", "file2", "predicted", "precent"]
@@ -111,4 +114,7 @@ def get_line_from_data(data):
 	else:
 		precent = diff_prec
 		predicted = "Different"
-	return [data['file1'], data['file2'], predicted, precent]
+	return [data['file1'], data['file2'], predicted, "{}%".format(precent)]
+
+
+eel.start('index.html', size=(1000, 600))
