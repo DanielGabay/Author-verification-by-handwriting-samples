@@ -92,12 +92,11 @@ def pyGetFilePath():
 
 @eel.expose
 def save_result_to_excel(data,folderName = ""):
-	print(data)
 	timestr = time.strftime("%d-%m-%Y_%H-%M-%S")
 	csv_name = "{}_{}.csv".format(folderName,timestr)
 	with open(csv_name, 'w', newline='') as csv_file:
 		csvWriter = csv.writer(csv_file, delimiter=',')
-		header = ["file1", "file2", "predicted", "precent"]
+		header = ["file1", "file2", "predicted", "confident"]
 		csvWriter.writerow(header)
 		for i in range(len(data)):
 			line = get_line_from_data(data[i])

@@ -20,7 +20,7 @@ function initApp() {
 	//Init
 	bindElementsEvents();
 
-	$('.ui.dropdown')   // drop down settings
+	$('.ui.dropdown') // drop down settings
 		.dropdown({
 			on: 'hover',
 			onChange: selectedPair
@@ -31,8 +31,13 @@ function initApp() {
 function showSelectedFiles(fileNames = []) {
 
 	renderCompletedFiles(fileNames);
-	updateAppState({ action: 'reset' });
-	updateAppState({ action: 'add', fileNames: fileNames });
+	updateAppState({
+		action: 'reset'
+	});
+	updateAppState({
+		action: 'add',
+		fileNames: fileNames
+	});
 
 }
 
@@ -97,30 +102,30 @@ function bindElementsEvents() {
 function saveResults() {
 
 	if (Array.isArray(dropDownArray) && dropDownArray.length) {
-	
-	Swal.fire({
-		title: 'Save Results?',
-		text: "You won't be able to revert this!",
-		icon: 'question',
-		showCancelButton: true,
-		confirmButtonColor: '#3085d6',
-		cancelButtonColor: '#d33',
-		confirmButtonText: 'Yes, Save it!'
-	}).then((result) => {
-		if (result.value) {
 
-			eel.save_result_to_excel(dropDownArray, FOLDER_NAME)(function () {
+		Swal.fire({
+			title: 'Save Results?',
+			text: "You won't be able to revert this!",
+			icon: 'question',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes, Save it!'
+		}).then((result) => {
+			if (result.value) {
 
-				Swal.fire({
-					position: 'top-end',
-					icon: 'success',
-					title: 'Results has been saved at your folder path',
-					showConfirmButton: false,
-					timer: 1500
+				eel.save_result_to_excel(dropDownArray, FOLDER_NAME)(function () {
+
+					Swal.fire({
+						position: 'top-end',
+						icon: 'success',
+						title: 'Results has been saved at your folder path',
+						showConfirmButton: false,
+						timer: 1500
+					})
 				})
-			})
-		}
-	})
+			}
+		})
 
 	}
 }
@@ -144,7 +149,7 @@ function compareFolder() {
 function uploadFolder() {
 	eel.pyGetFolderPath()(function (result) {
 
-		if (result ==="E")
+		if (result === "E")
 			return;
 		handleFolderSelect(result);
 	});
@@ -158,7 +163,9 @@ function uploadFiles() {
 
 function resetUpload(evnt) {
 	const upload = evnt.currentTarget.closest('.upload');
-	updateAppState({ action: 'reset' });
+	updateAppState({
+		action: 'reset'
+	});
 	upload.querySelector('.list-files').innerHTML = '';
 	upload.querySelector('footer').classList.remove('hasFiles');
 	upload.querySelector('.reset').classList.remove('active');
@@ -171,7 +178,9 @@ function resetUpload(evnt) {
 
 function resetUploadFolder(evnt) {
 	const upload = evnt.currentTarget.closest('.upload');
-	updateAppState({ action: 'reset' });
+	updateAppState({
+		action: 'reset'
+	});
 	upload.querySelector('.list-files').innerHTML = '';
 	upload.querySelector('footer').classList.remove('hasFiles');
 	upload.querySelector('.reset').classList.remove('active');
@@ -191,12 +200,10 @@ function compareFiles() {
 		changeSubTitle(result[2][0] + " & " + result[2][1]);
 		console.log(result);
 
-		let preds = [(Math.round(result[1][0] * 100)).toFixed(1), (Math.round(result[1][1] * 100)).toFixed(1)]
+		let preds = [(result[1][0] * 100).toFixed(2), (result[1][1] * 100).toFixed(2)]
 		console.log(preds)
 		preds = preds.map(Number);
 		console.log(preds)
-		debugger
-		const compareScore = [99.0, 1.0];
 		buildGraph(preds);
 	})
 
@@ -213,7 +220,10 @@ function hideLoader() {
 }
 
 function updateAppState(options) {
-	const { action, fileNames } = options;
+	const {
+		action,
+		fileNames
+	} = options;
 
 	if (action === 'add') {
 		App.fileNames = fileNames;
@@ -226,6 +236,251 @@ function updateAppState(options) {
 }
 
 function buildGraph(scoresPercents) {
+	const [diffPer, samePer] = scoresPercents;
+
+	DQ('#graph-container').classList.remove('hide');
+	const secondaryColor = getComputedStyle(document.documentElement)
+		.getPropertyValue('--secondary-color');
+	const quaternaryColor = getComputedStyle(document.documentElement)
+		.getPropertyValue('--quaternary-color');
+	const resultsTitle = (diffPer > samePer) ? "Different Author" : "Same Author";
+
+	// remove last graph and creates a new graph container
+	d3chart = $('#d3chartContainer')
+	d3chart.empty();
+	d3chart.append(`<br/><h1>${resultsTitle}</h1>`);
+	d3chart.append('<svg id="d3ChartSvg" viewBox="0 0 400 220"></svg>');
+
+	const data = [{
+			name: "Same",
+			percentage: samePer,
+			color: secondaryColor,
+			value: samePer * 100,
+		},
+		{
+			name: "Different",
+			percentage: diffPer,
+			color: quaternaryColor,
+			value: diffPer * 100,
+		}
+	]
+
+	const svg = d3
+		.select('#d3ChartSvg');
+
+	// identify the dimensions of the viewBox to establish the svg canvas
+	const viewBox = svg.attr('viewBox');
+	const regexViewBox = /\d+ \d+ (\d+) (\d+)/;
+	// ! .match() returns string values
+	const [, viewBoxWidth, viewBoxHeight] = viewBox.match(regexViewBox).map(item => Number.parseInt(item, 10));
+
+	// with the margin convention include a group element translated within the svg canvas
+	const margin = {
+		top: 20,
+		right: 20,
+		bottom: 20,
+		left: 20,
+	};
+	// compute the width and height of the actual viz from the viewBox dimensions and considering the margins
+	// this to later work with width and height attributes directly through the width and height variables
+	const width = viewBoxWidth - (margin.left + margin.right);
+	const height = viewBoxHeight - (margin.top + margin.bottom);
+
+	// compute the radius as half the minor size between the width and height
+	const radius = Math.min(width, height) / 3;
+	// initialize a variable to have the multiple elements share the same stroke-width property
+	const strokeWidth = 10;
+
+	const group = svg
+		.append('g')
+		.attr('transform', `translate(${margin.left} ${margin.top})`);
+
+
+	// DEFAULT CIRCLE
+	// circle used as a background for the colored donut chart
+	// add a group to center the circle in the canvas (this to rotate the circle from the center)
+	const groupDefault = group
+		.append('g')
+		.attr('transform', `translate(${width / 2} ${height / 2})`);
+
+	// append the circle showing only the stroke
+	groupDefault
+		.append('circle')
+		.attr('cx', 0)
+		.attr('cy', 0)
+		.attr('r', radius)
+		.attr('transform', 'rotate(-90)')
+		.attr('fill', 'none')
+		.attr('stroke', 'hsla(0, 0%, 0%, 0.08')
+		.attr('stroke-width', strokeWidth)
+		.attr('stroke-linecap', 'round')
+		// hide the stroke of the circle using the radius
+		// this to compute the circumference of the shape
+		.attr('stroke-dasharray', radius * 3.14 * 4)
+		.attr('stroke-dashoffset', radius * 3.14 * 4);
+
+
+	// COLORED CIRCLES
+	// pie function to compute the arcs
+	const pie = d3
+		.pie()
+		.sort(null)
+		.padAngle(0.12)
+		// use either the value or the percentage in the dataset
+		.value(d => d.value);
+
+	// arc function to create the d attributes for the path elements
+	const arc = d3
+		.arc()
+		// have the arc overlaid on top of the stroke of the circle
+		.innerRadius(radius)
+		.outerRadius(radius);
+
+	/* for each data point include the following structure
+	g             // wrapping all arcs
+	  g           // wrapping each arc
+	    arc       // actual shape
+	    line      // connecting line
+	    text      // text label
+	  g
+	    arc
+	    ...
+	*/
+	// wrapping group, horizontally centered
+	const groupArcs = group
+		.append('g')
+		.attr('transform', `translate(${width / 2} ${height / 2})`);
+
+	const groupsArcs = groupArcs
+		.selectAll('g')
+		.data(pie(data))
+		.enter()
+		.append('g');
+
+	// include the arcs specifying the stroke with the same width of the circle element
+	groupsArcs
+		.append('path')
+		.attr('d', arc)
+		.attr('fill', 'none')
+		.attr('stroke', d => d.data.color)
+		.attr('stroke-width', strokeWidth * 0.8)
+		.attr('stroke-linecap', 'round')
+		.attr('stroke-linejoin', 'round')
+		// hide the segments by applying a stroke-dasharray/stroke-dashoffset equal to the circle circumference
+		// ! the length of the element varies, and it considered afterwords
+		// for certain the paths are less than the circumference of the entire circle
+		.attr('stroke-dasharray', radius * 3.14 * 2)
+		.attr('stroke-dashoffset', radius * 3.14 * 2)
+		.style('opacity', 0)
+		.style('visibility', 'hidden');
+
+	// include line elements visually connecting the text labels with the arcs
+	groupsArcs
+		.append('line')
+		.attr('x1', 0)
+		.attr('x2', (d) => {
+			const [x] = arc.centroid(d);
+			return x > 0 ? '25' : '-25';
+		})
+		.attr('y1', 0)
+		.attr('y2', 0)
+		.attr('stroke', ({
+			data: d
+		}) => d.color)
+		.attr('stroke-width', 1.5)
+		.attr('transform', (d) => {
+			const [x, y] = arc.centroid(d);
+			const offset = x > 0 ? 20 : -20;
+			return `translate(${x + offset} ${y})`;
+		})
+		.attr('stroke-dasharray', 25)
+		.attr('stroke-dashoffset', 25);
+
+	// include text elements associated with the arcs
+	groupsArcs
+		.append('text')
+		.attr('x', 0)
+		.attr('y', 0)
+		.attr('font-size', 8)
+		.attr('text-anchor', (d) => {
+			const [x] = arc.centroid(d);
+			return x > 0 ? 'start' : 'end';
+		})
+		.attr('transform', (d) => {
+			const [x, y] = arc.centroid(d);
+			const offset = x > 0 ? 50 : -50;
+			return `translate(${x + offset} ${y})`;
+		})
+		.html(({
+			data: d
+		}) => `
+    <tspan x="0">${d.name}:</tspan><tspan x="0" dy="10" font-size="12">${d.percentage}%</tspan>
+  `)
+		.style('opacity', 0)
+		.style('visibility', 'hidden');
+
+
+	// TRANSITIONS
+	// once the elements are set up
+	// draw the stroke of the larger circle element
+	groupDefault
+		.select('circle')
+		.transition()
+		.ease(d3.easeExp)
+		.delay(200)
+		.duration(1300)
+		.attr('stroke-dashoffset', '0')
+		// once the transition is complete
+		// draw the smaller strokes one after the other
+		.on('end', () => {
+			// immediately set the stroke-dasharray and stroke-dashoffset properties to match the length of the path elements
+			// using vanilla JavaScript
+			const paths = document.querySelectorAll('svg g g path');
+			paths.forEach((path) => {
+				const length = path.getTotalLength();
+				path.setAttribute('stroke-dasharray', length);
+				path.setAttribute('stroke-dashoffset', length);
+			});
+
+			const duration = 800;
+			// transition the path elements to stroke-dashoffset 0
+			d3
+				.selectAll('svg g g path')
+				.transition()
+				.ease(d3.easeLinear)
+				.delay((d, i) => i * duration)
+				.duration(duration)
+				.style('opacity', 1)
+				.style('visibility', 'visible')
+				.attr('stroke-dashoffset', 0);
+
+
+			// transition the line elements elements to stroke-dashoffset 0
+			d3
+				.selectAll('svg g g line')
+				.transition()
+				.ease(d3.easeLinear)
+				.delay((d, i) => i * duration + duration / 2.5)
+				.duration(duration / 3)
+				.style('opacity', 1)
+				.style('visibility', 'visible')
+				.attr('stroke-dashoffset', 0);
+
+			// transition the text elements to opacity 1 and visibility visible
+			d3
+				.selectAll('svg g g text')
+				.transition()
+				.ease(d3.easeLinear)
+				.delay((d, i) => i * duration + duration / 2)
+				.duration(duration / 2)
+				.style('opacity', 1)
+				.style('visibility', 'visible');
+		});
+
+
+}
+
+function buildGraph2(scoresPercents) {
 	// first element in the array is the same
 	// second element in the array is the different
 	const [diffPer, samePer] = scoresPercents;
@@ -258,9 +513,16 @@ function buildGraph(scoresPercents) {
 			indexLabelFontSize: 17,
 			indexLabel: "{label} - #percent%",
 			toolTipContent: "<strong>{label}:</strong> (#percent%)",
-			dataPoints: [
-				{ y: diffPer, label: "Different Author", color: secondaryColor },
-				{ y: samePer, label: "Same Author", color: quaternaryColor },
+			dataPoints: [{
+					y: diffPer,
+					label: "Different Author",
+					color: secondaryColor
+				},
+				{
+					y: samePer,
+					label: "Same Author",
+					color: quaternaryColor
+				},
 			]
 		}]
 
@@ -269,8 +531,14 @@ function buildGraph(scoresPercents) {
 }
 
 function handleFolderSelect(folderName, folderNum) {
-	updateAppState({ action: 'delete', folderNum: folderNum });
-	updateAppState({ action: 'add', folderNum: folderNum });
+	updateAppState({
+		action: 'delete',
+		folderNum: folderNum
+	});
+	updateAppState({
+		action: 'add',
+		folderNum: folderNum
+	});
 	FOLDER_NAME = folderName;
 	const upload = DQ('#upload-2');
 
@@ -298,11 +566,12 @@ function handleFolderSelect(folderName, folderNum) {
 }
 
 eel.expose(print_from_py);
-function print_from_py(result) {   /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] ]
+
+function print_from_py(result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] ]
 	console.log(result)
 	let preds = [(Math.round(result[1][0] * 100)).toFixed(1), (Math.round(result[1][1] * 100)).toFixed(1)]
 	preds = preds.map(Number);
-	let pair = result[2];  // the names of the files
+	let pair = result[2]; // the names of the files
 
 	add_to_drop_down(pair, preds)
 }

@@ -11,3 +11,22 @@
 	height: 90%;
 	padding: 10px 0;
 }
+
+.d3chart-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	/* padding: 3rem 1rem; */
+}
+
+.d3chart-container h1 {
+	font-weight: 800;
+	font-size: 1.8rem;
+}
+
+/* have the svg occupy a sizeable portion of the wrapping container */
+.d3chart-container svg {
+	margin-top: 0.5rem;
+	width: 90%;
+	height: auto;
+}
