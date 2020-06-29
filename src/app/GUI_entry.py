@@ -4,6 +4,7 @@ from main import _gui_entry,get_pair_list
 from tkinter import filedialog
 from tkinter import *
 from tkinter.filedialog import askopenfile
+import csv
 
 path1 = ""
 path2 = ""
@@ -87,3 +88,27 @@ def pyGetFilePath():
 	return [path1.split("/")[-1],path2.split("/")[-1]]
 
 eel.start('index.html', size=(1000, 600))
+
+@eel.expose
+def save_result_to_excel(data):
+	csv_name = "data.csv"
+	with open(csv_name, 'w', newline='') as csv_file:
+		csvWriter = csv.writer(csv_file, delimiter=',')
+		header = ["file1", "file2", "predicted", "precent"]
+		csvWriter.writerow(header)
+		for i in range(len(data)):
+			line = get_line_from_data(data[i])
+			csvWriter.writerow(line)
+
+def get_line_from_data(data):
+	precent = 0
+	predicted = ""
+	diff_prec = data['preds'][0]
+	same_prec = data['preds'][1]
+	if (same_prec > diff_prec):
+		precent = same_prec
+		predicted = "Same"
+	else:
+		precent = diff_prec
+		predicted = "Different"
+	return [data['file1'], data['file2'], predicted, precent]

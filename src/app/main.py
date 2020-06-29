@@ -295,7 +295,7 @@ def get_pair_list(FOLDER_PATH , difference_sign = 'b'):
 	return pair_list		
 
 if __name__ == "__main__":
-	_global.init('hebrew',monkey_by_vectors=True, print_globals=True, data_path="newData")
+	_global.init('hebrew',monkey_by_vectors=True, print_globals=True, data_path="data")
 	# test_all_same(1000)
-	#main_app('9.tiff', '8.tiff', test_mode=True)
-	result_from_folder(_global.DATA_PATH)
+	main_app('9.tiff', '8.tiff', test_mode=True)
+	# result_from_folder(_global.DATA_PATH)
