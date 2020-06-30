@@ -7,6 +7,7 @@ let App = {
 
 let dropDownArray = []
 let FOLDER_NAME = "";
+let FIRST_FLAG = true;
 
 // run/invoke initApp on startup
 initApp();
@@ -117,7 +118,6 @@ function saveResults() {
 				eel.save_result_to_excel(dropDownArray, FOLDER_NAME)(function () {
 
 					Swal.fire({
-						position: 'top-end',
 						icon: 'success',
 						title: 'Results has been saved at your folder path',
 						showConfirmButton: false,
@@ -132,10 +132,8 @@ function saveResults() {
 
 
 function compareFolder() {
-	changeSubTitle(FOLDER_NAME)
-	
-	DQ('#drop-down').classList.remove('hide');
-	DQ('#graph-container').classList.remove('hide');
+	showLoader();
+
 	eel.gui_entry_folder()(function () {
 
 		$('#save-results').addClass('active');
@@ -179,6 +177,7 @@ function resetUpload(evnt) {
 }
 
 function resetUploadFolder(evnt) {
+	FIRST_FLAG = true;
 	const upload = evnt.currentTarget.closest('.upload');
 	updateAppState({
 		action: 'reset'
@@ -570,6 +569,15 @@ function handleFolderSelect(folderName, folderNum) {
 eel.expose(get_pair_result);
 function get_pair_result(err, result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] ]
 
+	if (FIRST_FLAG) {
+		changeSubTitle(FOLDER_NAME)
+		console.log("only 1");
+		hideLoader();
+		DQ('#drop-down').classList.remove('hide');
+		DQ('#graph-container').classList.remove('hide');
+		FIRST_FLAG = false;
+	}
+
 	let pair = result[2]; // the names of the files
 	let preds;
 	if (err != "") {
@@ -593,8 +601,7 @@ function add_to_drop_down(pair, preds, err) {
 
 	const [diffPer, samePer] = preds;
 	let resultsIcon = (diffPer > samePer) ? "times" : "check";
-	if (err != "")
-	{
+	if (err != "") {
 		resultsIcon = "ban";
 	}
 	let str = "";
@@ -605,6 +612,16 @@ function add_to_drop_down(pair, preds, err) {
 
 	var div = document.getElementById('drop-menu');
 	div.innerHTML += str;
+
+	dropDownTransition();
+
+}
+
+function dropDownTransition() {
+	$('#drop-down').transition({
+		animation: 'pulse',
+		duration: '3s', // default setting
+	});
 }
 
 function selectedPair(value, text, $choise) {
