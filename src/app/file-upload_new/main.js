@@ -133,6 +133,8 @@ function saveResults() {
 
 function compareFolder() {
 	changeSubTitle(FOLDER_NAME)
+	
+	DQ('#drop-down').classList.remove('hide');
 	DQ('#graph-container').classList.remove('hide');
 	eel.gui_entry_folder()(function () {
 
@@ -252,17 +254,17 @@ function buildGraph(scoresPercents) {
 	d3chart.append('<svg id="d3ChartSvg" viewBox="0 0 400 220"></svg>');
 
 	const data = [{
-			name: "Same",
-			percentage: samePer,
-			color: secondaryColor,
-			value: samePer * 100,
-		},
-		{
-			name: "Different",
-			percentage: diffPer,
-			color: quaternaryColor,
-			value: diffPer * 100,
-		}
+		name: "Same",
+		percentage: samePer,
+		color: secondaryColor,
+		value: samePer * 100,
+	},
+	{
+		name: "Different",
+		percentage: diffPer,
+		color: quaternaryColor,
+		value: diffPer * 100,
+	}
 	]
 
 	const svg = d3
@@ -514,15 +516,15 @@ function buildGraph2(scoresPercents) {
 			indexLabel: "{label} - #percent%",
 			toolTipContent: "<strong>{label}:</strong> (#percent%)",
 			dataPoints: [{
-					y: diffPer,
-					label: "Different Author",
-					color: secondaryColor
-				},
-				{
-					y: samePer,
-					label: "Same Author",
-					color: quaternaryColor
-				},
+				y: diffPer,
+				label: "Different Author",
+				color: secondaryColor
+			},
+			{
+				y: samePer,
+				label: "Same Author",
+				color: quaternaryColor
+			},
 			]
 		}]
 
@@ -565,27 +567,36 @@ function handleFolderSelect(folderName, folderNum) {
 	}, load);
 }
 
-eel.expose(print_from_py);
+eel.expose(get_pair_result);
+function get_pair_result(err, result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] ]
 
-function print_from_py(result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] ]
-	console.log(result)
-	let preds = [(Math.round(result[1][0] * 100)).toFixed(1), (Math.round(result[1][1] * 100)).toFixed(1)]
-	preds = preds.map(Number);
 	let pair = result[2]; // the names of the files
-
-	add_to_drop_down(pair, preds)
+	let preds;
+	if (err != "") {
+		console.log(err)
+		preds = [50, 50]
+	}
+	else {
+		preds = [(Math.round(result[1][0] * 100)).toFixed(1), (Math.round(result[1][1] * 100)).toFixed(1)]
+		preds = preds.map(Number);
+	}
+	add_to_drop_down(pair, preds, err)
 }
 
-function add_to_drop_down(pair, preds) {
+function add_to_drop_down(pair, preds, err) {
 	let index = dropDownArray.push({
 		file1: pair[0],
 		file2: pair[1],
-		preds: preds
+		preds: preds,
+		error: err
 	});
 
 	const [diffPer, samePer] = preds;
-	const resultsIcon = (diffPer > samePer) ? "times" : "check";
-
+	let resultsIcon = (diffPer > samePer) ? "times" : "check";
+	if (err != "")
+	{
+		resultsIcon = "ban";
+	}
 	let str = "";
 	str += "<div id='item_" + (index - 1) + "' class='item'>";
 	str += " <i class='" + resultsIcon + " icon'></i>";
@@ -599,11 +610,13 @@ function add_to_drop_down(pair, preds) {
 function selectedPair(value, text, $choise) {
 
 	//buildGraph([50,50])
-
-	console.log("selected: " + $choise.attr('id'))
+	console.log("select!")
 	let itemId = $choise.attr('id');
 	let index = itemId.split("_")[1]
-	console.log("index is: " + index)
+	if (dropDownArray[index].error != "") {
+		console.log("dont let choose err")
+		return;
+	}
 	let preds = dropDownArray[index].preds
 	console.log(preds)
 	buildGraph(preds)

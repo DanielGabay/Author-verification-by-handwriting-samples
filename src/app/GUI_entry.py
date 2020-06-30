@@ -34,10 +34,12 @@ def gui_entry_folder():
 	pair_list = get_pair_list(folder)
 	count = 0
 	for pair in pair_list:
+		file1 = pair[0].split("\\")[-1]
+		file2 = pair[1].split("\\")[-1]
 		err, res = _gui_entry(pair[0], pair[1], False)
-		# TODO: res is a tuple? cant append
-		res.append([pair[0].split("\\")[-1], pair[1].split("\\")[-1]])
-		eel.print_from_py(res)()
+		
+		res.append([file1, file2])
+		eel.get_pair_result(err,res)()
 		count+=1
 		if count == 2:
 			break
@@ -103,10 +105,13 @@ def save_result_to_excel(data,folderName = ""):
 			csvWriter.writerow(line)
 
 def get_line_from_data(data):
+	if data['error'] is not "":
+		return [data['file1'], data['file2'], data['error'], "{}".format("ERROR")]
 	precent = 0
 	predicted = ""
 	diff_prec = data['preds'][0]
 	same_prec = data['preds'][1]
+
 	if (same_prec > diff_prec):
 		precent = same_prec
 		predicted = "Same"
