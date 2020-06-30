@@ -177,6 +177,7 @@ function resetUpload(evnt) {
 }
 
 function resetUploadFolder(evnt) {
+	debugger
 	FIRST_FLAG = true;
 	const upload = evnt.currentTarget.closest('.upload');
 	updateAppState({
@@ -186,7 +187,7 @@ function resetUploadFolder(evnt) {
 	upload.querySelector('footer').classList.remove('hasFiles');
 	upload.querySelector('.reset').classList.remove('active');
 	upload.querySelector('#compare-folder').classList.remove('active');
-	upload.querySelector('#save-results').classList.remove('active');
+	// upload.querySelector('#save-results').classList.remove('active');
 	// $('#text').classList.remove('hide');
 	setTimeout(() => {
 		upload.querySelector('.body').classList.remove('hidden');
@@ -559,7 +560,7 @@ function handleFolderSelect(folderName, folderNum) {
 	upload.querySelector('#compare-folder').classList.add('active');
 	upload.querySelector('.list-files').innerHTML = template;
 
-	const load = 1500;
+	const load = 1000;
 	setTimeout(() => {
 		upload.querySelector('.progress').classList.remove('active');
 		upload.querySelector('.done').classList.add('anim');

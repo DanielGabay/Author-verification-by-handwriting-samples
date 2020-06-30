@@ -42,7 +42,7 @@ body {
 }
 
 #result-sub-title{
-	font-size: 15px;
+	font-size: 10px;
 }
 
 h2{
@@ -75,7 +75,7 @@ a {
 	display: flex;
 	align-items: baseline;
 	flex-grow: 1;
-	padding:  var(--spaces);
+	padding:  10px;
 }
 
 .hide {

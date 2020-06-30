@@ -4,7 +4,22 @@
     align-self: normal;
     justify-self: stretch;
 	flex: 1;
+	margin-bottom: 0;
 	margin-left: var(--spaces);
+}
+
+.chart header {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	align-items: center;
+	padding: 0 10px;
+}
+.chart header #drop-down {
+	justify-self: self-start;
+}
+
+.chart #save-results {
+	justify-self: self-end;
 }
 
 .chart-container {
