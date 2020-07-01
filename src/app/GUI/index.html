@@ -3,59 +3,160 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="description" content="">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Author Verification Based On Handwritten Text Analysis</title>
-    <link href="css/style.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compare Tests</title>
+    <script src="./libraries/jquery-3.3.1.min.js"></script>
+    <link rel="stylesheet" href="./semantic/semantic.min.css">
+    <script src="./semantic/semantic.min.js"></script>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="./libraries/d3.min.js"></script>
     <script type="text/javascript" src="eel.js"></script>
-    <script type="text/javascript" src="main.js"></script>
-    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <script src="main.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
 </head>
 
 <body>
-    <section class="wellcome_area clearfix" id="home">
-        <div class="container h-100">
-            <div class="row h-200 align-items-center">
-                <div class="col-12 col-md">
-                    <div class="wellcome-heading">
-                        <h2>Author Verification</h2>
-                        <p>Compare two handwritten documents and determine
-                            <br />their similarity in precentage.
+    <header class="_header">
+        <aside>
+            <i class="balance scale icon big"></i>
+        </aside>
+        <h1> Author Verification</h1>
+        <nav class="menu">
+        </nav>
+
+    </header>
+    <main class="flex">
+
+        <div>
+            <div id="upload-1" class="upload card">
+                <div class="upload-files">
+                    <header>
+                        <p>
+                            <i class="paperclip icon" aria-hidden="true"></i>
+                            <span class="up">Files</span>
+                            <span class="load">&nbsp;selection</span>
                         </p>
+                    </header>
+                    <div class="body" id="trigger-file-1">
+                        <i class="file icon pointer-none" aria-hidden="true"></i>
+                        <p class="pointer-none"><strong>Click</strong>
+                            to browse files</p>
                     </div>
-
-
-                    <div class="get-start-area">
-                        <div class="form-inline">
-                            <button type="button" id="load_file1" onclick="getFilePath(1)">
-                                <img src="img/file.svg" /> &nbsp;
-                                Load file 1
-                            </button>
-
-                            <button type="button" id="load_file2" onclick="getFilePath(2)">
-                                <img src="img/file.svg" /> &nbsp;
-                                Load file 2
-                            </button>
-                            <input type="button" class="submit" value="GO!" onclick="main_linker()">
-                            <div class="loader" id="loader" style="display: none"></div>
+                    <footer>
+                        <div class="divider">
+                            <span>
+                                <AR>Loaded</AR>
+                            </span>
                         </div>
-                    </div>
-                    <div>
-                        <p id="filename1"></p>
-                        <p id="filename2"></p>
-                    </div>
+                        <div class="list-files">
+                            <!--   template   -->
+                        </div>
+                        <div class="controls">
+                            <button class="reset"><i class="undo icon"></i>New Selection</button>
+                            <button id="compare">Compare</button>
+                        </div>
 
+                    </footer>
                 </div>
             </div>
+
+
+            <div id="upload-2" class="upload card">
+                <div class="upload-files">
+                    <header>
+                        <p>
+                            <i class="paperclip icon" aria-hidden="true"></i>
+                            <span class="up">Folder</span>
+                            <span class="load">&nbsp;selection</span>
+                        </p>
+                    </header>
+                    <div class="body" id="trigger-file-2">
+                        <i class="folder open icon pointer-none" aria-hidden="true"></i>
+                        <p class="pointer-none"><strong>Click</strong>
+                            to browse folder</p>
+                    </div>
+                    <footer>
+                        <div class="divider">
+                            <span>
+                                <AR>Loaded</AR>
+                            </span>
+                        </div>
+                        <div class="list-files">
+                            <!--   template   -->
+                        </div>
+                        <div class="controls">
+                            <button class="reset"><i class="undo icon"></i>New Selection</button>
+                            <button id="compare-folder">Compare</button>
+                        </div>
+                    </footer>
+                </div>
+            </div>
+
         </div>
-        <!-- <div class="loader" id="loader" style="display: none"></div> -->
+
+        <div id="folder-result"></div>
+
+        <div id="chart-container" class="chart card hide ">
+            <header>
+                <div id="drop-down" class="hide ui floating scrolling dropdown button ">
+                    <span>Comparison results <i class="dropdown icon"></i></span>
+                    <div id="drop-menu" class="menu">
+                        <div class="header">
+                            <i class="tags icon"></i>
+                            Comparison results
+                        </div>
+                        <div class="divider"></div>
+
+
+                    </div>
+                </div>
+                <p>
+                    <i class="list ul icon" aria-hidden="true"></i>
+                    <span class="up">Results</span>
+                    <span id="result-sub-title" class="load "></span>
+                </p>
+                <button id="save-results" class="ui grey inverted button">Save results</button>
+
+            </header>
+            <div id="d3chartContainer" class="d3chart-container">
+                <!-- viz here -->
+            </div>
         </div>
-        <div id="chartContainer"></div>
-        <!-- <div class="welcome-thumb">
-            <p id="result"></p>
-        </div> -->
-    </section>
+        </div>
+    </main>
+    <footer class="footer">
+        <p>© Developed by Shachar Israeli & Daniel Gabay. All rights reserved.</p>
+    </footer>
+    <div class="overlay hide">
+        <div class="wrap">
+            <div class="center">
+                <div class="document-loader">
+                    <span class="heading short"></span>
+                    <span class="line short"></span>
+                    <span class="line"></span>
+                    <span class="line"></span>
+                    <span class="line"></span>
+                    <span class="line short"></span>
+                    <span class="line"></span>
+                    <span class="line"></span>
+                    <span class="line short"></span>
+                    <span class="heading"></span>
+                    <span class="line"></span>
+                    <span class="line"></span>
+                    <span class="line short"></span>
+                    <span class="line"></span>
+                    <span class="line"></span>
+                    <span class="line"></span>
+                    <span class="line"></span>
+                    <span class="line short"></span>
+                </div>
+                <p>Please be patient, it takes a few moments...</p>
+            </div>
+        </div>
+    </div>
+
+
 </body>
 
 </html>

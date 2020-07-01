@@ -1,65 +1,22 @@
-.uploads-container {
-	display: grid;
-	grid-template-areas: 'upload-one upload-two';
-	grid-gap: 10px;
-	justify-content: space-between;
-	padding: 15px;
+.controls {
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
-.upload-one {
-	grid-area: upload-one;
+.controls button:disabled {
+	display: none;
 }
-
-.upload-two {
-	grid-area: upload-two;
+.controls button:hover {
+	color: var(--primary-color);
+	background-color: white;
 }
 
 .upload {
-	position: relative;
-	width: 400px;
+	min-width: 400px;
 	min-height: 250px;
-	box-sizing: border-box;
-	border-radius: 5px;
-	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-	padding-bottom: 20px;
-	background: #fff;
-	animation: fadeup 0.5s 0.5s ease both;
-	transform: translateY(20px);
-	opacity: 0;
 }
-.upload .upload-files header {
-	background: #4db6ac;
-	border-top-left-radius: 5px;
-	border-top-right-radius: 5px;
-	text-align: center;
-}
-.upload .upload-files header p {
-	color: #fff;
-	font-size: 40px;
-	margin: 0;
-	padding: 10px 0;
-}
-.upload .upload-files header p i {
-	transform: translateY(20px);
-	opacity: 0;
-	font-size: 30px;
-	animation: fadeup 0.5s 1s ease both;
-}
-.upload .upload-files header p .up {
-	font-weight: bold;
-	transform: translateX(-20px);
-	display: inline-block;
-	opacity: 0;
-	animation: faderight 0.5s 1.5s ease both;
-}
-.upload .upload-files header p .load {
-	display: inline-block;
-	font-weight: 100;
-	margin-left: -8px;
-	transform: translateX(-20px);
-	opacity: 0;
-	animation: faderight 1s 1.5s ease both;
-}
+
 .upload .upload-files .body {
 	text-align: center;
 	margin: 50px 0;
@@ -87,10 +44,10 @@
 }
 .upload .upload-files .body p b,
 .upload .upload-files .body p strong {
-	color: #4db6ac;
+	color: var(--primary-color);
 }
 .upload .upload-files .body.active {
-	border: dashed 2px #4db6ac;
+	border: dashed 2px var(--primary-color);
 }
 .upload .upload-files .body.active i {
 	box-shadow: 0 0 0 -3px #fff, 0 0 0 lightgray, 0 0 0 -3px #fff, 0 0 0 lightgray;
@@ -139,13 +96,8 @@
 }
 .upload .upload-files footer .list-files {
 	width: 320px;
-	margin: 0 auto;
-	margin-top: 15px;
-	padding-left: 5px;
-	text-align: center;
-	overflow-x: hidden;
-	overflow-y: auto;
-	max-height: 210px;
+    margin: 15px auto;
+    
 }
 .upload .upload-files footer .list-files::-webkit-scrollbar-track {
 	background-color: rgba(211, 211, 211, 0.25);
@@ -194,10 +146,9 @@
 	}
 }
 .upload .upload-files footer .list-files .file .done {
-	cursor: pointer;
 	width: 40px;
 	height: 40px;
-	background: #4db6ac;
+	background: var(--primary-color);
 	border-radius: 50%;
 	margin-left: -10px;
 	transform: scale(0);
@@ -210,8 +161,8 @@
 	left: -5px;
 	font-size: 24px;
 	opacity: 0;
-}
-.upload .upload-files footer .list-files .file .done:hover:before {
+} */
+/* .upload .upload-files footer .list-files .file .done:hover:before {
 	transition: all 0.25s ease;
 	top: -30px;
 	opacity: 1;
@@ -248,49 +199,31 @@
 		opacity: 1;
 	}
 }
-.upload .upload-files footer .importar {
+.upload .upload-files footer button {
 	outline: none;
-	position: absolute;
-	left: 0;
-	right: 0;
-	bottom: 20px;
 	margin: auto;
-	border: solid 1px #4db6ac;
-	color: #4db6ac;
+	border: solid 1px var(--primary-color);
+	color: var(--primary-color);
 	background: transparent;
 	padding: 8px 15px;
 	font-size: 12px;
 	border-radius: 4px;
-	font-family: Roboto;
 	line-height: 1;
 	cursor: pointer;
-	transform: translateY(15px);
 	opacity: 0;
 	visibility: hidden;
-	margin-left: calc(50% - 40px);
 }
-.upload .upload-files footer .importar.active {
+.upload .upload-files footer button.active {
 	transition: transform 0.5s 1.5s ease, opacity 0.5s 1.5s ease, background;
 	transform: translateY(0);
 	opacity: 1;
 	visibility: visible;
 }
-.upload .upload-files footer .importar:hover {
-	background: #4db6ac;
+.upload .upload-files footer button:hover {
+	background: var(--primary-color);
 	color: #fff;
 }
-@keyframes fadeup {
-	to {
-		transform: translateY(0);
-		opacity: 1;
-	}
-}
-@keyframes faderight {
-	to {
-		transform: translateX(0);
-		opacity: 1;
-	}
-}
+
 @keyframes fade {
 	to {
 		opacity: 1;

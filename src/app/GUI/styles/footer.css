@@ -2,7 +2,7 @@
 	height: 30px;
 	line-height: 30px;
 	color: #fff;
-	background-color: #4db6ac;
+	background-color: var(--primary-color);
 	display: flex;
 	padding: 0 10px;
 	justify-content: space-between;

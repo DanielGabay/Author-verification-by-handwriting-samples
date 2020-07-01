@@ -1,3 +1,8 @@
 :root {
+	/* --primary-color: #6614c4; */
 	--primary-color: #4db6ac;
+	--secondary-color: #0789F8;
+	/* --secondary-color: #db820e; */
+	--quaternary-color: #F9BA00;
+	--spaces: 20px;
 }

@@ -1,10 +1,11 @@
 @import './reset.css';
 @import './variables.css';
 @import './header.css';
+@import './card.css';
 @import './uploads.css';
 @import './footer.css';
 @import './loader.css';
-
+@import './chart.css';
 * {
 	box-sizing: border-box;
 }
@@ -15,22 +16,117 @@ body {
 	padding: 0;
 }
 
+
+
 body {
 	font-family: "Roboto", sans-serif;
+
+	background: linear-gradient(to top, #4f6072, #8699aa);
 	display: flex;
 	flex-direction: column;
-	background: linear-gradient(to top, #4f6072, #8699aa);
 }
 
+#text{
+
+		position: absolute;
+		left: 60%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		height: 400px !important;
+		width: 550px;
+		box-shadow: 0 0 10px 3px #29a351;
+		background-color: #dbdbdb;
+		border-radius: 10px;
+		padding: 10px;
+	text-align: center;
+}
+
+#result-sub-title{
+	font-size: 10px;
+}
+
+h2{
+	font-size: 25px;
+	/* font-weight: bold; */
+}
+h1{
+	
+	font-size: 27px;
+	font-weight: bold;
+}
 a {
 	text-decoration: none;
 	color: inherit;
 }
-
-main {
+.grid {
+	
 	flex-grow: 1;
+	display: grid;
+	grid-gap: var(--spaces);
+	grid-template-columns: 1fr  2fr;
+	grid-template-rows: 1fr 1fr;
+	grid-template-areas: 
+	"upload chart"
+    ". chart";
+	margin:  var(--spaces);
+}
+
+.flex {
+	display: flex;
+	align-items: baseline;
+	flex-grow: 1;
+	padding:  10px;
 }
 
 .hide {
-	display: none;
+	display: none !important;
 }
+
+
+
+.box {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	overflow: hidden;
+	text-align: center;
+	border-bottom: 5px solid #1F1E1A;
+	box-shadow: 0px 2px 0px rgba(207, 137, 16, .5);
+	animation: revelar 2s forwards linear;
+  }
+  
+  .box h1 {
+	margin: 0;
+	padding: 0;
+	font-family: verdana;
+	font-size: 30px;
+	color: #1F1E1A;
+	text-shadow: 5px 5px 5px rgba(207, 137, 16, .5);
+	text-transform: uppercase;
+  }
+  @keyframes revelar {
+	0% {
+	  width: 0;
+	  height: 0;
+	}
+	30% {
+	  width: 500px;
+	  height: 0;
+	}
+	60% {
+	  width: 500px;
+	  height: 80px;
+	}
+	80% {
+	  width: 500px;
+	  height: 80px;
+	  box-shadow: 0px 2px 0px rgba(207, 137, 16, .5);
+	}
+	100% {
+	  width: 500px;
+	  height: 80px;
+	  box-shadow: 0px 7px 0px rgba(207, 137, 16, .5);
+	}
+  }
+

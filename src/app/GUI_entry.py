@@ -7,15 +7,18 @@ from tkinter.filedialog import askopenfile
 import csv
 import time
 
-
+# globals
 path1 = ""
 path2 = ""
 folder= ""
 
-eel.init('file-upload_new')
+# init GUI window (select the GUI folder)
+eel.init('GUI')
+
+# eel exposed functions to javascript
 
 @eel.expose
-def gui_entry():
+def gui_entry_files():
 	global path1
 	global path2
 	if (path1 == "" or path2 == ""):
@@ -45,32 +48,6 @@ def gui_entry_folder():
 		if count == 2:
 			break
 
-def get_input_files(title):
-	root = Tk()
-	root.withdraw()
-	root.wm_attributes('-topmost', 1)
-	f = filedialog.askopenfilenames(parent=root,title=title,filetypes =[('img', '*.tiff'), ('img', '*.tif'), ('img', '*.png')])
-	return (root.tk.splitlist(f))
-
-def get_input_folder():
-	root = Tk()
-	root.withdraw()
-	root.wm_attributes('-topmost', 1)
-	root.directory = filedialog.askdirectory(parent=root)
-	return root.directory
-	
-
-@eel.expose
-def pyGetFolderPath():
-	global folder
-	folder = get_input_folder()
-	
-	if folder is "":
-		print("E")
-		return 'E'
-	return folder.split("/")[-1]
-
-
 @eel.expose
 def pyGetFilePath():
 	global path1
@@ -92,6 +69,15 @@ def pyGetFilePath():
 		return "E"
 	return [path1.split("/")[-1],path2.split("/")[-1]]
 
+@eel.expose
+def pyGetFolderPath():
+	global folder
+	folder = get_input_folder()
+	
+	if folder is "":
+		print("E")
+		return 'E'
+	return folder.split("/")[-1]
 
 @eel.expose
 def save_result_to_excel(data,folderName = ""):
@@ -104,6 +90,20 @@ def save_result_to_excel(data,folderName = ""):
 		for i in range(len(data)):
 			line = get_line_from_data(data[i])
 			csvWriter.writerow(line)
+
+def get_input_files(title):
+	root = Tk()
+	root.withdraw()
+	root.wm_attributes('-topmost', 1)
+	f = filedialog.askopenfilenames(parent=root,title=title,filetypes =[('img', '*.tiff'), ('img', '*.tif'), ('img', '*.png')])
+	return (root.tk.splitlist(f))
+
+def get_input_folder():
+	root = Tk()
+	root.withdraw()
+	root.wm_attributes('-topmost', 1)
+	root.directory = filedialog.askdirectory(parent=root)
+	return root.directory
 
 def get_line_from_data(data):
 	if data['error'] is not "":

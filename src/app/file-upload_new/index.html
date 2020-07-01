@@ -14,7 +14,6 @@
     <script type="text/javascript" src="eel.js"></script>
     <script src="main.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
-    <!-- <script src="libraries/canvasjs-2.3.2/canvasjs.min.js"></script> -->
 </head>
 
 <body>
@@ -88,8 +87,6 @@
                         </div>
                         <div class="controls">
                             <button class="reset"><i class="undo icon"></i>New Selection</button>
-
-                            <!-- <button class="reset">Update New Folder</button> -->
                             <button id="compare-folder">Compare</button>
                         </div>
                     </footer>
@@ -100,8 +97,7 @@
 
         <div id="folder-result"></div>
 
-        <div id="graph-container" class="chart card hide ">
-
+        <div id="chart-container" class="chart card hide ">
             <header>
                 <div id="drop-down" class="hide ui floating scrolling dropdown button ">
                     <span>Comparison results <i class="dropdown icon"></i></span>
@@ -123,8 +119,6 @@
                 <button id="save-results" class="ui grey inverted button">Save results</button>
 
             </header>
-
-            <!-- <div id="chartContainer" class="chart-container"></div> -->
             <div id="d3chartContainer" class="d3chart-container">
                 <!-- viz here -->
             </div>
