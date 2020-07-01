@@ -106,12 +106,11 @@ function saveResults() {
 
 		Swal.fire({
 			title: 'Save Results?',
-			text: "You won't be able to revert this!",
 			icon: 'question',
 			showCancelButton: true,
 			confirmButtonColor: '#3085d6',
 			cancelButtonColor: '#d33',
-			confirmButtonText: 'Yes, Save it!'
+			confirmButtonText: 'Save'
 		}).then((result) => {
 			if (result.value) {
 
@@ -119,7 +118,7 @@ function saveResults() {
 
 					Swal.fire({
 						icon: 'success',
-						title: 'Results has been saved at your folder path',
+						title: 'Results has been saved to your current .exe diractory',
 						showConfirmButton: false,
 						timer: 1500
 					})
@@ -140,8 +139,8 @@ function compareFolder() {
 
 		Swal.fire({
 			icon: 'success',
-			title: 'Folder Comparing Completed',
-			text: 'Save the result now to an excel file by clicking the save button',
+			title: 'Folder comparison completed',
+			text: 'Export an excel file by clicking "Save results" button',
 		})
 	})
 }

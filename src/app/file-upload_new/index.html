@@ -20,7 +20,7 @@
 <body>
     <header class="_header">
         <aside>
-            <i class="balance scale icon big" ></i>
+            <i class="balance scale icon big"></i>
         </aside>
         <h1> Author Verification</h1>
         <nav class="menu">
@@ -35,26 +35,26 @@
                     <header>
                         <p>
                             <i class="paperclip icon" aria-hidden="true"></i>
-                            <span class="up">Upload</span>
-                            <span class="load">&nbsp;files</span>
+                            <span class="up">Files</span>
+                            <span class="load">&nbsp;selection</span>
                         </p>
                     </header>
                     <div class="body" id="trigger-file-1">
                         <i class="file icon pointer-none" aria-hidden="true"></i>
                         <p class="pointer-none"><strong>Click</strong>
-                            to begin compring two files</p>
+                            to browse files</p>
                     </div>
                     <footer>
                         <div class="divider">
                             <span>
-                                <AR>FILES</AR>
+                                <AR>Loaded</AR>
                             </span>
                         </div>
                         <div class="list-files">
                             <!--   template   -->
                         </div>
                         <div class="controls">
-                            <button class="reset">Update New Files</button>
+                            <button class="reset"><i class="undo icon"></i>New Selection</button>
                             <button id="compare">Compare</button>
                         </div>
 
@@ -68,57 +68,47 @@
                     <header>
                         <p>
                             <i class="paperclip icon" aria-hidden="true"></i>
-                            <span class="up">Upload</span>
-                            <span class="load">&nbsp;folder</span>
+                            <span class="up">Folder</span>
+                            <span class="load">&nbsp;selection</span>
                         </p>
                     </header>
                     <div class="body" id="trigger-file-2">
                         <i class="folder open icon pointer-none" aria-hidden="true"></i>
                         <p class="pointer-none"><strong>Click</strong>
-                            to begin compring all pairs in Folder</p>
+                            to browse folder</p>
                     </div>
                     <footer>
                         <div class="divider">
                             <span>
-                                <AR>Folder Loaded</AR>
+                                <AR>Loaded</AR>
                             </span>
                         </div>
                         <div class="list-files">
                             <!--   template   -->
                         </div>
                         <div class="controls">
-                            <button  class="reset"><i
-                                class="undo icon"></i>Update New Folder</button>
+                            <button class="reset"><i class="undo icon"></i>New Selection</button>
 
                             <!-- <button class="reset">Update New Folder</button> -->
-                            <button id="compare-folder">Compare Folder</button>
- 
-
+                            <button id="compare-folder">Compare</button>
                         </div>
-
                     </footer>
                 </div>
             </div>
 
         </div>
-        <!-- <div id = "text">
-                <h1>   <br/>Author Verification<br/></h1>
-                <h2><br/><br/>Compare two handwritten documents<br/> &<br/> determine
-                    their similarity in precentage.</h2>
-                <h2 style="color:red;"><br/><br/>need to add here maybe more details</h2>
-            </div> -->
 
         <div id="folder-result"></div>
 
         <div id="graph-container" class="chart card hide ">
 
             <header>
-                <div id = "drop-down" class="hide ui floating scrolling dropdown button ">
-                    <span>Comparing results <i class="dropdown icon"></i></span>
+                <div id="drop-down" class="hide ui floating scrolling dropdown button ">
+                    <span>Comparison results <i class="dropdown icon"></i></span>
                     <div id="drop-menu" class="menu">
                         <div class="header">
                             <i class="tags icon"></i>
-                            Comparing results
+                            Comparison results
                         </div>
                         <div class="divider"></div>
 
@@ -142,7 +132,7 @@
         </div>
     </main>
     <footer class="footer">
-        <p>© by Shachar Israeli & Daniel Gabay. All rights reserved.</p>
+        <p>© Developed by Shachar Israeli & Daniel Gabay. All rights reserved.</p>
     </footer>
     <div class="overlay hide">
         <div class="wrap">
@@ -167,7 +157,7 @@
                     <span class="line"></span>
                     <span class="line short"></span>
                 </div>
-                <p>Please be patient (it takes a few moments)</p>
+                <p>Please be patient, it takes a few moments...</p>
             </div>
         </div>
     </div>
