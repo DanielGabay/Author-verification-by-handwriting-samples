@@ -154,7 +154,6 @@ function renderSelectedFiles(fileNames = []) {
 function compareFiles() {
 	showLoader();
 	eel.gui_entry_files()(function (list) {
-
 		const [err, result] = list
 		console.log(err)
 		console.log(result);
@@ -164,15 +163,13 @@ function compareFiles() {
 		if (err != "") {
 			console.log(err)
 			preds = [50, 50]
-		}
-		else {
+		} else {
 			preds = resultToPreds(result)
 			preds = preds.map(Number);
 		}
 
 		console.log(preds)
 		insert_dropdown(pair, preds, err)
-
 		createChart(pair, preds);
 	})
 
@@ -373,7 +370,6 @@ function resultToPreds(result) {
 }
 
 function saveResults() {
-
 	if (Array.isArray(dropDownArray) && dropDownArray.length) {
 		const resultsTitle = (dropDownArray.length === 1) ? "Save Result?" : `Save all ${dropDownArray.length} Results?`;
 		Swal.fire({
@@ -398,8 +394,7 @@ function saveResults() {
 			}
 		})
 
-	}
-	else {
+	} else {
 		alert("empty!!!")
 	}
 }
@@ -433,8 +428,7 @@ function get_pair_result(err, result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] 
 	if (err != "") {
 		console.log(err)
 		preds = [50, 50]
-	}
-	else {
+	} else {
 		preds = resultToPreds(result)
 		preds = preds.map(Number);
 	}
@@ -476,17 +470,17 @@ function createChart(pair, scoresPercents) {
 	$('#pair-result')
 		.transition('pulse')
 	const data = [{
-		name: "Same",
-		percentage: samePer,
-		color: secondaryColor,
-		value: samePer * 100,
-	},
-	{
-		name: "Different",
-		percentage: diffPer,
-		color: quaternaryColor,
-		value: diffPer * 100,
-	}
+			name: "Same",
+			percentage: samePer,
+			color: secondaryColor,
+			value: samePer * 100,
+		},
+		{
+			name: "Different",
+			percentage: diffPer,
+			color: quaternaryColor,
+			value: diffPer * 100,
+		}
 	]
 
 	const svg = d3
