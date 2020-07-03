@@ -37,8 +37,8 @@ function bindElementsEvents() {
 	DQ('#trigger-file-2').addEventListener('click', uploadFolder);
 	DQ('#upload-2 .reset').addEventListener('click', resetFolderUpload);
 	DQ('#compare-folder').addEventListener('click', compareFolder);
+	
 	DQ('#save-results').addEventListener('click', saveResults);
-
 }
 
 /***  files comparision functions ***/ 
@@ -94,16 +94,26 @@ function renderSelectedFiles(fileNames = []) {
 
 function compareFiles() {
 	showLoader();
-	eel.gui_entry_files()(function (result) {
+	eel.gui_entry_files()(function (list) {
 
+		const [err, result] = list
+		console.log(err)
+		console.log(result);
 		hideLoader();
 		updateResultsSubtitle(result[2][0] + " & " + result[2][1]);
-		console.log(result);
+		let pair = result[2]; // the names of the files
+		if (err != "") {
+			console.log(err)
+			preds = [50, 50]
+		}
+		else {
+			preds = resultToPreds(result)
+			preds = preds.map(Number);
+		}
 
-		let preds = resultToPreds(result)
 		console.log(preds)
-		preds = preds.map(Number);
-		console.log(preds)
+		insert_dropdown(pair, preds, err)
+
 		createChart(preds);
 	})
 
@@ -261,9 +271,14 @@ function insert_dropdown(pair, preds, err) {
 
 function transition_dropdown() {
 	$('#drop-down').transition({
-		animation: 'pulse',
-		duration: '3s', // default setting
+		animation: 'glow',
+		duration: '2s', 
 	});
+	
+	let title = `Comparison results: ${dropDownArray.length}`;
+	var div = document.getElementById('drop-down-title');
+	div.innerHTML = title;
+
 }
 
 /*** results ***/
@@ -278,7 +293,7 @@ function saveResults() {
 	if (Array.isArray(dropDownArray) && dropDownArray.length) {
 
 		Swal.fire({
-			title: 'Save Results?',
+			title: `Save all ${dropDownArray.length} Results?`,
 			icon: 'question',
 			showCancelButton: true,
 			confirmButtonColor: '#3085d6',
@@ -299,6 +314,9 @@ function saveResults() {
 			}
 		})
 
+	}
+	else{
+		alert("empty!!!")
 	}
 }
 
@@ -329,7 +347,7 @@ function get_pair_result(err, result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] 
 		updateResultsSubtitle(FOLDER_NAME)
 		console.log("only 1");
 		hideLoader();
-		DQ('#drop-down').classList.remove('hide');
+		// DQ('#drop-down').classList.remove('hide');
 		DQ('#chart-container').classList.remove('hide');
 		FIRST_FLAG = false;
 	}
@@ -347,6 +365,8 @@ function get_pair_result(err, result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] 
 	insert_dropdown(pair, preds, err)
 }
 
+
+
 /***  Display results chart ***/ 
 
 function createChart(scoresPercents) {
@@ -362,8 +382,11 @@ function createChart(scoresPercents) {
 	// remove last graph and creates a new graph container
 	d3chart = $('#d3chartContainer')
 	d3chart.empty();
-	d3chart.append(`<br/><h1>${resultsTitle}</h1>`);
+	d3chart.append(`<br/><h1 id="result-title"> ${resultsTitle}</h1>`);
 	d3chart.append('<svg id="d3ChartSvg" viewBox="0 0 400 220"></svg>');
+
+	$('#result-title')
+	.transition('pulse')
 
 	const data = [{
 		name: "Same",

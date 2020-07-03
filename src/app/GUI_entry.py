@@ -23,11 +23,11 @@ def gui_entry_files():
 	global path2
 	if (path1 == "" or path2 == ""):
 		return
-	err, res = _gui_entry(path1, path2, False)
-	
+	#err, res = _gui_entry(path1, path2, False)
+	err, res =  "",["ggg",[0.40,0.60]]
 	res.append([path1.split("/")[-1], path2.split("/")[-1]])
 	# return err too?
-	return res
+	return err, res
 
 @eel.expose
 def gui_entry_folder():
