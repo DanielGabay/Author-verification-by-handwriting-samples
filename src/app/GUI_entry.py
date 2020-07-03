@@ -23,7 +23,6 @@ def disable_folder_comparing():
 	global KEEP_COMPARING
 	KEEP_COMPARING = False	
 
-
 @eel.expose
 def gui_entry_files():
 	global path1

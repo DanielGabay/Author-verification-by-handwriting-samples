@@ -9,6 +9,7 @@ let App = {
 let dropDownArray = []
 let FOLDER_NAME = "";
 
+
 /***  init functions ***/
 
 initApp();
@@ -25,6 +26,8 @@ function initApp() {
 
 }
 
+
+
 // bind listeners functions
 function bindElementsEvents() {
 	//for files
@@ -39,7 +42,44 @@ function bindElementsEvents() {
 	DQ('#stop-compare').addEventListener('click', stopComparing);
 
 	DQ('#save-results').addEventListener('click', saveResults);
+	DQ('#info-button').addEventListener('click', showInfo);
 }
+
+function disableButtons() {
+	$('#compare-folder').addClass('ui basic disabled loading button');
+	if ($("#compare-folder").hasClass("loading")) {
+		$("#compare").addClass("ui basic disabled button")
+	}
+}
+
+function enableButtons() {
+	
+	if ($("#compare-folder").hasClass("loading")) {
+		$("#compare").removeClass("ui basic disabled button")
+	}
+	$('#stop-compare').removeClass('ui basic disabled loading button active');
+	$('#compare-folder').removeClass('ui basic disabled loading button active');
+}
+
+
+
+
+
+
+function showInfo() {
+
+	Swal.fire({
+		title: 'Custom animation with Animate.css',
+		showClass: {
+			popup: 'animate__animated animate__fadeInDown'
+		},
+		hideClass: {
+			popup: 'animate__animated animate__fadeOutUp'
+		}
+	})
+
+}
+
 
 /***  files comparision functions ***/
 
@@ -114,7 +154,7 @@ function compareFiles() {
 		console.log(preds)
 		insert_dropdown(pair, preds, err)
 
-		createChart(pair,preds);
+		createChart(pair, preds);
 	})
 
 }
@@ -200,7 +240,7 @@ function renderSelectedFolder(folderName, folderNum) {
 }
 
 function compareFolder() {
-	$('#compare-folder').addClass('ui basic disabled loading button');
+	disableButtons();
 	showLoader();
 	eel.gui_entry_folder()(function () {
 		$('#save-results').addClass('active');
@@ -209,8 +249,9 @@ function compareFolder() {
 			title: 'Folder comparison completed',
 			text: 'Export an excel file by clicking "Save results" button',
 		})
-		$('#stop-compare').removeClass('ui basic disabled loading button active');
-		$('#compare-folder').removeClass('ui basic disabled loading button active');
+
+		enableButtons();
+
 	})
 }
 
@@ -315,9 +356,9 @@ function resultToPreds(result) {
 function saveResults() {
 
 	if (Array.isArray(dropDownArray) && dropDownArray.length) {
-
+		const resultsTitle = (dropDownArray.length === 1) ? "Save Result?" : `Save all ${dropDownArray.length} Results?`;
 		Swal.fire({
-			title: `Save all ${dropDownArray.length} Results?`,
+			title: resultsTitle,
 			icon: 'question',
 			showCancelButton: true,
 			confirmButtonColor: '#3085d6',
@@ -354,9 +395,9 @@ function displaySelectedPair(value, text, $choise) {
 		return;
 	}
 	let preds = dropDownArray[index].preds
-	let pair = [dropDownArray[index].file1,dropDownArray[index].file2]
+	let pair = [dropDownArray[index].file1, dropDownArray[index].file2]
 	console.log(preds)
-	createChart(pair,preds)
+	createChart(pair, preds)
 }
 
 function updateResultsSubtitle(title) {
@@ -385,7 +426,7 @@ function get_pair_result(err, result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] 
 		updateResultsSubtitle(FOLDER_NAME)
 		DQ('#stop-compare').classList.add('active');
 		DQ('#chart-container').classList.remove('hide');
-		createChart(pair,preds)
+		createChart(pair, preds)
 	}
 }
 
@@ -393,7 +434,7 @@ function get_pair_result(err, result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] 
 
 /***  Display results chart ***/
 
-function createChart(pair,scoresPercents) {
+function createChart(pair, scoresPercents) {
 	const [diffPer, samePer] = scoresPercents;
 
 	DQ('#chart-container').classList.remove('hide');
