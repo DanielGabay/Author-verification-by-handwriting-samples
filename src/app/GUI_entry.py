@@ -11,11 +11,18 @@ import time
 path1 = ""
 path2 = ""
 folder= ""
+KEEP_COMPARING = True
 
 # init GUI window (select the GUI folder)
 eel.init('GUI')
 
 # eel exposed functions to javascript
+
+@eel.expose
+def disable_folder_comparing():
+	global KEEP_COMPARING
+	KEEP_COMPARING = False	
+
 
 @eel.expose
 def gui_entry_files():
@@ -32,20 +39,25 @@ def gui_entry_files():
 @eel.expose
 def gui_entry_folder():
 	global folder
+	global KEEP_COMPARING
+	KEEP_COMPARING = True
 	if (folder == ""):
 		return
 	pair_list = get_pair_list(folder)
 	count = 0
 	for pair in pair_list:
+		if(not KEEP_COMPARING):   #break point from JS
+			print("STOP COMPARINGG")
+			return
 		file1 = pair[0].split("\\")[-1]
 		file2 = pair[1].split("\\")[-1]
-		#err, res = _gui_entry(pair[0], pair[1], False)
-		err, res = "" , ["ggg",[0.50,0.50]]
+		err, res = _gui_entry(pair[0], pair[1], False)
+		# err, res = "" , ["ggg",[0.50,0.50]]
 
 		res.append([file1, file2])
 		eel.get_pair_result(err,res)()
 		count+=1
-		if count == 2:
+		if count == 5:
 			break
 
 @eel.expose

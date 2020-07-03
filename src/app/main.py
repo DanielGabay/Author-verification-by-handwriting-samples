@@ -280,8 +280,6 @@ def get_pair_list(FOLDER_PATH , difference_sign = 'b'):
 	for _, _, files in os.walk(FOLDER_PATH):
 		b_files = [x for x in files if difference_sign in x]
 		a_files = [y for y in files if difference_sign not in y]
-	print(len(b_files))
-	print(len(a_files))
 
 	pair_list = []
 	for a_file in a_files:
