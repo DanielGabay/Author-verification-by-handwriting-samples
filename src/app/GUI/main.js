@@ -8,7 +8,6 @@ let App = {
 // globals
 let dropDownArray = []
 let FOLDER_NAME = "";
-let FIRST_FLAG = true;
 
 /***  init functions ***/
 
@@ -140,7 +139,6 @@ function resetFilesUpload(evnt) {
 
 
 function stopComparing() {
-
 	Swal.fire({
 		title: "Stop comparing?",
 		icon: 'question',
@@ -202,10 +200,8 @@ function renderSelectedFolder(folderName, folderNum) {
 }
 
 function compareFolder() {
-
 	$('#compare-folder').addClass('ui basic disabled loading button');
 	showLoader();
-
 	eel.gui_entry_folder()(function () {
 		$('#save-results').addClass('active');
 		Swal.fire({
@@ -219,7 +215,6 @@ function compareFolder() {
 }
 
 function resetFolderUpload(evnt) {
-	FIRST_FLAG = true;
 	const upload = evnt.currentTarget.closest('.upload');
 	updateAppState({
 		action: 'reset'
@@ -264,6 +259,10 @@ function showLoader() {
 function hideLoader() {
 	DQ('.overlay').classList.add('hide');
 	// $('#text').classList.add('hide');
+}
+
+function isLoaderOn() {
+	return !DQ('.overlay').classList.contains('hide')
 }
 
 /*** dropdown ***/
@@ -369,14 +368,6 @@ function updateResultsSubtitle(title) {
 
 eel.expose(get_pair_result);
 function get_pair_result(err, result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] ]
-	if (FIRST_FLAG) {
-		updateResultsSubtitle(FOLDER_NAME)
-		hideLoader();
-		DQ('#stop-compare').classList.add('active');
-		DQ('#chart-container').classList.remove('hide');
-		FIRST_FLAG = false;
-	}
-
 	let pair = result[2]; // the names of the files
 	let preds;
 	if (err != "") {
@@ -388,6 +379,14 @@ function get_pair_result(err, result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] 
 		preds = preds.map(Number);
 	}
 	insert_dropdown(pair, preds, err)
+
+	if (isLoaderOn()) {
+		hideLoader();
+		updateResultsSubtitle(FOLDER_NAME)
+		DQ('#stop-compare').classList.add('active');
+		DQ('#chart-container').classList.remove('hide');
+		createChart(pair,preds)
+	}
 }
 
 
@@ -592,8 +591,8 @@ function createChart(pair,scoresPercents) {
 		.select('circle')
 		.transition()
 		.ease(d3.easeExp)
-		.delay(200)
-		.duration(1300)
+		.delay(150)
+		.duration(1000)
 		.attr('stroke-dashoffset', '0')
 		// once the transition is complete
 		// draw the smaller strokes one after the other
