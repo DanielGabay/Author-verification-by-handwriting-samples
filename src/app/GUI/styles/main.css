@@ -6,6 +6,7 @@
 @import './footer.css';
 @import './loader.css';
 @import './chart.css';
+@import './info.css';
 * {
 	box-sizing: border-box;
 }

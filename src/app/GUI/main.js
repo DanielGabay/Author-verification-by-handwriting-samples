@@ -17,6 +17,7 @@ initApp();
 function initApp() {
 	//Init
 	bindElementsEvents();
+	enableInfoEvens();
 
 	$('.ui.dropdown') // drop down settings
 		.dropdown({
@@ -26,7 +27,42 @@ function initApp() {
 
 }
 
+function enableInfoEvens()
+{
+	$('.help-button').click(function (event) {
+		event.preventDefault();
+		Swal.fire({
+			title: 'Welcome to handwriting similarity checker',
+			html: $("#help-button-popup").html(),
+			showCloseButton: true,
+			grow: 'fullscreen',
+			confirmButtonText: 'Close'
+		});
+	});
+	
+	var animTime = 300,
+		clickPolice = false;
+	
+	$(document).on('touchstart click', '.acc-btn', function () {
+		if (!clickPolice) {
+			clickPolice = true;
+	
+			var currIndex = $(this).index('.acc-btn'),
+				targetHeight = $('.acc-content-inner').eq(currIndex).outerHeight();
+	
+			$('.acc-btn h4').removeClass('selected');
+			$(this).find('h4').addClass('selected');
+	
+			$('.acc-content').stop().animate({ height: 0 }, animTime);
+			$('.acc-content').eq(currIndex).stop().animate({ height: targetHeight }, animTime);
+	
+			setTimeout(function () { clickPolice = false; }, animTime);
+		}
+	
+	});
+	
 
+}
 
 // bind listeners functions
 function bindElementsEvents() {
@@ -42,7 +78,7 @@ function bindElementsEvents() {
 	DQ('#stop-compare').addEventListener('click', stopComparing);
 
 	DQ('#save-results').addEventListener('click', saveResults);
-	DQ('#info-button').addEventListener('click', showInfo);
+	// DQ('#info-button').addEventListener('click', showInfo);
 }
 
 function disableButtons() {
@@ -53,7 +89,7 @@ function disableButtons() {
 }
 
 function enableButtons() {
-	
+
 	if ($("#compare-folder").hasClass("loading")) {
 		$("#compare").removeClass("ui basic disabled button")
 	}
@@ -62,23 +98,6 @@ function enableButtons() {
 }
 
 
-
-
-
-
-function showInfo() {
-
-	Swal.fire({
-		title: 'Custom animation with Animate.css',
-		showClass: {
-			popup: 'animate__animated animate__fadeInDown'
-		},
-		hideClass: {
-			popup: 'animate__animated animate__fadeOutUp'
-		}
-	})
-
-}
 
 
 /***  files comparision functions ***/
