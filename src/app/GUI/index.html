@@ -19,22 +19,20 @@
 <body>
     <header class="_header">
         <aside>
-            <!-- <i class="balance scale icon big"></i> -->
-            <img src="assets/logo.png" width="70" height="70">
+            <a href="https://github.com/DanielGabay/Author-verification-by-handwriting-samples" target="_blank">
+                <img src="assets/logo.png" width="70" height="70">
+            </a>
         </aside>
-        <h1> Author Verification</h1>
+        <h1>Handwriting Similarity Checker</h1>
         <nav class="menu">
-
             <i id="info-button" class=" info circle large link icon help-button" aria-hidden="true"></i>
         </nav>
     </header>
     <main class="main-grid">
-
         <div id="upload-1" class="upload card">
             <div class="upload-files">
                 <header>
                     <p>
-
                         <i class="cloud icon" aria-hidden="true"></i>
                         <span class="up">Files</span>
                         <span class="load">&nbsp;selection</span>
@@ -47,8 +45,8 @@
                 <footer>
                     <div class="divider">
                         <span>
-                                <AR>Loaded</AR>
-                            </span>
+                            <AR>Loaded</AR>
+                        </span>
                     </div>
                     <div class="list-files">
                         <!--   template   -->
@@ -57,7 +55,6 @@
                         <button class="reset"><i class="undo icon"></i>New Selection</button>
                         <button id="compare">Compare</button>
                     </div>
-
                 </footer>
             </div>
         </div>
@@ -78,8 +75,8 @@
                 <footer>
                     <div class="divider">
                         <span>
-                                <AR>Loaded</AR>
-                            </span>
+                            <AR>Loaded</AR>
+                        </span>
                     </div>
                     <div class="list-files">
                         <!--   template   -->
@@ -94,11 +91,10 @@
             </div>
         </div>
 
-
         <div id="chart-container" class="chart card hide">
             <header>
                 <div id="drop-down" class="ui floating scrolling dropdown button ">
-                    <span id='drop-down-title'>Comparison results <i class="dropdown icon"></i></span>
+                    <span id='drop-down-title'>Comparison results<i class="angle down icon"></i></span>
                     <div id="drop-menu" class="menu">
                         <div class="header">
                             <i class="tags icon"></i> Comparison results
@@ -121,7 +117,7 @@
         </div>
     </main>
     <footer class="footer">
-        <p>© Developed by Shachar Israeli & Daniel Gabay. All rights reserved.</p>
+        <p>© Developed by Shachar Israeli & Daniel Gabay (2020). All rights reserved.</p>
     </footer>
     <div class="overlay hide">
         <div class="wrap">
@@ -151,23 +147,28 @@
         </div>
     </div>
 
-
     <div id="help-button-popup">
         <div class="help-popup">
             <p>
-                Select two handwritten scanned text and we will give you the chance the texts were written by the same person. </p>
-            <p> The program is intended for use by the National Institute for Testing & Evaluation to identify fraud in exam, but it can be a solution in a wide range of areas.</p>
+                The program compares between two hebrew handwritten documents and display how similar they are.
+            </p>
+            <p> The program is intended for use by the National Institute for Testing & Evaluation to identify frauds in
+                exams.
+            </p>
 
             <div class="acc-container">
-
                 <div class="acc-btn">
                     <h4 class="selected">How it works</h4>
                 </div>
                 <div class="acc-content open">
                     <div class="acc-content-inner">
-                        <p>An external account is one that can be used by non-Kier employees to access Kier SharePoint. The external person will be sent a username and password to log onto the system. You will then be able to manage thier access in the same
-                            way as you currently manage other users. There accounts can opnly be used to access SharePoint sites with https://ext.kier.co.uk or https://ext.kier.group at the beginning of the URL.</p>
-                        <p>Try asking Kiera to create an account to get started.</p>
+                        <p>
+                            Each document is processed in order to identify the letters in the text.
+                            <br />
+                            After the program finds and identify some of the letters, they than compared
+                            <br />
+                            by our three algorithms which at the end returns a score in precentage.
+                        </p>
                     </div>
                 </div>
 
@@ -176,8 +177,13 @@
                 </div>
                 <div class="acc-content">
                     <div class="acc-content-inner">
-                        <p>I can add and remove users from groups on your SharePoint sites.</p>
-                        <p>Try entering "add user to group" to get started.</p>
+                        <p>
+                            1) At the Files Selection window, browse two files that you want to compare.
+                            <br />
+                            2) After the files is loaded, click on the 'Compare' button to initiate the system.
+                            <br />
+                            3) View the results on the 'Results' window.
+                        </p>
                     </div>
                 </div>
 
@@ -186,8 +192,23 @@
                 </div>
                 <div class="acc-content">
                     <div class="acc-content-inner">
-                        <p>I can create SharePoint sites.</p>
-                        <p>Try entering "create site" to get started.</p>
+                        <p>
+                            1) At the Folder Selection window, browse a folder that contains pairs of files
+                            that will be compared.
+                            <br />
+                            2) After the folder is loaded, click on the 'Compare' button to initiate the system.
+                            <br />
+                            3) After each pair of documents compare is finished, you can view thier results by choosing
+                            <br />
+                            the wanted pair at the dropdown menu on the result window.
+                            <br />
+                            4) At any time you can click the 'Stop' button to stop the comparision (you canno't resume
+                            afterwars).
+                            <br />
+                            5) At any time you can also save the results to an excel file by clicking 'Save Results'
+                            button on the results window.
+                            <br />
+                        </p>
                     </div>
                 </div>
 
@@ -196,9 +217,21 @@
                 </div>
                 <div class="acc-content">
                     <div class="acc-content-inner">
-                        <p>If you have any comments or suggestions then we're always happy to hear from you:</p>
-                        <p><a href="https://github.com/shachar-israeli">Shachar Israeli</a></p>
-                        <p><a href="https://github.com/DanielGabay">Daniel Gabay</a></p>
+                        <p>
+                            The system developed by Shachar Israely & Daniel Gabay as part of the
+                            <br />
+                            4th-year final project at the SW Engineering Department, Azrieli College of Engineering,
+                            Jerusalem Israel.
+                            <br />
+                            If you have any comments or suggestions we'll be happy to hear from you :)
+                            <br />
+                            <br />
+                            Contact:
+                            <br />
+                            <a href="https://github.com/shachar-israeli" target="_blank">Shachar Israeli</a> - shachar.israeli29@gmail.com
+                            <br />
+                            <a href="https://github.com/DanielGabay" target="_blank">Daniel Gabay</a> - danielgabay5@gmail.com
+                        </p>
 
                     </div>
                 </div>

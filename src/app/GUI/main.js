@@ -2,7 +2,7 @@
 const DQ = document.querySelector.bind(document);
 //APP
 let App = {
-    fileNames: []
+	fileNames: []
 };
 
 // globals
@@ -15,87 +15,91 @@ let FOLDER_NAME = "";
 initApp();
 
 function initApp() {
-    //Init
-    bindElementsEvents();
-    enableInfoEvens();
+	//Init
+	bindElementsEvents();
+	enableInfoEvens();
 
-    $('.ui.dropdown') // drop down settings
-        .dropdown({
-            on: 'hover',
-            onChange: displaySelectedPair
-        });
+	$('.ui.dropdown') // drop down settings
+		.dropdown({
+			on: 'hover',
+			onChange: displaySelectedPair
+		});
 
 }
 
 function enableInfoEvens() {
-    $('.help-button').click(function(event) {
-        event.preventDefault();
-        Swal.fire({
-            title: 'Welcome to handwriting similarity checker',
-            html: $("#help-button-popup").html(),
-            showCloseButton: true,
-            grow: 'fullscreen',
-            confirmButtonText: 'Close'
-        });
-    });
+	$('.help-button').click(function (event) {
+		event.preventDefault();
+		Swal.fire({
+			title: 'Welcome to the handwriting similarity checker',
+			html: $("#help-button-popup").html(),
+			showCloseButton: true,
+			grow: 'fullscreen',
+			confirmButtonText: 'Close'
+		});
+	});
 
-    var animTime = 300,
-        clickPolice = false;
+	var animTime = 300,
+		clickPolice = false;
 
-    $(document).on('touchstart click', '.acc-btn', function() {
-        if (!clickPolice) {
-            clickPolice = true;
+	$(document).on('touchstart click', '.acc-btn', function () {
+		if (!clickPolice) {
+			clickPolice = true;
 
-            var currIndex = $(this).index('.acc-btn'),
-                targetHeight = $('.acc-content-inner').eq(currIndex).outerHeight();
+			var currIndex = $(this).index('.acc-btn'),
+				targetHeight = $('.acc-content-inner').eq(currIndex).outerHeight();
 
-            $('.acc-btn h4').removeClass('selected');
-            $(this).find('h4').addClass('selected');
+			$('.acc-btn h4').removeClass('selected');
+			$(this).find('h4').addClass('selected');
 
-            $('.acc-content').stop().animate({ height: 0 }, animTime);
-            $('.acc-content').eq(currIndex).stop().animate({ height: targetHeight }, animTime);
+			$('.acc-content').stop().animate({
+				height: 0
+			}, animTime);
+			$('.acc-content').eq(currIndex).stop().animate({
+				height: targetHeight
+			}, animTime);
 
-            setTimeout(function() { clickPolice = false; }, animTime);
-        }
+			setTimeout(function () {
+				clickPolice = false;
+			}, animTime);
+		}
 
-    });
+	});
 
 
 }
 
 // bind listeners functions
 function bindElementsEvents() {
+	//for files
+	DQ('#trigger-file-1').addEventListener('click', uploadFiles);
+	console.log("weooeo");
+	DQ('#upload-1 .reset').addEventListener('click', resetFilesUpload);
+	DQ('#compare').addEventListener('click', compareFiles);
 
-    //for files
-    DQ('#trigger-file-1').addEventListener('click', uploadFiles);
-    console.log("weooeo");
-    DQ('#upload-1 .reset').addEventListener('click', resetFilesUpload);
-    DQ('#compare').addEventListener('click', compareFiles);
+	//for folder
+	DQ('#trigger-file-2').addEventListener('click', uploadFolder);
+	DQ('#upload-2 .reset').addEventListener('click', resetFolderUpload);
+	DQ('#compare-folder').addEventListener('click', compareFolder);
+	DQ('#stop-compare').addEventListener('click', stopComparing);
 
-    //for folder
-    DQ('#trigger-file-2').addEventListener('click', uploadFolder);
-    DQ('#upload-2 .reset').addEventListener('click', resetFolderUpload);
-    DQ('#compare-folder').addEventListener('click', compareFolder);
-    DQ('#stop-compare').addEventListener('click', stopComparing);
-
-    DQ('#save-results').addEventListener('click', saveResults);
-    // DQ('#info-button').addEventListener('click', showInfo);
+	DQ('#save-results').addEventListener('click', saveResults);
+	// DQ('#info-button').addEventListener('click', showInfo);
 }
 
 function disableButtons() {
-    $('#compare-folder').addClass('ui basic disabled loading button');
-    if ($("#compare-folder").hasClass("loading")) {
-        $("#compare").addClass("ui basic disabled button")
-    }
+	$('#compare-folder').addClass('ui basic disabled loading button');
+	if ($("#compare-folder").hasClass("loading")) {
+		$("#compare").addClass("ui basic disabled button")
+	}
 }
 
 function enableButtons() {
-
-    if ($("#compare-folder").hasClass("loading")) {
-        $("#compare").removeClass("ui basic disabled button")
-    }
-    $('#stop-compare').removeClass('ui basic disabled loading button active');
-    $('#compare-folder').removeClass('ui basic disabled loading button active');
+	if ($("#compare-folder").hasClass("loading")) {
+		$("#compare").removeClass("ui basic disabled button")
+	}
+	$('#stop-compare').removeClass('ui basic disabled loading button active');
+	$('#compare-folder').removeClass('ui basic disabled loading button active');
 }
 
 
@@ -104,24 +108,24 @@ function enableButtons() {
 /***  files comparision functions ***/
 
 function uploadFiles() {
-    eel.pyGetFilePath()(function(result) {
-        renderSelectedFiles(result);
-    });
+	eel.pyGetFilePath()(function (result) {
+		renderSelectedFiles(result);
+	});
 }
 
 function renderSelectedFiles(fileNames = []) {
-    //files template
-    updateAppState({
-        action: 'reset'
-    });
-    updateAppState({
-        action: 'add',
-        fileNames: fileNames
-    });
+	//files template
+	updateAppState({
+		action: 'reset'
+	});
+	updateAppState({
+		action: 'add',
+		fileNames: fileNames
+	});
 
-    const upload = DQ(`#upload-1`);
+	const upload = DQ(`#upload-1`);
 
-    const template = `${fileNames
+	const template = `${fileNames
 		.map(fileName => `<div class="file file--${fileName.replace('.', '-')}">
      <div class="name"><span>${fileName}</span></div>
      <div class="progress active"></div>
@@ -423,6 +427,7 @@ function updateResultsSubtitle(title) {
 /* eel exposed functions to python */
 
 eel.expose(get_pair_result);
+
 function get_pair_result(err, result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] ]
 	let pair = result[2]; // the names of the files
 	let preds;
