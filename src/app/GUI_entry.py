@@ -11,7 +11,7 @@ import time
 PATH1 = ""
 PATH2 = ""
 CURRENT_FOLDER = ""
-KEEP_FOLDER_COMPARE = True
+KEEP_FOLDER_COMPARING = True
 
 # init GUI window (select the GUI folder)
 eel.init('GUI')
@@ -20,8 +20,8 @@ eel.init('GUI')
 
 @eel.expose
 def disable_folder_comparing():
-	global KEEP_FOLDER_COMPARE
-	KEEP_FOLDER_COMPARE = False	
+	global KEEP_FOLDER_COMPARING
+	KEEP_FOLDER_COMPARING = False	
 
 @eel.expose
 def gui_entry_files():
@@ -31,26 +31,26 @@ def gui_entry_files():
 		return
 	err, res = _gui_entry(PATH1, PATH2, False)
 	res.append([PATH1.split("/")[-1], PATH2.split("/")[-1]])
-	# return err too?
+	
 	return err, res
 
 @eel.expose
 def gui_entry_folder():
 	global CURRENT_FOLDER
-	global KEEP_FOLDER_COMPARE
-	KEEP_FOLDER_COMPARE = True
+	global KEEP_FOLDER_COMPARING
+	KEEP_FOLDER_COMPARING = True
 	if (CURRENT_FOLDER == ""):
 		return
 	pair_list = get_pair_list(CURRENT_FOLDER)
 	count = 0
 	for pair in pair_list:
-		if(not KEEP_FOLDER_COMPARE):   #break point from JS
+		if(not KEEP_FOLDER_COMPARING):   #break point from JS
 			print("STOP COMPARINGG")
 			return
 		file1 = pair[0].split("\\")[-1]
 		file2 = pair[1].split("\\")[-1]
-		err, res = _gui_entry(pair[0], pair[1], False)
-		# err, res = "" , ["ggg",[0.50,0.50]]
+		#err, res = _gui_entry(pair[0], pair[1], False)
+		err, res = "" , ["ggg",[0.50,0.50]]
 
 		res.append([file1, file2])
 		eel.get_pair_result(err,res)()

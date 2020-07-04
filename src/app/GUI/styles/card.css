@@ -1,67 +1,67 @@
 .card {
-	/* min-width: 400px; */
-	/* min-height: 260px; */
-	margin-bottom: 10px;
-	border-radius: 5px;
-	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-	background: #fff;
-	animation: fadeup 0.5s 0.5s ease both;
-	transform: translateY(20px);
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    background: #fff;
+    animation: fadeup 0.5s 0.5s ease both;
+    transform: translateY(20px);
     opacity: 0;
     min-height: 240px;
     padding-bottom: 10px;
 }
+
 .card header {
-	background-color: var(--primary-color);
-	border-top-left-radius: 5px;
-	border-top-right-radius: 5px;
-	text-align: center;
-}
-.card header p {
-	color: #fff;
-	font-size: 40px;
-	margin: 0;
-	padding: 10px 0;
-}
-.card header p i {
-	transform: translateY(20px);
-	opacity: 0;
-	font-size: 30px;
-	animation: fadeup 0.5s 1s ease both;
+    background-color: var(--primary-color);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    text-align: center;
 }
 
+.card header p {
+    color: #fff;
+    font-size: 40px;
+    margin: 0;
+    padding: 10px 0;
+}
+
+.card header p i {
+    transform: translateY(20px);
+    opacity: 0;
+    font-size: 30px;
+    animation: fadeup 0.5s 1s ease both;
+}
 
 .card header p i.fa-file-text {
     position: relative;
     top: -4px;
 }
 
-
 .card header p .up {
-	font-weight: bold;
-	transform: translateX(-20px);
-	display: inline-block;
-	opacity: 0;
-	animation: faderight 0.5s 1.5s ease both;
+    font-weight: bold;
+    transform: translateX(-20px);
+    display: inline-block;
+    opacity: 0;
+    animation: faderight 0.5s 1.5s ease both;
 }
+
 .card header p .load {
-	display: inline-block;
-	font-weight: 100;
-	margin-left: -8px;
-	transform: translateX(-20px);
-	opacity: 0;
-	animation: faderight 1s 1.5s ease both;
+    display: inline-block;
+    font-weight: 100;
+    margin-left: -8px;
+    transform: translateX(-20px);
+    opacity: 0;
+    animation: faderight 1s 1.5s ease both;
 }
 
 @keyframes fadeup {
-	to {
-		transform: translateY(0);
-		opacity: 1;
-	}
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
+
 @keyframes faderight {
-	to {
-		transform: translateX(0);
-		opacity: 1;
-	}
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }

@@ -20,7 +20,7 @@
     <header class="_header">
         <aside>
             <!-- <i class="balance scale icon big"></i> -->
-            <img src="../logo.jpeg" width="70" height="70">
+            <img src="assets/logo.jpeg" width="65" height="65">
         </aside>
         <h1> Author Verification</h1>
         <nav class="menu">
@@ -28,84 +28,80 @@
             <i id="info-button" class=" info circle large link icon help-button" aria-hidden="true"></i>
         </nav>
     </header>
-    <main class="flex">
-        <div>
-            <div id="upload-1" class="upload card">
-                <div class="upload-files">
-                    <header>
-                        <p>
+    <main class="main-grid">
 
-                            <i class="cloud icon" aria-hidden="true"></i>
-                            <span class="up">Files</span>
-                            <span class="load">&nbsp;selection</span>
-                        </p>
-                    </header>
-                    <div class="body" id="trigger-file-1">
-                        <i class="file icon pointer-none" aria-hidden="true"></i>
-                        <p class="pointer-none"><strong>Click</strong>
-                            to browse files</p>
-                    </div>
-                    <footer>
-                        <div class="divider">
-                            <span>
+        <div id="upload-1" class="upload card">
+            <div class="upload-files">
+                <header>
+                    <p>
+
+                        <i class="cloud icon" aria-hidden="true"></i>
+                        <span class="up">Files</span>
+                        <span class="load">&nbsp;selection</span>
+                    </p>
+                </header>
+                <div class="body" id="trigger-file-1">
+                    <i class="file icon pointer-none" aria-hidden="true"></i>
+                    <p class="pointer-none"><strong>Click</strong> to browse files</p>
+                </div>
+                <footer>
+                    <div class="divider">
+                        <span>
                                 <AR>Loaded</AR>
                             </span>
-                        </div>
-                        <div class="list-files">
-                            <!--   template   -->
-                        </div>
-                        <div class="controls">
-                            <button class="reset"><i class="undo icon"></i>New Selection</button>
-                            <button id="compare">Compare</button>
-                        </div>
-
-                    </footer>
-                </div>
-            </div>
-
-            <div id="upload-2" class="upload card">
-                <div class="upload-files">
-                    <header>
-                        <p>
-                            <i class="cloud icon" aria-hidden="true"></i>
-                            <span class="up">Folder</span>
-                            <span class="load">&nbsp;selection</span>
-                        </p>
-                    </header>
-                    <div class="body" id="trigger-file-2">
-                        <i class="folder open icon pointer-none" aria-hidden="true"></i>
-                        <p class="pointer-none"><strong>Click</strong>
-                            to browse folder</p>
                     </div>
-                    <footer>
-                        <div class="divider">
-                            <span>
-                                <AR>Loaded</AR>
-                            </span>
-                        </div>
-                        <div class="list-files">
-                            <!--   template   -->
-                        </div>
-                        <div class="controls">
+                    <div class="list-files">
+                        <!--   template   -->
+                    </div>
+                    <div class="controls">
+                        <button class="reset"><i class="undo icon"></i>New Selection</button>
+                        <button id="compare">Compare</button>
+                    </div>
 
-                            <button id="reset-files" class="reset"><i class="undo icon"></i>New Selection</button>
-                            <button id="stop-compare">STOP</button>
-                            <button id="compare-folder">Compare</button>
-                        </div>
-                    </footer>
-                </div>
+                </footer>
             </div>
         </div>
 
-        <div id="folder-result"></div>
-        <div id="chart-container" class="chart card hide ">
+        <div id="upload-2" class="upload card">
+            <div class="upload-files">
+                <header>
+                    <p>
+                        <i class="cloud icon" aria-hidden="true"></i>
+                        <span class="up">Folder</span>
+                        <span class="load">&nbsp;selection</span>
+                    </p>
+                </header>
+                <div class="body" id="trigger-file-2">
+                    <i class="folder open icon pointer-none" aria-hidden="true"></i>
+                    <p class="pointer-none"><strong>Click</strong> to browse folder</p>
+                </div>
+                <footer>
+                    <div class="divider">
+                        <span>
+                                <AR>Loaded</AR>
+                            </span>
+                    </div>
+                    <div class="list-files">
+                        <!--   template   -->
+                    </div>
+                    <div class="controls">
+
+                        <button id="reset-files" class="reset"><i class="undo icon"></i>New Selection</button>
+                        <button id="stop-compare">STOP</button>
+                        <button id="compare-folder">Compare</button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+
+
+        <div id="chart-container" class="chart card ">
             <header>
                 <div id="drop-down" class="ui floating scrolling dropdown button ">
                     <span id='drop-down-title'>Comparison results <i class="dropdown icon"></i></span>
                     <div id="drop-menu" class="menu">
                         <div class="header">
-                            <i class="tags icon"></i>
-                            Comparison results
+                            <i class="tags icon"></i> Comparison results
                         </div>
                         <div class="divider"></div>
                     </div>
@@ -156,14 +152,12 @@
     </div>
 
 
-    <div id="help-button-popup">   
+    <div id="help-button-popup">
         <div class="help-popup">
             <p>
-                 Select two handwritten scanned text and we will give you
-                 the chance the texts were written by the same person.  </p>
-              <p>  The program is intended for use by the National Institute for Testing & Evaluation to identify fraud in exam, 
-                but it can be a solution in a wide range of areas.</p>
-           
+                Select two handwritten scanned text and we will give you the chance the texts were written by the same person. </p>
+            <p> The program is intended for use by the National Institute for Testing & Evaluation to identify fraud in exam, but it can be a solution in a wide range of areas.</p>
+
             <div class="acc-container">
 
                 <div class="acc-btn">
@@ -171,11 +165,8 @@
                 </div>
                 <div class="acc-content open">
                     <div class="acc-content-inner">
-                        <p>An external account is one that can be used by non-Kier employees to access Kier SharePoint.
-                            The external person will be sent a username and password to log onto the system. You will
-                            then be able to manage thier access in the same way as you currently manage other users.
-                            There accounts can opnly be used to access SharePoint sites with https://ext.kier.co.uk or
-                            https://ext.kier.group at the beginning of the URL.</p>
+                        <p>An external account is one that can be used by non-Kier employees to access Kier SharePoint. The external person will be sent a username and password to log onto the system. You will then be able to manage thier access in the same
+                            way as you currently manage other users. There accounts can opnly be used to access SharePoint sites with https://ext.kier.co.uk or https://ext.kier.group at the beginning of the URL.</p>
                         <p>Try asking Kiera to create an account to get started.</p>
                     </div>
                 </div>
@@ -208,7 +199,7 @@
                         <p>If you have any comments or suggestions then we're always happy to hear from you:</p>
                         <p><a href="https://github.com/shachar-israeli">Shachar Israeli</a></p>
                         <p><a href="https://github.com/DanielGabay">Daniel Gabay</a></p>
-                        
+
                     </div>
                 </div>
             </div>
