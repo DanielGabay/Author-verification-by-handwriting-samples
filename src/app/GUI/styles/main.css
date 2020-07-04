@@ -63,7 +63,8 @@ a {
     flex-grow: 1;
     display: grid;
     grid-gap: var(--spaces);
-    grid-template-areas: "upload-1 chart-container chart-container" "upload-2 chart-container chart-container";
+    grid-auto-columns: 1fr 2fr;
+    grid-template-areas: "upload-1 chart-container " "upload-2 chart-container";
     margin: var(--spaces);
 }
 
