@@ -17,7 +17,7 @@ initApp();
 function initApp() {
 	//Init
 	bindElementsEvents();
-	enableInfoEvens();
+	enableInfoEvents();
 
 	$('.ui.dropdown') // drop down settings
 		.dropdown({
@@ -27,7 +27,7 @@ function initApp() {
 
 }
 
-function enableInfoEvens() {
+function enableInfoEvents() {
 	$('.help-button').click(function (event) {
 		event.preventDefault();
 		Swal.fire({
@@ -427,7 +427,6 @@ function updateResultsSubtitle(title) {
 /* eel exposed functions to python */
 
 eel.expose(get_pair_result);
-
 function get_pair_result(err, result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] ]
 	let pair = result[2]; // the names of the files
 	let preds;
