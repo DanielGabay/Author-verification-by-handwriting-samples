@@ -7,7 +7,7 @@ import eel
 import _global
 from classes import CompareDocuments, Document, Stats
 from prepare_document import get_prepared_doc
-from create_output import generate_conclusion,generate_gui_output,generate_output,print_ae_monkey_results
+from create_output import generate_output, print_ae_monkey_results
 
 #Recognition Phase
 from recognition_functions import (get_identified_letters,
@@ -35,7 +35,7 @@ def _gui_entry_init_global():
 	try:
 		_global.init('hebrew', test_mode=False)
 	except Exception as e:
-		return "Error: model/models not found in models diractory"
+		return "Error: model/models not found in models diractory.\nPlease verify all models are correctly in place."
 
 
 def init_doc(doc, only_save_letters=False):
@@ -85,7 +85,6 @@ def main_app(doc_name1, doc_name2, test_mode=False):
 	'''
 	output = generate_output(compare_docs)
 	
-	# gui_output = generate_gui_output(compare_docs) + generate_conclusion(compare_docs)
 
 	result_list.append(compare_docs.final_result['proba'])
 	dbg_print(output)
@@ -196,26 +195,6 @@ def model_acc(tn, tp, fn, fp):
 	if total == 0:
 		return 0
 	return (tn+tp)/(total) * 100
-
-def print_ae_monkey_results(s, len_b):
-	print("\n------------------")
-	print("Number of same pairs checked:{}".format(len_b))
-	print("Sum of al pairs checked: {}".format(s.count_num_of_tests))
-	print("\n------------------")
-	print_conf_matrix("Monkey & letter AE Conf & ssim Matrix:", s.tn, s.tp, s.fn, s.fp)
-	print("Model accuracy: {0:.2f}%".format(model_acc(s.tn, s.tp, s.fn, s.fp)))
-	print("\n------------------")
-	print_conf_matrix("Only letter AE Conf Matrix:", s.ae_tn, s.ae_tp, s.ae_fn, s.ae_fp)
-	print("Model accuracy: {0:.2f}%".format(model_acc(s.ae_tn, s.ae_tp, s.ae_fn, s.ae_fp)))
-	print("\n------------------")
-	print_conf_matrix("Only Monkey Conf Matrix:", s.monkey_tn, s.monkey_tp, s.monkey_fn, s.monkey_fp)
-	print("Model accuracy: {0:.2f}%".format(model_acc(s.monkey_tn, s.monkey_tp, s.monkey_fn, s.monkey_fp)))
-	print("\n------------------")
-	print_conf_matrix("Only ssim Conf Matrix:", s.ssim_tn, s.ssim_tp, s.ssim_fn, s.ssim_fp)
-	print("Model accuracy: {0:.2f}%".format(model_acc(s.ssim_tn, s.ssim_tp, s.ssim_fn, s.ssim_fp)))
-	print("\n------------------")
-	print_conf_matrix("Final Result Conf Matrix:", s.final_tn, s.final_tp, s.final_fn, s.final_fp)
-	print("Model accuracy: {0:.2f}%".format(model_acc( s.final_tn, s.final_tp, s.final_fn, s.final_fp)))
 
 def get_doc_by_name(all_docs, file_name):
 	for doc in all_docs:

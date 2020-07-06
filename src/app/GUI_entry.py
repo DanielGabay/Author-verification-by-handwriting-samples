@@ -1,10 +1,11 @@
-# import pkg_resources.py2_warn # import just as workaround for pyinstaller error
+import pkg_resources.py2_warn # import just as workaround for pyinstaller error
 import eel
 from main import _gui_entry, get_folder_pairs_files, _gui_entry_init_global
 from tkinter import filedialog
 from tkinter import *
 from tkinter.filedialog import askopenfile
-import csv
+import pandas as pd
+from pandas import ExcelWriter
 import time
 
 # globals
@@ -46,12 +47,11 @@ def gui_entry_folder():
 	global KEEP_FOLDER_COMPARING
 	KEEP_FOLDER_COMPARING = True
 	if CURRENT_FOLDER == "":
-		return
+		return "FOLER_NOT_SELECTED"
 
 	pair_list = get_folder_pairs_files(CURRENT_FOLDER)
 	for pair in pair_list:
 		if not KEEP_FOLDER_COMPARING:   #break point from JS
-			print("STOP COMPARINGG")
 			return
 
 		err, res = _gui_entry(pair[0], pair[1], False)
@@ -85,21 +85,21 @@ def pyGetFolderPath():
 	CURRENT_FOLDER = get_input_folder()
 	
 	if CURRENT_FOLDER is "":
-		print("E")
 		return 'E'
 	return CURRENT_FOLDER.split("/")[-1]
 
+def convert_data_to_xlsx(data):
+	return [get_line_from_data(data[i]) for i in range(len(data))]
+
 @eel.expose
-def save_result_to_excel(data,folderName = ""):
+def save_result_to_excel(data, folderName = ""):
 	timestr = time.strftime("%d-%m-%Y_%H-%M-%S")
-	csv_name = "{}_{}.csv".format(folderName,timestr)
-	with open(csv_name, 'w', newline='') as csv_file:
-		csvWriter = csv.writer(csv_file, delimiter=',')
-		header = ["file1", "file2", "predicted", "confident"]
-		csvWriter.writerow(header)
-		for i in range(len(data)):
-			line = get_line_from_data(data[i])
-			csvWriter.writerow(line)
+	header = ["file1", "file2", "predicted", "confident"]
+	data = convert_data_to_xlsx(data)
+	df = pd.DataFrame(data, columns=header)
+	xlsx_name = "{}_{}.xlsx".format(folderName, timestr)
+	with ExcelWriter(xlsx_name) as writer:
+		df.to_excel(writer)
 
 def get_input_files(title):
 	root = Tk()

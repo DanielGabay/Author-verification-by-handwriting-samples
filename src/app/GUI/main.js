@@ -267,7 +267,9 @@ function renderSelectedFolder(folderName, folderNum) {
 function compareFolder() {
 	disableButtons();
 	showLoader();
-	eel.gui_entry_folder()(function () {
+	eel.gui_entry_folder()(function (err) {
+		if (err == "FOLER_NOT_SELECTED")
+			return;
 		$('#save-results').addClass('active');
 		Swal.fire({
 			icon: 'success',
@@ -408,29 +410,44 @@ function resultToPreds(result) {
 
 function saveResults() {
 	if (Array.isArray(dropDownArray) && dropDownArray.length) {
-		const resultsTitle = (dropDownArray.length === 1) ? "Save Result?" : `Save all ${dropDownArray.length} Results?`;
 		Swal.fire({
-			title: resultsTitle,
-			icon: 'question',
+			title: 'Enter excel file name',
+			input: 'text',
 			showCancelButton: true,
 			confirmButtonColor: '#3085d6',
 			cancelButtonColor: '#d33',
-			confirmButtonText: 'Save'
-		}).then((result) => {
+			confirmButtonText: 'Save',
+			showLoaderOnConfirm: true,
+			inputValidator: (value) => {
+			  if (!value) {
+				return 'Please insert a file name'
+			  }
+			}
+		  }).then((result) => {
 			if (result.value) {
-
-				eel.save_result_to_excel(dropDownArray, FOLDER_NAME)(function () {
-
+				Swal.fire({
+					title: 'Enter excel file name',
+					input: 'text',
+					showCancelButton: true,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'Save',
+					inputValidator: (value) => {
+					  if (!value) {
+						return 'You need to write a name!'
+					  }
+					}
+				  })
+				eel.save_result_to_excel(dropDownArray, result.value)(function () {
 					Swal.fire({
 						icon: 'success',
-						title: 'Results has been saved to your current .exe diractory',
+						title: `${result.value} has been saved to your current .exe diractory`,
 						showConfirmButton: false,
 						timer: 2500
 					})
 				})
 			}
 		})
-
 	} else {
 		alert("empty")
 	}
