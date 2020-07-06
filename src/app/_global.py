@@ -4,6 +4,16 @@ import os
 
 import sys
 
+def models_path_for_pyinstaller(onefile=True):
+	if onefile:
+		BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+	else:
+		BASE_DIR = os.path.dirname(sys.executable)
+
+	MODELS_PATH = os.path.join(BASE_DIR, "models\\")
+	return MODELS_PATH
+
+
 def init(language='hebrew', test_mode=True, data_path=None):
 	'''
 	@param: language:
@@ -67,13 +77,13 @@ def init(language='hebrew', test_mode=True, data_path=None):
 	# set the base dir according to the running file: .exe or .py
 	BASE_DIR = ""
 	if getattr(sys, 'frozen', False):
-		BASE_DIR = os.path.dirname(sys.executable)
+		MODELS_PATH = models_path_for_pyinstaller(onefile=True)
 		DEBUG_MODE = False
 	elif __file__:
-		BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+		# path for .py is same as onefile for pyinstaller
+		MODELS_PATH = models_path_for_pyinstaller(onefile=True)
 		DEBUG_MODE = True
 	
-	MODELS_PATH = os.path.join(BASE_DIR, "models\\")
 	DATA_PATH = os.path.join(BASE_DIR, "data\\")
 
 	if data_path is not None:

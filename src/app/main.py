@@ -63,7 +63,7 @@ def main_app(doc_name1, doc_name2, test_mode=False):
 	result_list = list()
 
 	"""
-	Initialize Variable& Settings~~~~
+	Initialize Variable & Settings
 	"""
 	_global.init('hebrew', test_mode=test_mode)
 
