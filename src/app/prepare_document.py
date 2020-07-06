@@ -27,6 +27,7 @@ def cut_width(page, page_num, is_png=False):
 		else: # is tiff
 			right = width - 100
 			bottom = bottom - 622
+	
 	cropped = page.crop((left, top, right, bottom))
 	# cropped.show()
 	return cropped

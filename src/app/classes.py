@@ -89,7 +89,6 @@ class AlgoPredict():
 			return False, res
 		else:  # same authors
 			return True, result[0][1]
-			# print("<Same Author> [confident: {0:.2f}%]".format(result[0][1]*100))
 
 class CompareDocuments():
 	'''
@@ -129,7 +128,7 @@ class CompareDocuments():
 	# def showImages(self, img1,img2, prec):
 	# 	plt.subplot(121), plt.imshow(img1,cmap='gray')
 	# 	plt.subplot(122), plt.imshow(img2,cmap='gray')
-	# 	plt.title('prediction: {}'.format(prec)) 
+	# plt.title('prediction: {}'.format(prec)) 
 	# 	plt.show()
 
 	'''

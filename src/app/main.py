@@ -15,18 +15,34 @@ from recognition_functions import (get_identified_letters,
 #Detection Phase
 from detection_functions import detect_lines, get_letters
 
-py_print_to_gui = False
+def dbg_print(str):
+	if _global.DEBUG_MODE:
+		print(str)
 
-def print_to_gui(str):
-	if py_print_to_gui:
-		eel.print_from_py(str)()
+def _gui_entry(doc_name1, doc_name2, test_mode=False):
+	file_names_from_path = [os.path.split(doc_name1)[1], os.path.split(doc_name2)[1]]
+	try:
+		result = main_app(doc_name1, doc_name2, test_mode=test_mode)
+		result.insert(0, file_names_from_path)
+		return "", result
+	except FileNotFoundError:
+		return "Error: File not found on data folder", [file_names_from_path, [0.5, 0.5]]
+	except Exception as e:
+		print(e)
+		return "Error {}".format(e), [file_names_from_path, [0.5, 0.5]]
+
+def _gui_entry_init_global():
+	try:
+		_global.init('hebrew', test_mode=False)
+	except Exception as e:
+		return "Error: model/models not found in models diractory"
+
 
 def init_doc(doc, only_save_letters=False):
 	'''
 	Detection Phase
 	'''
 	path = os.path.join(_global.DATA_PATH, doc.name) if _global.TEST_MODE else doc.name
-	print_to_gui(path) # can be removed later
 	doc.doc_img = get_prepared_doc(path)
 	detected_lines = detect_lines(doc.doc_img)
 	detected_letters = get_letters(detected_lines)
@@ -34,29 +50,20 @@ def init_doc(doc, only_save_letters=False):
 	'''
 	Recognition Phase
 	'''
-	print_to_gui("Identify Letters") # can be removed later
 	doc.id_letters = get_identified_letters(detected_letters)
-	print_to_gui("Getting Monkey Features") # can be removed later
 	doc.monkey_features = get_monkey_features(doc.id_letters)
-	print_to_gui("Getting AutoEncoder Features") # can be removed later
 	get_letter_ae_features(doc.id_letters)
 
 	return doc
 
-def _gui_entry(doc_name1, doc_name2, test_mode=False):
-	try:
-		result = main_app(doc_name1, doc_name2, test_mode=test_mode)
-		return "", result
-	except FileNotFoundError:
-		return "Error: File not found on data folder", None
-	except Exception as e:
-		print(e)
-		return "Error {}".format(e), None
-
-
 def main_app(doc_name1, doc_name2, test_mode=False):
+	'''
+	result_list: [ [doc_name1, doc_name2], final_res_proba ]
+	'''
+	result_list = list()
+
 	"""
-	Initialize Variable& Settings
+	Initialize Variable& Settings~~~~
 	"""
 	_global.init('hebrew', test_mode=test_mode)
 
@@ -66,12 +73,11 @@ def main_app(doc_name1, doc_name2, test_mode=False):
 	doc1 = init_doc(Document(doc_name1))
 	doc2 = init_doc(Document(doc_name2))
 
-	print("Comparing: [{}] [{}]".format(doc1.name, doc2.name))
+	dbg_print("Comparing: [{}] [{}]".format(doc1.name, doc2.name))
 	'''
 	Verification Phase
 	'''
 	compare_docs = CompareDocuments(doc1, doc2)
-	print_to_gui("Verifying") # can be removed later
 	compare_docs.verify()
 
 	'''
@@ -79,15 +85,11 @@ def main_app(doc_name1, doc_name2, test_mode=False):
 	'''
 	output = generate_output(compare_docs)
 	
-	gui_output = generate_gui_output(compare_docs)
 	# gui_output = generate_gui_output(compare_docs) + generate_conclusion(compare_docs)
-	result_list = []
-	result_list.append(gui_output)
+
 	result_list.append(compare_docs.final_result['proba'])
-	print(output)
-	print("-----")
-	print(gui_output)
-	
+	dbg_print(output)
+
 	return result_list
 
 def print_conf_matrix(title, tn, tp, fn, fp):
@@ -202,10 +204,6 @@ def print_ae_monkey_results(s, len_b):
 	print("\n------------------")
 	print_conf_matrix("Monkey & letter AE Conf & ssim Matrix:", s.tn, s.tp, s.fn, s.fp)
 	print("Model accuracy: {0:.2f}%".format(model_acc(s.tn, s.tp, s.fn, s.fp)))
-	# print_conf_matrix("Monkey & letter AE Conf Matrix:", s.tn, s.tp, s.fn, s.fp)
-	# print("Model accuracy: {0:.2f}% (*NOTE: not includes Undecided results!)".format(model_acc(s.tn, s.tp, s.fn, s.fp)))
-	# print("Undecided Results:\n->conflict:{}\n-->conflict_while_same:{}\n-->conflict_while_diff:{}"\
-		# .format(s.conflict, s.conflict_while_same,s.conflict_while_diff))
 	print("\n------------------")
 	print_conf_matrix("Only letter AE Conf Matrix:", s.ae_tn, s.ae_tp, s.ae_fn, s.ae_fp)
 	print("Model accuracy: {0:.2f}%".format(model_acc(s.ae_tn, s.ae_tp, s.ae_fn, s.ae_fp)))
@@ -270,30 +268,24 @@ def test_all_same(test_random_different=0):
 
 	print_ae_monkey_results(s, len(b_files))
 
-
-
-def get_pair_list(FOLDER_PATH , difference_sign = 'b'):
-
-	print("choose folder: {}".format(FOLDER_PATH))
-	b_files =  []
+def get_folder_pairs_files(FOLDER_PATH , difference_sign = 'b'):
 	a_files = []
+	b_files =  []
 	for _, _, files in os.walk(FOLDER_PATH):
-		b_files = [x for x in files if difference_sign in x]
 		a_files = [y for y in files if difference_sign not in y]
-
+		b_files = [x for x in files if difference_sign in x]
+	
 	pair_list = []
-	for a_file in a_files:
-		for b_file in b_files:
-			if a_file == b_file.replace(difference_sign, ''):
-				# print("file to compare: {} with {}".format(a_file,b_file))
-				path1 = os.path.join(FOLDER_PATH, "{}".format(a_file))
-				path2 = os.path.join(FOLDER_PATH, "{}".format(b_file))
-				pair_list.append([path1,path2])
+	for b_file in b_files:
+		pair_of_b = b_file.replace(difference_sign, '')
+		if pair_of_b in a_files:
+			path1 = os.path.join(FOLDER_PATH, "{}".format(pair_of_b))
+			path2 = os.path.join(FOLDER_PATH, "{}".format(b_file))
+			pair_list.append([path1,path2])
 
 	return pair_list		
 
 if __name__ == "__main__":
-	_global.init('hebrew',monkey_by_vectors=True, print_globals=True, data_path="data")
-	# test_all_same(1000)
-	main_app('9.tiff', '8.tiff', test_mode=True)
-	# result_from_folder(_global.DATA_PATH)
+	_global.init('hebrew',monkey_by_vectors=True, data_path="newData")
+	# test_all_same(97)
+	main_app('43b.tiff', '43.tiff', test_mode=True)

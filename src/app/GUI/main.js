@@ -16,6 +16,17 @@ initApp();
 
 function initApp() {
 	//Init
+	eel.init_py_main_global()(function (err) {
+		console.log(err)
+		if (err != null) {
+			Swal.fire({
+				icon: 'error',
+				title: 'Error on init',
+				text: err,
+			});
+		}
+	});
+
 	bindElementsEvents();
 	enableInfoEvents();
 
@@ -73,7 +84,6 @@ function enableInfoEvents() {
 function bindElementsEvents() {
 	//for files
 	DQ('#trigger-file-1').addEventListener('click', uploadFiles);
-	console.log("weooeo");
 	DQ('#upload-1 .reset').addEventListener('click', resetFilesUpload);
 	DQ('#compare').addEventListener('click', compareFiles);
 
@@ -159,23 +169,17 @@ function renderSelectedFiles(fileNames = []) {
 function compareFiles() {
 	showLoader();
 	eel.gui_entry_files()(function (list) {
-		const [err, result] = list
-		console.log(err)
-		console.log(result);
 		hideLoader();
-		updateResultsSubtitle(result[2][0] + " & " + result[2][1]);
-		let pair = result[2]; // the names of the files
-		if (err != "") {
-			console.log(err)
-			preds = [50, 50]
-		} else {
-			preds = resultToPreds(result)
-			preds = preds.map(Number);
-		}
+		const [err, result] = list
+		let pair = result[0]; // the names of the files
 
-		console.log(preds)
+		title = get_title_if_err(pair, err)
+		preds = resultToPreds(result)
+		preds = preds.map(Number);
+
+		updateResultsSubtitle(title);
 		insert_dropdown(pair, preds, err)
-		createChart(pair, preds);
+		createChart(title, preds);
 	})
 
 }
@@ -296,6 +300,17 @@ function resetFolderUpload(evnt) {
 
 /***  misc functions ***/
 
+function get_title_if_err(pair, err) {
+	if (err != "") {
+		title = `**ERROR OCCURED** ${pair[0]} & ${pair[1]}`
+		console.log(err)
+	} else {
+		title = `${pair[0]} & ${pair[1]}`
+	}
+	return title
+}
+
+
 function updateAppState(options) {
 	const {
 		action,
@@ -330,18 +345,37 @@ function isLoaderOn() {
 /*** dropdown ***/
 
 function insert_dropdown(pair, preds, err) {
+	item_in_dropdown = false;
+	dropDownArray.every((item) => {
+		// check if new pair is already in dropdown
+		if (item.preds[0] == preds[0] &&
+			((item.file1 == pair[0] && item.file2 == pair[1]) ||
+				(item.file1 == pair[1] && item.file2 == pair[0]))) {
+			item_in_dropdown = true;
+			return false
+		}
+		return true;
+	})
+	if (item_in_dropdown) {
+		return;
+	}
+
 	let index = dropDownArray.push({
 		file1: pair[0],
 		file2: pair[1],
 		preds: preds,
 		error: err
 	});
+	let resultsIcon
 
 	const [diffPer, samePer] = preds;
-	let resultsIcon = (diffPer > samePer) ? "times" : "check";
+
+	resultsIcon = (diffPer > samePer) ? "times" : "check";
+
 	if (err != "") {
 		resultsIcon = "ban";
 	}
+
 	let str = "";
 	str += "<div id='item_" + (index - 1) + "' class='item'>";
 	str += " <i class='" + resultsIcon + " icon'></i>";
@@ -352,19 +386,17 @@ function insert_dropdown(pair, preds, err) {
 	div.innerHTML += str;
 
 	transition_dropdown();
-
 }
 
 function transition_dropdown() {
 	$('#drop-down').transition({
 		animation: 'glow',
-		duration: '2s',
+		duration: '2.5s',
 	});
 
-	let title = `Comparison results: ${dropDownArray.length}`;
+	let title = `Comparison results: ${dropDownArray.length} <i class="angle down icon"></i>`;
 	var div = document.getElementById('drop-down-title');
 	div.innerHTML = title;
-
 }
 
 /*** results ***/
@@ -400,23 +432,18 @@ function saveResults() {
 		})
 
 	} else {
-		alert("empty!!!")
+		alert("empty")
 	}
 }
 
 function displaySelectedPair(value, text, $choise) {
-	//createChart([50,50])
-	console.log("select!")
 	let itemId = $choise.attr('id');
 	let index = itemId.split("_")[1]
-	if (dropDownArray[index].error != "") {
-		console.log("dont let choose err")
-		return;
-	}
 	let preds = dropDownArray[index].preds
 	let pair = [dropDownArray[index].file1, dropDownArray[index].file2]
-	console.log(preds)
-	createChart(pair, preds)
+	err = dropDownArray[index].error
+	title = get_title_if_err(pair, err)
+	createChart(title, preds)
 }
 
 function updateResultsSubtitle(title) {
@@ -426,17 +453,20 @@ function updateResultsSubtitle(title) {
 
 /* eel exposed functions to python */
 
-eel.expose(get_pair_result);
-function get_pair_result(err, result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] ]
-	let pair = result[2]; // the names of the files
+eel.expose(set_pair_result);
+
+function set_pair_result(err, result) {
+	/* file_names , res_proba
+	[ [1b.tiff,1.tiff], [0.1,0.9] ]
+	*/
+	let pair = result[0]; // the names of the files
 	let preds;
-	if (err != "") {
-		console.log(err)
-		preds = [50, 50]
-	} else {
-		preds = resultToPreds(result)
-		preds = preds.map(Number);
-	}
+
+	title = get_title_if_err(pair, err)
+
+	preds = resultToPreds(result)
+	preds = preds.map(Number);
+
 	insert_dropdown(pair, preds, err)
 
 	if (isLoaderOn()) {
@@ -452,7 +482,7 @@ function get_pair_result(err, result) { /// [ ... , [0.8,0.2], [1b.tiff,1.tiff] 
 
 /***  Display results chart ***/
 
-function createChart(pair, scoresPercents) {
+function createChart(title, scoresPercents) {
 	const [diffPer, samePer] = scoresPercents;
 
 	DQ('#chart-container').classList.remove('hide');
@@ -460,13 +490,11 @@ function createChart(pair, scoresPercents) {
 		.getPropertyValue('--secondary-color');
 	const quaternaryColor = getComputedStyle(document.documentElement)
 		.getPropertyValue('--quaternary-color');
-	const resultsTitle = (diffPer > samePer) ? "Different Author" : "Same Author";
-	const files = pair[0] + " & " + pair[1];
+
 	// remove last graph and creates a new graph container
 	d3chart = $('#d3chartContainer')
 	d3chart.empty();
-	d3chart.append(`<br/><h1 id="pair-result"> ${files}</h1>`);
-	d3chart.append(`<br/><h2 id="result-title"> ${resultsTitle}</h2>`);
+	d3chart.append(`<br/><h1 id="pair-result"> ${title}</h1>`);
 	d3chart.append('<svg id="d3ChartSvg" viewBox="0 0 400 220"></svg>');
 
 

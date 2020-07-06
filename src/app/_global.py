@@ -4,8 +4,7 @@ import os
 
 import sys
 
-def init(language='hebrew', monkey_by_vectors=True,\
-		test_mode=True, data_path=None, print_globals=False):
+def init(language='hebrew', test_mode=True, data_path=None):
 	'''
 	@param: language:
 		Current version has the ability to process only hebrew docs.
@@ -45,25 +44,34 @@ def init(language='hebrew', monkey_by_vectors=True,\
 	global ENCODER_MODEL
 	global LETTERS_IMPROVED_MODEL
 	global MONKEY_MODEL
+	global DEBUG_MODE
 
 	'''
 	use this try block to check wether this init function was
-	called already.
-	at the first time: continue init
+	called already and the models are loaded correctly.
+	at the first time well get NameError-> continue init
 	else: return
 	'''
 	try:
+		aeLettersClassifier
+		monkeyClassifier
+		finalResultClassifier
 		lettersClassifier
+		lettersImprovedClassifier
+		encoder
 	except NameError:
 		pass
 	else:
 		return
 
+	# set the base dir according to the running file: .exe or .py
 	BASE_DIR = ""
 	if getattr(sys, 'frozen', False):
 		BASE_DIR = os.path.dirname(sys.executable)
+		DEBUG_MODE = False
 	elif __file__:
 		BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+		DEBUG_MODE = True
 	
 	MODELS_PATH = os.path.join(BASE_DIR, "models\\")
 	DATA_PATH = os.path.join(BASE_DIR, "data\\")
@@ -87,41 +95,38 @@ def init(language='hebrew', monkey_by_vectors=True,\
 		LETTERS_MODEL = 'hebLettersModel'
 		ENCODER_MODEL = 'hebLettersEncoder32'
 		LETTERS_IMPROVED_MODEL = 'hebLettersImprovedModel'
-		AE_LETTERS_MODEL = 'hebAutoEncoderDiffVecModel.sav'
+		AE_LETTERS_MODEL = 'hebAutoEncoderDiffVecModel_lr.sav'
 		FINAL_RESULT_MODEL = 'hebFinalResult_mlp.sav'
-		if monkey_by_vectors:
-			MONKEY_MODEL = 'hebMonkeyLettersByVectors_lr.sav'
-			# MONKEY_MODEL = 'hebMonkeyLettersByVectors_mlp.sav'
-			# MONKEY_MODEL = 'hebMonkeyLettersByVectors.sav'
-		else:
-			MONKEY_MODEL = 'hebMonkeyLettersBySum.sav'
+		MONKEY_MODEL = 'hebMonkeyLettersByVectors_lr.sav'
 		lang_letters = get_lang_letters_dict(language)
 		ae_trained_letters = get_ae_trained_letters(language)
 
 		'''
 		load all models
 		'''
-		aeLettersClassifier = joblib.load(MODELS_PATH + AE_LETTERS_MODEL)
-		monkeyClassifier = joblib.load(MODELS_PATH + MONKEY_MODEL)
-		finalResultClassifier = joblib.load(MODELS_PATH + FINAL_RESULT_MODEL)
-		lettersClassifier = load_model(MODELS_PATH, LETTERS_MODEL)
-		lettersImprovedClassifier = load_model(MODELS_PATH, LETTERS_IMPROVED_MODEL)
-		encoder = load_model(MODELS_PATH, ENCODER_MODEL)
-	if print_globals:
-		print("Monkey: {}\nAutoEncoder by predictions: {}".format(MONKEY_MODEL, AE_LETTERS_RESULT_BY_PRECENT))
-		print("AutoEncoder threshold: {}".format(AE_SUM_PRED_THRESH))
+		try:
+			aeLettersClassifier = joblib.load(MODELS_PATH + AE_LETTERS_MODEL)
+			monkeyClassifier = joblib.load(MODELS_PATH + MONKEY_MODEL)
+			finalResultClassifier = joblib.load(MODELS_PATH + FINAL_RESULT_MODEL)
+			lettersClassifier = load_model(MODELS_PATH, LETTERS_MODEL)
+			lettersImprovedClassifier = load_model(MODELS_PATH, LETTERS_IMPROVED_MODEL)
+			encoder = load_model(MODELS_PATH, ENCODER_MODEL)
+		except Exception as e:
+			raise
 
 def load_model(models_path, model_name):
 	'''
 	Load the model .h5 and .json files and compile it.
 	add lettersClassifier into _globals
 	'''
+	global DEBUG_MODE
 	json_file = open(os.path.join(models_path, model_name + ".json"), 'r')
 	loaded_model_json = json_file.read()
 	json_file.close()
 	classifier = model_from_json(loaded_model_json)
 	classifier.load_weights(os.path.join(models_path, model_name + ".h5"))
-	print("Loaded: {} from disk".format(model_name))
+	if DEBUG_MODE:
+		print("Loaded: {} from disk".format(model_name))
 	return classifier
 
 def get_ae_trained_letters(lang):

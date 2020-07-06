@@ -1,6 +1,6 @@
 # import pkg_resources.py2_warn # import just as workaround for pyinstaller error
 import eel
-from main import _gui_entry,get_pair_list
+from main import _gui_entry, get_folder_pairs_files, _gui_entry_init_global
 from tkinter import filedialog
 from tkinter import *
 from tkinter.filedialog import askopenfile
@@ -16,7 +16,15 @@ KEEP_FOLDER_COMPARING = True
 # init GUI window (select the GUI folder)
 eel.init('GUI')
 
-# eel exposed functions to javascript
+'''
+eel exposed functions to javascript
+'''
+
+@eel.expose
+def init_py_main_global():
+	err = _gui_entry_init_global()
+	return err
+
 
 @eel.expose
 def disable_folder_comparing():
@@ -30,8 +38,6 @@ def gui_entry_files():
 	if (PATH1 == "" or PATH2 == ""):
 		return
 	err, res = _gui_entry(PATH1, PATH2, False)
-	res.append([PATH1.split("/")[-1], PATH2.split("/")[-1]])
-	
 	return err, res
 
 @eel.expose
@@ -39,24 +45,18 @@ def gui_entry_folder():
 	global CURRENT_FOLDER
 	global KEEP_FOLDER_COMPARING
 	KEEP_FOLDER_COMPARING = True
-	if (CURRENT_FOLDER == ""):
+	if CURRENT_FOLDER == "":
 		return
-	pair_list = get_pair_list(CURRENT_FOLDER)
-	count = 0
+
+	pair_list = get_folder_pairs_files(CURRENT_FOLDER)
 	for pair in pair_list:
-		if(not KEEP_FOLDER_COMPARING):   #break point from JS
+		if not KEEP_FOLDER_COMPARING:   #break point from JS
 			print("STOP COMPARINGG")
 			return
-		file1 = pair[0].split("\\")[-1]
-		file2 = pair[1].split("\\")[-1]
-		#err, res = _gui_entry(pair[0], pair[1], False)
-		err, res = "" , ["ggg",[0.50,0.50]]
 
-		res.append([file1, file2])
-		eel.get_pair_result(err,res)()
-		count+=1
-		if count == 5:
-			break
+		err, res = _gui_entry(pair[0], pair[1], False)
+		eel.set_pair_result(err, res)()
+
 
 @eel.expose
 def pyGetFilePath():
