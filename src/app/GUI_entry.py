@@ -11,6 +11,7 @@ import time
 # globals
 PATH1 = ""
 PATH2 = ""
+EXEL_FILE =""
 CURRENT_FOLDER = ""
 KEEP_FOLDER_COMPARING = True
 
@@ -57,6 +58,21 @@ def gui_entry_folder():
 			return
 		err, res = _gui_entry(pair[0], pair[1], False)
 		eel.set_pair_result(err, res)()
+
+@eel.expose
+def pyGetExelFilePath():
+	global EXEL_FILE
+	root = Tk()
+	root.withdraw()
+	root.wm_attributes('-topmost', 1)
+	f = ""
+	f = filedialog.askopenfilename(parent=root,title="rrr")
+	if f is not "":
+		EXEL_FILE = f
+		return f.split("/")[-1]
+	else:
+		print("fdfdf")
+
 
 @eel.expose
 def pyGetFilePath():
