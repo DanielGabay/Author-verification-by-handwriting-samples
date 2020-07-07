@@ -1,7 +1,6 @@
 import joblib
 from keras.models import model_from_json
 import os
-
 import sys
 
 def models_path_for_pyinstaller(onefile=True):
@@ -114,15 +113,16 @@ def init(language='hebrew', test_mode=True, data_path=None):
 		'''
 		load all models
 		'''
-		try:
-			aeLettersClassifier = joblib.load(MODELS_PATH + AE_LETTERS_MODEL)
-			monkeyClassifier = joblib.load(MODELS_PATH + MONKEY_MODEL)
-			finalResultClassifier = joblib.load(MODELS_PATH + FINAL_RESULT_MODEL)
-			lettersClassifier = load_model(MODELS_PATH, LETTERS_MODEL)
-			lettersImprovedClassifier = load_model(MODELS_PATH, LETTERS_IMPROVED_MODEL)
-			encoder = load_model(MODELS_PATH, ENCODER_MODEL)
-		except Exception as e:
-			raise
+		aeLettersClassifier = joblib.load(MODELS_PATH + AE_LETTERS_MODEL)
+		monkeyClassifier = joblib.load(MODELS_PATH + MONKEY_MODEL)
+		finalResultClassifier = joblib.load(MODELS_PATH + FINAL_RESULT_MODEL)
+
+		lettersClassifier = load_model(MODELS_PATH, LETTERS_MODEL)
+		lettersImprovedClassifier = load_model(MODELS_PATH, LETTERS_IMPROVED_MODEL)
+		encoder = load_model(MODELS_PATH, ENCODER_MODEL)
+	if print_globals:
+		print("Monkey: {}\nAutoEncoder by predictions: {}".format(MONKEY_MODEL, AE_LETTERS_RESULT_BY_PRECENT))
+		print("AutoEncoder threshold: {}".format(AE_SUM_PRED_THRESH))
 
 def load_model(models_path, model_name):
 	'''

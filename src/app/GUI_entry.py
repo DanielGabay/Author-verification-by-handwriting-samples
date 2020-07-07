@@ -1,4 +1,4 @@
-import pkg_resources.py2_warn # import just as workaround for pyinstaller error
+#import pkg_resources.py2_warn # import just as workaround for pyinstaller error
 import eel
 from main import _gui_entry, get_folder_pairs_files, _gui_entry_init_global
 from tkinter import filedialog
@@ -24,6 +24,7 @@ eel exposed functions to javascript
 @eel.expose
 def init_py_main_global():
 	err = _gui_entry_init_global()
+	print(err)
 	return err
 
 
@@ -39,6 +40,9 @@ def gui_entry_files():
 	if (PATH1 == "" or PATH2 == ""):
 		return
 	err, res = _gui_entry(PATH1, PATH2, False)
+	print(err)
+	res.append([PATH1.split("/")[-1], PATH2.split("/")[-1]])
+	
 	return err, res
 
 @eel.expose

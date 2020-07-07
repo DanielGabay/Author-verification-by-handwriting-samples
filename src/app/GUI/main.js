@@ -2,7 +2,7 @@
 const DQ = document.querySelector.bind(document);
 //APP
 let App = {
-	fileNames: []
+    fileNames: []
 };
 
 // globals
@@ -15,101 +15,104 @@ let FOLDER_NAME = "";
 initApp();
 
 function initApp() {
-	//Init
-	eel.init_py_main_global()(function (err) {
-		console.log(err)
-		if (err != null) {
-			Swal.fire({
-				icon: 'error',
-				title: 'Error on init',
-				text: err,
-			});
-		}
-	});
+    //Init
+    eel.init_py_main_global()(function(err) {
+        console.log(err)
+        if (err != null) {
+            console.log(err)
+            Swal.fire({
+                icon: 'error',
+                title: 'Error on init',
+                text: err,
+                heightAuto: false
+            });
+        }
+    });
 
-	bindElementsEvents();
-	enableInfoEvents();
+    bindElementsEvents();
+    enableInfoEvents();
 
-	$('.ui.dropdown') // drop down settings
-		.dropdown({
-			on: 'hover',
-			onChange: displaySelectedPair
-		});
+    $('.ui.dropdown') // drop down settings
+        .dropdown({
+            on: 'hover',
+            onChange: displaySelectedPair
+        });
 
 }
 
 function enableInfoEvents() {
-	$('.help-button').click(function (event) {
-		event.preventDefault();
-		Swal.fire({
-			title: 'Welcome to the handwriting similarity checker',
-			html: $("#help-button-popup").html(),
-			showCloseButton: true,
-			grow: 'fullscreen',
-			confirmButtonText: 'Close'
-		});
-	});
+    $('.help-button').click(function(event) {
+        event.preventDefault();
+        Swal.fire({
+            title: 'Welcome to the handwriting similarity checker',
+            html: $("#help-button-popup").html(),
+            showCloseButton: true,
+            grow: 'fullscreen',
+            confirmButtonText: 'Close',
+            heightAuto: false
+        });
+    });
 
-	var animTime = 300,
-		clickPolice = false;
+    var animTime = 300,
+        clickPolice = false;
 
-	$(document).on('touchstart click', '.acc-btn', function () {
-		if (!clickPolice) {
-			clickPolice = true;
+    $(document).on('touchstart click', '.acc-btn', function() {
+        if (!clickPolice) {
+            clickPolice = true;
 
-			var currIndex = $(this).index('.acc-btn'),
-				targetHeight = $('.acc-content-inner').eq(currIndex).outerHeight();
+            var currIndex = $(this).index('.acc-btn'),
+                targetHeight = $('.acc-content-inner').eq(currIndex).outerHeight();
 
-			$('.acc-btn h4').removeClass('selected');
-			$(this).find('h4').addClass('selected');
+            $('.acc-btn h4').removeClass('selected');
+            $(this).find('h4').addClass('selected');
 
-			$('.acc-content').stop().animate({
-				height: 0
-			}, animTime);
-			$('.acc-content').eq(currIndex).stop().animate({
-				height: targetHeight
-			}, animTime);
+            $('.acc-content').stop().animate({
+                height: 0
+            }, animTime);
+            $('.acc-content').eq(currIndex).stop().animate({
+                height: targetHeight
+            }, animTime);
 
-			setTimeout(function () {
-				clickPolice = false;
-			}, animTime);
-		}
+            setTimeout(function() {
+                clickPolice = false;
+            }, animTime);
+        }
 
-	});
+    });
 
 
 }
 
 // bind listeners functions
 function bindElementsEvents() {
-	//for files
-	DQ('#trigger-file-1').addEventListener('click', uploadFiles);
-	DQ('#upload-1 .reset').addEventListener('click', resetFilesUpload);
-	DQ('#compare').addEventListener('click', compareFiles);
+    //for files
+    DQ('#trigger-file-1').addEventListener('click', uploadFiles);
+    DQ('#upload-1 .reset').addEventListener('click', resetFilesUpload);
+    DQ('#compare').addEventListener('click', compareFiles);
 
-	//for folder
-	DQ('#trigger-file-2').addEventListener('click', uploadFolder);
-	DQ('#upload-2 .reset').addEventListener('click', resetFolderUpload);
-	DQ('#compare-folder').addEventListener('click', compareFolder);
-	DQ('#stop-compare').addEventListener('click', stopComparing);
+    //for folder
+    DQ('#trigger-file-2').addEventListener('click', uploadFolder);
+    DQ('#upload-2 .reset').addEventListener('click', resetFolderUpload);
+    DQ('#compare-folder').addEventListener('click', compareFolder);
+    DQ('#stop-compare').addEventListener('click', stopComparing);
 
-	DQ('#save-results').addEventListener('click', saveResults);
-	// DQ('#info-button').addEventListener('click', showInfo);
+    DQ('#save-results').addEventListener('click', saveResults);
+    // DQ('#info-button').addEventListener('click', showInfo);
 }
 
 function disableButtons() {
-	$('#compare-folder').addClass('ui basic disabled loading button');
-	if ($("#compare-folder").hasClass("loading")) {
-		$("#compare").addClass("ui basic disabled button")
-	}
+    $('#compare-folder').addClass('ui basic disabled loading button');
+    if ($("#compare-folder").hasClass("loading")) {
+        $("#compare").addClass("ui basic disabled button")
+    }
 }
 
 function enableButtons() {
-	if ($("#compare-folder").hasClass("loading")) {
-		$("#compare").removeClass("ui basic disabled button")
-	}
-	$('#stop-compare').removeClass('ui basic disabled loading button active');
-	$('#compare-folder').removeClass('ui basic disabled loading button active');
+    if ($("#compare-folder").hasClass("loading")) {
+        $("#compare").removeClass("ui basic disabled button")
+    }
+    $('#stop-compare').removeClass('ui basic disabled loading button active');
+    $('#compare-folder').removeClass('ui basic disabled loading button active');
 }
 
 
@@ -118,24 +121,24 @@ function enableButtons() {
 /***  files comparision functions ***/
 
 function uploadFiles() {
-	eel.pyGetFilePath()(function (result) {
-		renderSelectedFiles(result);
-	});
+    eel.pyGetFilePath()(function(result) {
+        renderSelectedFiles(result);
+    });
 }
 
 function renderSelectedFiles(fileNames = []) {
-	//files template
-	updateAppState({
-		action: 'reset'
-	});
-	updateAppState({
-		action: 'add',
-		fileNames: fileNames
-	});
+    //files template
+    updateAppState({
+        action: 'reset'
+    });
+    updateAppState({
+        action: 'add',
+        fileNames: fileNames
+    });
 
-	const upload = DQ(`#upload-1`);
+    const upload = DQ(`#upload-1`);
 
-	const template = `${fileNames
+    const template = `${fileNames
 		.map(fileName => `<div class="file file--${fileName.replace('.', '-')}">
      <div class="name"><span>${fileName}</span></div>
      <div class="progress active"></div>
@@ -210,7 +213,8 @@ function stopComparing() {
 		showCancelButton: true,
 		confirmButtonColor: '#3085d6',
 		cancelButtonColor: '#d33',
-		confirmButtonText: 'Yes'
+		confirmButtonText: 'Yes',
+		heightAuto: false
 	}).then((result) => {
 		if (result.value) {
 
@@ -275,6 +279,7 @@ function compareFolder() {
 			icon: 'success',
 			title: 'Folder comparison completed',
 			text: 'Export an excel file by clicking "Save results" button',
+			heightAuto: false
 		})
 
 		enableButtons();
@@ -418,12 +423,13 @@ function saveResults() {
 			cancelButtonColor: '#d33',
 			confirmButtonText: 'Save',
 			showLoaderOnConfirm: true,
+			heightAuto: false,
 			inputValidator: (value) => {
-			  if (!value) {
-				return 'Please insert a file name'
-			  }
+				if (!value) {
+					return 'Please insert a file name'
+				}
 			}
-		  }).then((result) => {
+		}).then((result) => {
 			if (result.value) {
 				Swal.fire({
 					title: 'Enter excel file name',
@@ -433,11 +439,11 @@ function saveResults() {
 					cancelButtonColor: '#d33',
 					confirmButtonText: 'Save',
 					inputValidator: (value) => {
-					  if (!value) {
-						return 'You need to write a name!'
-					  }
+						if (!value) {
+							return 'You need to write a name!'
+						}
 					}
-				  })
+				})
 				eel.save_result_to_excel(dropDownArray, result.value)(function () {
 					Swal.fire({
 						icon: 'success',
@@ -520,17 +526,17 @@ function createChart(title, scoresPercents) {
 	$('#pair-result')
 		.transition('pulse')
 	const data = [{
-			name: "Same",
-			percentage: samePer,
-			color: secondaryColor,
-			value: samePer * 100,
-		},
-		{
-			name: "Different",
-			percentage: diffPer,
-			color: quaternaryColor,
-			value: diffPer * 100,
-		}
+		name: "Same",
+		percentage: samePer,
+		color: secondaryColor,
+		value: samePer * 100,
+	},
+	{
+		name: "Different",
+		percentage: diffPer,
+		color: quaternaryColor,
+		value: diffPer * 100,
+	}
 	]
 
 	const svg = d3
