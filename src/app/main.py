@@ -265,6 +265,6 @@ def get_folder_pairs_files(FOLDER_PATH , difference_sign = 'b'):
 	return pair_list		
 
 if __name__ == "__main__":
-	_global.init('hebrew',monkey_by_vectors=True, data_path="newData")
+	_global.init('hebrew', data_path="newData")
 	# test_all_same(97)
 	main_app('43b.tiff', '43.tiff', test_mode=True)

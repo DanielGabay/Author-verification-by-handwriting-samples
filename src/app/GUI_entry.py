@@ -74,7 +74,6 @@ def pyGetFilePath():
 
 	elif len(files) == 1:
 		PATH1 = files[0]
-	#	eel.popup_second_file()()
 		files = get_input_files('Choose a file')
 		if len(files)< 1:
 			return "E"
