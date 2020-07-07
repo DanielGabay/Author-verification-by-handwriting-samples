@@ -431,19 +431,6 @@ function saveResults() {
 			}
 		}).then((result) => {
 			if (result.value) {
-				Swal.fire({
-					title: 'Enter excel file name',
-					input: 'text',
-					showCancelButton: true,
-					confirmButtonColor: '#3085d6',
-					cancelButtonColor: '#d33',
-					confirmButtonText: 'Save',
-					inputValidator: (value) => {
-						if (!value) {
-							return 'You need to write a name!'
-						}
-					}
-				})
 				eel.save_result_to_excel(dropDownArray, result.value)(function () {
 					Swal.fire({
 						icon: 'success',

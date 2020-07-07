@@ -35,6 +35,7 @@ def _gui_entry_init_global():
 	try:
 		_global.init('hebrew', test_mode=False)
 	except Exception as e:
+		print(e)
 		return "Error: model/models not found in models diractory.\nPlease verify all models are correctly in place."
 
 

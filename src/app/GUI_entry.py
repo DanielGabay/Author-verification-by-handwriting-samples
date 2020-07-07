@@ -27,7 +27,6 @@ def init_py_main_global():
 	print(err)
 	return err
 
-
 @eel.expose
 def disable_folder_comparing():
 	global KEEP_FOLDER_COMPARING
@@ -52,15 +51,12 @@ def gui_entry_folder():
 	KEEP_FOLDER_COMPARING = True
 	if CURRENT_FOLDER == "":
 		return "FOLER_NOT_SELECTED"
-
 	pair_list = get_folder_pairs_files(CURRENT_FOLDER)
 	for pair in pair_list:
 		if not KEEP_FOLDER_COMPARING:   #break point from JS
 			return
-
 		err, res = _gui_entry(pair[0], pair[1], False)
 		eel.set_pair_result(err, res)()
-
 
 @eel.expose
 def pyGetFilePath():
@@ -133,6 +129,5 @@ def get_line_from_data(data):
 		precent = diff_prec
 		predicted = "Different"
 	return [data['file1'], data['file2'], predicted, "{}%".format(precent)]
-
 
 eel.start('index.html', size=(1000, 600))
