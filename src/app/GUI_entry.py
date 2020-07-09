@@ -48,11 +48,12 @@ def gui_entry_files():
 @eel.expose
 def gui_entry_folder():
 	global CURRENT_FOLDER
+	global EXEL_FILE
 	global KEEP_FOLDER_COMPARING
 	KEEP_FOLDER_COMPARING = True
 	if CURRENT_FOLDER == "":
 		return "FOLER_NOT_SELECTED"
-	pair_list = get_folder_pairs_files(CURRENT_FOLDER)
+	pair_list = get_folder_pairs_files(CURRENT_FOLDER, EXEL_FILE)
 	for pair in pair_list:
 		if not KEEP_FOLDER_COMPARING:   #break point from JS
 			return

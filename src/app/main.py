@@ -8,6 +8,7 @@ import _global
 from classes import CompareDocuments, Document, Stats
 from prepare_document import get_prepared_doc
 from create_output import generate_output, print_ae_monkey_results
+import pandas as pd
 
 #Recognition Phase
 from recognition_functions import (get_identified_letters,
@@ -248,7 +249,7 @@ def test_all_same(test_random_different=0):
 
 	print_ae_monkey_results(s, len(b_files))
 
-def get_folder_pairs_files(FOLDER_PATH , difference_sign = 'b'):
+def folder_pairs_by_difference_sign(FOLDER_PATH, difference_sign='b'):
 	a_files = []
 	b_files =  []
 	for _, _, files in os.walk(FOLDER_PATH):
@@ -265,6 +266,23 @@ def get_folder_pairs_files(FOLDER_PATH , difference_sign = 'b'):
 
 	return pair_list		
 
+def folder_pairs_by_excel(EXCEL_PATH):
+	if not os.path.isfile(EXCEL_PATH):
+		return []
+	
+	df_pairs = pd.read_excel(EXCEL_PATH)
+	# only two columns of data is needed: [file1, file2]
+	if df_pairs.shape[1] != 2:
+		return []
+	pairs_lst = df_pairs.values.tolist()
+	return pairs_lst
+
+def get_folder_pairs_files(FOLDER_PATH, EXCEL_PATH="", difference_sign = 'b'):
+	if EXCEL_PATH == "":
+		return folder_pairs_by_difference_sign(FOLDER_PATH, difference_sign)
+	else:
+		return folder_pairs_by_excel(EXCEL_PATH)
+	
 if __name__ == "__main__":
 	_global.init('hebrew', data_path="newData")
 	# test_all_same(97)
