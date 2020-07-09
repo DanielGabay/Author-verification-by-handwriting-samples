@@ -266,7 +266,7 @@ def folder_pairs_by_difference_sign(FOLDER_PATH, difference_sign='b'):
 
 	return pair_list		
 
-def folder_pairs_by_excel(EXCEL_PATH):
+def folder_pairs_by_excel(FOLDER_PATH,EXCEL_PATH):
 	if not os.path.isfile(EXCEL_PATH):
 		return []
 	
@@ -274,14 +274,19 @@ def folder_pairs_by_excel(EXCEL_PATH):
 	# only two columns of data is needed: [file1, file2]
 	if df_pairs.shape[1] != 2:
 		return []
-	pairs_lst = df_pairs.values.tolist()
-	return pairs_lst
+	excel_pairs = df_pairs.values.tolist()
+	pair_list = []
+	for pair in excel_pairs:
+		path1 = os.path.join(FOLDER_PATH, "{}".format(pair[0]))
+		path2 = os.path.join(FOLDER_PATH, "{}".format(pair[1]))
+		pair_list.append([path1,path2])
+	return pair_list
 
 def get_folder_pairs_files(FOLDER_PATH, EXCEL_PATH="", difference_sign = 'b'):
 	if EXCEL_PATH == "":
 		return folder_pairs_by_difference_sign(FOLDER_PATH, difference_sign)
 	else:
-		return folder_pairs_by_excel(EXCEL_PATH)
+		return folder_pairs_by_excel(FOLDER_PATH,EXCEL_PATH)
 	
 if __name__ == "__main__":
 	_global.init('hebrew', data_path="newData")

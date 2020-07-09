@@ -15,7 +15,6 @@ let FOLDER_NAME = "";
 initApp();
 
 function initApp() {
-    //Init
     eel.init_py_main_global()(function(err) {
         console.log(err)
         if (err != null) {
@@ -29,6 +28,7 @@ function initApp() {
         }
     });
 
+
     bindElementsEvents();
     enableInfoEvents();
 
@@ -37,8 +37,8 @@ function initApp() {
             on: 'hover',
             onChange: displaySelectedPair
         });
-
 }
+
 
 function enableInfoEvents() {
     $('.help-button').click(function(event) {
@@ -222,15 +222,91 @@ function stopComparing() {
 			eel.disable_folder_comparing()()
 		}
 	})
-
 }
 
 function uploadFolder() {
-	eel.pyGetFolderPath()(function (result) {
-		if (result === "E")
-			return;
-		renderSelectedFolder(result);
-	});
+	let folderPath = "";
+	let excelPath = "";
+	Swal.mixin({
+		showCancelButton: true,
+		heightAuto: false,
+		showLoaderOnConfirm: true,
+		progressSteps: ['1', '2']
+	}).queue([({
+		title: 'Upload a Folder',
+		text: 'a folder that contain all the pairs you want to compare	 ',
+		confirmButtonText: 'Upload Folder',
+		preConfirm: () => {
+			return new Promise((resolve) => {
+				eel.pyGetFolderPath()(function (result) {
+					if (result === "E") {
+						resolve(false)
+						Swal.showValidationMessage(
+							`No Folder Selected, try again`
+						)
+						return;
+					}
+					folderPath = result;
+					renderSelectedFolder(result);
+					resolve(true);
+				});
+			}).then(flag => {
+				return flag;
+			})
+		}
+	}),
+	{
+		title: 'Upload an excel file. Example:',
+		text: 'need to be an image here!!!',
+		confirmButtonText: 'Upload an excel ',
+		preConfirm: () => {
+			return new Promise((resolve) => {
+				eel.pyGetexcelFilePath()(function (excelFile) {
+					console.log(excelPath)
+					if (excelFile === "E") {
+						console.log("no excell")
+						resolve(false)
+						Swal.showValidationMessage(
+							`No excel file Selected, try again`
+						)
+						return;
+					}
+					excelPath = excelFile;
+					resolve(true);
+				});
+
+			}).then(flag => {
+				return flag;
+			})
+		}
+	}
+
+	]).then(() => {
+
+
+		if(excelPath != ""){
+			console.log("got to the end!! folder:" + folderPath + "excel: " + excelPath);
+			DQ('#upload-2').querySelector('.list-files').innerHTML += addLoadedHtml("excel", excelPath);
+			DQ(`.file--${excelPath.replace('.', '-')}`).querySelector(".progress").classList.remove("active");
+			DQ(`.file--${excelPath.replace('.', '-')}`).querySelector(".done").classList.add("anim");
+		}
+		else{
+
+			Swal.fire({
+				icon: 'info',
+				title: "No Excel file provided",
+				text:  "Using the deafult comparison method",
+				showConfirmButton: false,
+				heightAuto: false,
+				timer: 2500
+			})
+		}
+
+		const upload = DQ('#upload-2');
+		upload.querySelector('.reset').classList.add('active');
+		upload.querySelector('#compare-folder').classList.add('active');
+
+	})
 }
 
 function renderSelectedFolder(folderName, folderNum) {
@@ -245,12 +321,10 @@ function renderSelectedFolder(folderName, folderNum) {
 	FOLDER_NAME = folderName;
 	const upload = DQ('#upload-2');
 
-	const template = addLoadedHtml("Folder",folderName);
+	const template = addLoadedHtml("Folder", folderName);
 
 	upload.querySelector('.body').classList.add('hidden');
 	upload.querySelector('footer').classList.add('hasFiles');
-	upload.querySelector('.reset').classList.add('active');
-	upload.querySelector('#compare-folder').classList.add('active');
 	upload.querySelector('.list-files').innerHTML = template;
 
 	const load = 1000;
@@ -258,30 +332,9 @@ function renderSelectedFolder(folderName, folderNum) {
 		upload.querySelector('.progress').classList.remove('active');
 		upload.querySelector('.done').classList.add('anim');
 	}, load);
-
-	Swal.fire({
-		text: 'Add exel file with the comparing pairs',
-		heightAuto: false
-	}).then(() => {
-
-		eel.pyGetExelFilePath()(function(exelFile) {
-			console.log(exelFile)
-			if (exelFile != null) {
-				console.log(exelFile)
-
-				DQ('#upload-2').querySelector('.list-files').innerHTML += addLoadedHtml("Exel",exelFile);
-				DQ(`.file--${exelFile.replace('.', '-')}`).querySelector(".progress").classList.remove("active");
-				DQ(`.file--${exelFile.replace('.', '-')}`).querySelector(".done").classList.add("anim");
-			}
-		});
-	}
-	)
-
-
 }
 
-function addLoadedHtml(title,objectName) {
-
+function addLoadedHtml(title, objectName) {
 	return `<div class="file file--${objectName.replace('.', '-')}">
 				<div class="name"><span>${title}:${objectName}</span></div>
 				<div class="progress active"></div>
@@ -295,12 +348,10 @@ function addLoadedHtml(title,objectName) {
 
 function compareFolder() {
 
-
-	alert("stop")
 	disableButtons();
 	showLoader();
 	eel.gui_entry_folder()(function (err) {
-		if (err == "FOLER_NOT_SELECTED")
+		if (err == "FOLDER_NOT_SELECTED")
 			return;
 		$('#save-results').addClass('active');
 		Swal.fire({
@@ -309,9 +360,7 @@ function compareFolder() {
 			text: 'Export an excel file by clicking "Save results" button',
 			heightAuto: false
 		})
-
 		enableButtons();
-
 	})
 }
 
@@ -464,6 +513,7 @@ function saveResults() {
 						icon: 'success',
 						title: `${result.value} has been saved to your current .exe diractory`,
 						showConfirmButton: false,
+						heightAuto: false,
 						timer: 2500
 					})
 				})

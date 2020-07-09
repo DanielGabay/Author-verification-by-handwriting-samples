@@ -52,7 +52,7 @@ def gui_entry_folder():
 	global KEEP_FOLDER_COMPARING
 	KEEP_FOLDER_COMPARING = True
 	if CURRENT_FOLDER == "":
-		return "FOLER_NOT_SELECTED"
+		return "FOLDER_NOT_SELECTED"
 	pair_list = get_folder_pairs_files(CURRENT_FOLDER, EXEL_FILE)
 	for pair in pair_list:
 		if not KEEP_FOLDER_COMPARING:   #break point from JS
@@ -71,8 +71,7 @@ def pyGetExelFilePath():
 	if f is not "":
 		EXEL_FILE = f
 		return f.split("/")[-1]
-	else:
-		print("fdfdf")
+	return "E"
 
 
 @eel.expose
