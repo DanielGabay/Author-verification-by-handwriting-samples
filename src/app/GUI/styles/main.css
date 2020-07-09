@@ -72,6 +72,11 @@ a {
     grid-area: upload-1;
 }
 
+#error-result {
+    color: red;
+    font-weight: bold;
+}
+
 #upload-2 {
     grid-area: upload-2;
 }

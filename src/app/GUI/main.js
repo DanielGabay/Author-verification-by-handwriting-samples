@@ -9,7 +9,6 @@ let App = {
 let dropDownArray = []
 let FOLDER_NAME = "";
 
-
 /***  init functions ***/
 
 initApp();
@@ -27,7 +26,6 @@ function initApp() {
             });
         }
     });
-
 
     bindElementsEvents();
     enableInfoEvents();
@@ -116,8 +114,6 @@ function enableButtons() {
 }
 
 
-
-
 /***  files comparision functions ***/
 
 function uploadFiles() {
@@ -137,10 +133,10 @@ function renderSelectedFiles(fileNames = []) {
     });
 
     const upload = DQ(`#upload-1`);
-
+    const fileIcon = "<i class='id badge icon' aria-hidden='true'></i>";
     const template = `${fileNames
 		.map(fileName => `<div class="file file--${fileName.replace('.', '-')}">
-     <div class="name"><span>${fileName}</span></div>
+     <div class="name"><span>${fileIcon} ${fileName}</span></div>
      <div class="progress active"></div>
      <div class="done">
 	
@@ -176,13 +172,13 @@ function compareFiles() {
 		const [err, result] = list
 		let pair = result[0]; // the names of the files
 
-		title = get_title_if_err(pair, err)
+		title = get_title(pair, err)
 		preds = resultToPreds(result)
 		preds = preds.map(Number);
 
-		updateResultsSubtitle(title);
+		updateResultsSubtitle("files");
 		insert_dropdown(pair, preds, err)
-		createChart(title, preds);
+		createChart(title, preds,err);
 	})
 
 }
@@ -204,25 +200,6 @@ function resetFilesUpload(evnt) {
 }
 
 /***  folder comparision functions ***/
-
-
-function stopComparing() {
-	Swal.fire({
-		title: "Stop comparing?",
-		icon: 'question',
-		showCancelButton: true,
-		confirmButtonColor: '#3085d6',
-		cancelButtonColor: '#d33',
-		confirmButtonText: 'Yes',
-		heightAuto: false
-	}).then((result) => {
-		if (result.value) {
-
-			$('#stop-compare').addClass('ui basic disabled loading button');
-			eel.disable_folder_comparing()()
-		}
-	})
-}
 
 function uploadFolder() {
 	let folderPath = "";
@@ -283,14 +260,10 @@ function uploadFolder() {
 
 	]).then(() => {
 
-
 		if(excelPath != ""){
-			console.log("got to the end!! folder:" + folderPath + "excel: " + excelPath);
-			DQ('#upload-2').querySelector('.list-files').innerHTML += addLoadedHtml("excel", excelPath);
-			DQ(`.file--${excelPath.replace('.', '-')}`).querySelector(".progress").classList.remove("active");
-			DQ(`.file--${excelPath.replace('.', '-')}`).querySelector(".done").classList.add("anim");
+			addExelProgressEffect(excelPath);
 		}
-		else{
+		else if (folderPath != ""){   // compare by difference_sign
 
 			Swal.fire({
 				icon: 'info',
@@ -309,6 +282,34 @@ function uploadFolder() {
 	})
 }
 
+
+function stopComparing() {
+	Swal.fire({
+		title: "Stop comparing?",
+		icon: 'question',
+		showCancelButton: true,
+		confirmButtonColor: '#3085d6',
+		cancelButtonColor: '#d33',
+		confirmButtonText: 'Yes',
+		heightAuto: false
+	}).then((result) => {
+		if (result.value) {
+
+			$('#stop-compare').addClass('ui basic disabled loading button');
+			eel.disable_folder_comparing()()
+		}
+	})
+}
+
+function addExelProgressEffect(excelPath){
+	const excelIcon = "<i class='columns icon' aria-hidden='true'></i>";
+	DQ('#upload-2').querySelector('.list-files').innerHTML += addLoadedHtml(excelIcon, excelPath);
+	DQ(`.file--${excelPath.replace('.', '-')}`).querySelector(".progress").classList.remove("active");
+	DQ(`.file--${excelPath.replace('.', '-')}`).querySelector(".done").classList.add("anim");
+
+}
+
+
 function renderSelectedFolder(folderName, folderNum) {
 	updateAppState({
 		action: 'delete',
@@ -321,7 +322,7 @@ function renderSelectedFolder(folderName, folderNum) {
 	FOLDER_NAME = folderName;
 	const upload = DQ('#upload-2');
 
-	const template = addLoadedHtml("Folder", folderName);
+	const template = addLoadedHtml("<i class='folder open icon' aria-hidden='true'></i>", folderName);
 
 	upload.querySelector('.body').classList.add('hidden');
 	upload.querySelector('footer').classList.add('hasFiles');
@@ -334,9 +335,9 @@ function renderSelectedFolder(folderName, folderNum) {
 	}, load);
 }
 
-function addLoadedHtml(title, objectName) {
+function addLoadedHtml(icon, objectName) {
 	return `<div class="file file--${objectName.replace('.', '-')}">
-				<div class="name"><span>${title}:${objectName}</span></div>
+				<div class="name"><span>${icon} ${objectName}</span></div>
 				<div class="progress active"></div>
 				<div class="done">
 				 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 1000 1000">
@@ -346,13 +347,24 @@ function addLoadedHtml(title, objectName) {
 			   </div>`;
 }
 
-function compareFolder() {
 
+function compareFolder() {
 	disableButtons();
 	showLoader();
 	eel.gui_entry_folder()(function (err) {
-		if (err == "FOLDER_NOT_SELECTED")
-			return;
+		console.log(err);
+		if(err != "")
+		{
+			hideLoader();
+			Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: err,
+                heightAuto: false
+			});
+
+		}
+		else{
 		$('#save-results').addClass('active');
 		Swal.fire({
 			icon: 'success',
@@ -360,9 +372,12 @@ function compareFolder() {
 			text: 'Export an excel file by clicking "Save results" button',
 			heightAuto: false
 		})
+	}
 		enableButtons();
 	})
 }
+
+
 
 function resetFolderUpload(evnt) {
 	const upload = evnt.currentTarget.closest('.upload');
@@ -384,15 +399,7 @@ function resetFolderUpload(evnt) {
 
 /***  misc functions ***/
 
-function get_title_if_err(pair, err) {
-	if (err != "") {
-		title = `**ERROR OCCURED** ${pair[0]} & ${pair[1]}`
-		console.log(err)
-	} else {
-		title = `${pair[0]} & ${pair[1]}`
-	}
-	return title
-}
+
 
 
 function updateAppState(options) {
@@ -530,8 +537,8 @@ function displaySelectedPair(value, text, $choise) {
 	let preds = dropDownArray[index].preds
 	let pair = [dropDownArray[index].file1, dropDownArray[index].file2]
 	err = dropDownArray[index].error
-	title = get_title_if_err(pair, err)
-	createChart(title, preds)
+	title = `${pair[0]} & ${pair[1]}`;
+	createChart(title, preds,err)
 }
 
 function updateResultsSubtitle(title) {
@@ -550,7 +557,7 @@ function set_pair_result(err, result) {
 	let pair = result[0]; // the names of the files
 	let preds;
 
-	title = get_title_if_err(pair, err)
+	title = `${pair[0]} & ${pair[1]}`;
 
 	preds = resultToPreds(result)
 	preds = preds.map(Number);
@@ -562,7 +569,7 @@ function set_pair_result(err, result) {
 		updateResultsSubtitle(FOLDER_NAME)
 		DQ('#stop-compare').classList.add('active');
 		DQ('#chart-container').classList.remove('hide');
-		createChart(pair, preds)
+		createChart(pair, preds,err)
 	}
 }
 
@@ -570,7 +577,7 @@ function set_pair_result(err, result) {
 
 /***  Display results chart ***/
 
-function createChart(title, scoresPercents) {
+function createChart(title, scoresPercents,err) {
 	const [diffPer, samePer] = scoresPercents;
 
 	DQ('#chart-container').classList.remove('hide');
@@ -583,6 +590,11 @@ function createChart(title, scoresPercents) {
 	d3chart = $('#d3chartContainer')
 	d3chart.empty();
 	d3chart.append(`<br/><h1 id="pair-result"> ${title}</h1>`);
+	if (err != ""){
+		console.log(err)
+		const errTitle = "**ERROR OCCURED**" ;
+		d3chart.append(`<br/><h2 id="error-result"> ${errTitle}</h2>`);
+	}
 	d3chart.append('<svg id="d3ChartSvg" viewBox="0 0 400 220"></svg>');
 
 

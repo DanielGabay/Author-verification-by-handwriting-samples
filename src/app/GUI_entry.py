@@ -8,6 +8,7 @@ import pandas as pd
 from pandas import ExcelWriter
 import time
 
+
 # globals
 PATH1 = ""
 PATH2 = ""
@@ -53,15 +54,20 @@ def gui_entry_folder():
 	KEEP_FOLDER_COMPARING = True
 	if CURRENT_FOLDER == "":
 		return "FOLDER_NOT_SELECTED"
-	pair_list = get_folder_pairs_files(CURRENT_FOLDER, EXEL_FILE)
-	for pair in pair_list:
-		if not KEEP_FOLDER_COMPARING:   #break point from JS
-			return
-		err, res = _gui_entry(pair[0], pair[1], False)
-		eel.set_pair_result(err, res)()
+
+	try:
+		pair_list = get_folder_pairs_files(CURRENT_FOLDER, EXEL_FILE)
+		for pair in pair_list:
+			if not KEEP_FOLDER_COMPARING:   #break point from JS
+				return
+			err, res = _gui_entry(pair[0], pair[1], False)
+			eel.set_pair_result(err, res)()
+		return ""		
+	except Exception as e:
+		return str(e)
 
 @eel.expose
-def pyGetExelFilePath():
+def pyGetexcelFilePath():
 	global EXEL_FILE
 	root = Tk()
 	root.withdraw()
