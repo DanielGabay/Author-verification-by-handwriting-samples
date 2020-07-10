@@ -30,7 +30,7 @@ def _gui_entry(doc_name1, doc_name2, test_mode=False):
 		return "Error: File not found on data folder", [file_names_from_path, [0.5, 0.5]]
 	except Exception as e:
 		print(e)
-		return "Error {}".format(e), [file_names_from_path, [0.5, 0.5]]
+		return "Error {}".format(str(e)), [file_names_from_path, [0.5, 0.5]]
 
 def _gui_entry_init_global():
 	try:

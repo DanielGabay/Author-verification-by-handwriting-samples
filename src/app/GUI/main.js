@@ -15,9 +15,7 @@ initApp();
 
 function initApp() {
     eel.init_py_main_global()(function(err) {
-        console.log(err)
         if (err != null) {
-            console.log(err)
             Swal.fire({
                 icon: 'error',
                 title: 'Error on init',
@@ -36,7 +34,6 @@ function initApp() {
             onChange: displaySelectedPair
         });
 }
-
 
 function enableInfoEvents() {
     $('.help-button').click(function(event) {
@@ -95,7 +92,6 @@ function bindElementsEvents() {
     DQ('#stop-compare').addEventListener('click', stopComparing);
 
     DQ('#save-results').addEventListener('click', saveResults);
-    // DQ('#info-button').addEventListener('click', showInfo);
 }
 
 function disableButtons() {
@@ -118,6 +114,9 @@ function enableButtons() {
 
 function uploadFiles() {
     eel.pyGetFilePath()(function(result) {
+        if (result === "E") {
+            return;
+        }
         renderSelectedFiles(result);
     });
 }
@@ -172,7 +171,7 @@ function compareFiles() {
 		const [err, result] = list
 		let pair = result[0]; // the names of the files
 
-		title = get_title(pair, err)
+		title = `${pair[0]} & ${pair[1]}`;
 		preds = resultToPreds(result)
 		preds = preds.map(Number);
 
@@ -233,15 +232,13 @@ function uploadFolder() {
 		}
 	}),
 	{
-		title: 'Upload an excel file. Example:',
-		text: 'need to be an image here!!!',
-		confirmButtonText: 'Upload an excel ',
+		title: 'Upload an Excel file like that:',
+		html:  " <img src='assets/excel.png' width='170' height='120'>",
+		confirmButtonText: 'Upload excel',
 		preConfirm: () => {
 			return new Promise((resolve) => {
 				eel.pyGetexcelFilePath()(function (excelFile) {
-					console.log(excelPath)
 					if (excelFile === "E") {
-						console.log("no excell")
 						resolve(false)
 						Swal.showValidationMessage(
 							`No excel file Selected, try again`
@@ -306,7 +303,6 @@ function addExelProgressEffect(excelPath){
 	DQ('#upload-2').querySelector('.list-files').innerHTML += addLoadedHtml(excelIcon, excelPath);
 	DQ(`.file--${excelPath.replace('.', '-')}`).querySelector(".progress").classList.remove("active");
 	DQ(`.file--${excelPath.replace('.', '-')}`).querySelector(".done").classList.add("anim");
-
 }
 
 
@@ -352,7 +348,6 @@ function compareFolder() {
 	disableButtons();
 	showLoader();
 	eel.gui_entry_folder()(function (err) {
-		console.log(err);
 		if(err != "")
 		{
 			hideLoader();
@@ -500,8 +495,9 @@ function resultToPreds(result) {
 function saveResults() {
 	if (Array.isArray(dropDownArray) && dropDownArray.length) {
 		Swal.fire({
-			title: 'Enter excel file name',
+			title: 'Save As:',
 			input: 'text',
+			inputPlaceholder: 'File name',
 			showCancelButton: true,
 			confirmButtonColor: '#3085d6',
 			cancelButtonColor: '#d33',
@@ -591,7 +587,6 @@ function createChart(title, scoresPercents,err) {
 	d3chart.empty();
 	d3chart.append(`<br/><h1 id="pair-result"> ${title}</h1>`);
 	if (err != ""){
-		console.log(err)
 		const errTitle = "**ERROR OCCURED**" ;
 		d3chart.append(`<br/><h2 id="error-result"> ${errTitle}</h2>`);
 	}
@@ -770,7 +765,6 @@ function createChart(title, scoresPercents,err) {
 		.style('opacity', 0)
 		.style('visibility', 'hidden');
 
-
 	// TRANSITIONS
 	// once the elements are set up
 	// draw the stroke of the larger circle element
@@ -827,6 +821,4 @@ function createChart(title, scoresPercents,err) {
 				.style('opacity', 1)
 				.style('visibility', 'visible');
 		});
-
-
 }

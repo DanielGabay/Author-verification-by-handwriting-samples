@@ -73,7 +73,7 @@ def pyGetexcelFilePath():
 	root.withdraw()
 	root.wm_attributes('-topmost', 1)
 	f = ""
-	f = filedialog.askopenfilename(parent=root,title="rrr")
+	f = filedialog.askopenfilename(parent=root,title="Upload an Excel File" ,filetypes=[("Excel files", "*.xlsx")])
 	if f is not "":
 		EXEL_FILE = f
 		return f.split("/")[-1]
