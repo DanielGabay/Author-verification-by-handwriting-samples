@@ -113,12 +113,12 @@ function enableButtons() {
 /***  files comparision functions ***/
 
 function uploadFiles() {
-    eel.pyGetFilePath()(function(result) {
-        if (result === "E") {
-            return;
-        }
-        renderSelectedFiles(result);
-    });
+	eel.pyGetFilePath()(function (result) {
+		if (result === "E") {
+			return;
+		}
+		renderSelectedFiles(result);
+	});
 }
 
 function renderSelectedFiles(fileNames = []) {
@@ -208,56 +208,59 @@ function uploadFolder() {
 		showLoaderOnConfirm: true,
 		progressSteps: ['1', '2']
 	}).queue([({
-		title: 'Upload a Folder',
-		text: 'a folder that contain all the pairs you want to compare	 ',
-		confirmButtonText: 'Upload Folder',
-		preConfirm: () => {
-			return new Promise((resolve) => {
-				eel.pyGetFolderPath()(function (result) {
-					if (result === "E") {
-						resolve(false)
-						Swal.showValidationMessage(
-							`No Folder Selected, try again`
-						)
-						return;
-					}
-					folderPath = result;
-					renderSelectedFolder(result);
-					resolve(true);
-				});
-			}).then(flag => {
-				return flag;
-			})
-		}
-	}),
-	{
-		title: 'Upload an Excel file like that:',
-		html:  " <img src='assets/excel.png' width='170' height='120'>",
-		confirmButtonText: 'Upload excel',
-		cancelButtonText: 'Continue without excel',
-		preConfirm: () => {
-			return new Promise((resolve) => {
-				eel.pyGetexcelFilePath()(function (excelFile) {
-					if (excelFile === "E") {
-						resolve(false)
-						Swal.showValidationMessage(
-							`No excel file Selected, try again`
-						)
-						return;
-					}
-					excelPath = excelFile;
-					resolve(true);
-				});
+			title: 'Upload a Folder',
+			text: 'Select the folder that contains the files to compare',
+			confirmButtonText: 'Upload Folder',
+			allowOutsideClick: false,
+			preConfirm: () => {
+				return new Promise((resolve) => {
+					eel.pyGetFolderPath()(function (result) {
+						if (result === "E") {
+							resolve(false)
+							Swal.showValidationMessage(
+								`No Folder Selected, try again`
+							)
+							return;
+						}
+						folderPath = result;
+						renderSelectedFolder(result);
+						resolve(true);
+					});
+				}).then(flag => {
+					return flag;
+				})
+			}
+		}),
+		{
+			title: 'Upload an Excel file containing the file names for comparison. Example:',
+			html: "<img src='assets/excel.png' width='170' height='120'>",
+			confirmButtonText: 'Upload excel',
+			cancelButtonText: 'Continue without excel',
+			allowOutsideClick: false,
+			preConfirm: () => {
+				return new Promise((resolve) => {
+					eel.pyGetexcelFilePath()(function (excelFile) {
+						if (excelFile === "E") {
+							resolve(false)
+							Swal.showValidationMessage(
+								`No excel file Selected, try again`
+							)
+							return;
+						}
+						excelPath = excelFile;
+						resolve(true);
+					});
 
-			}).then(flag => {
-				return flag;
-			})
-		}
+				}).then(flag => {
+					return flag;
+				})
+			}
 
-	}]).then(() => {
-		if (excelPath != "") {
-			addExelProgressEffect(excelPath);
-		} else if (folderPath != "") { // compare by difference_sign
+		}
+	]).then(() => {
+		if (folderPath == "")
+			return;
+		if (excelPath == "")
 			Swal.fire({
 				icon: 'info',
 				title: "No Excel file provided",
@@ -266,11 +269,12 @@ function uploadFolder() {
 				heightAuto: false,
 				timer: 2500
 			})
+		else if (excelPath != "") {
+			addExelProgressEffect(excelPath);
 		}
 		const upload = DQ('#upload-2');
 		upload.querySelector('.reset').classList.add('active');
 		upload.querySelector('#compare-folder').classList.add('active');
-
 	})
 }
 
@@ -341,8 +345,7 @@ function compareFolder() {
 	disableButtons();
 	showLoader();
 	eel.gui_entry_folder()(function (err) {
-		if(err != "")
-		{
+		if (err != "") {
 			hideLoader();
 			Swal.fire({
 				icon: 'error',
@@ -579,8 +582,8 @@ function createChart(title, scoresPercents, err) {
 	d3chart = $('#d3chartContainer')
 	d3chart.empty();
 	d3chart.append(`<br/><h1 id="pair-result"> ${title}</h1>`);
-	if (err != ""){
-		const errTitle = "**ERROR OCCURED**" ;
+	if (err != "") {
+		const errTitle = "**ERROR OCCURED**";
 		d3chart.append(`<br/><h2 id="error-result"> ${errTitle}</h2>`);
 	}
 	d3chart.append('<svg id="d3ChartSvg" viewBox="0 0 400 220"></svg>');
