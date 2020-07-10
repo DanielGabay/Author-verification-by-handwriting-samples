@@ -26,7 +26,6 @@ eel exposed functions to javascript
 @eel.expose
 def init_py_main_global():
 	err = _gui_entry_init_global()
-	print(err)
 	return err
 
 @eel.expose
@@ -41,7 +40,6 @@ def gui_entry_files():
 	if (PATH1 == "" or PATH2 == ""):
 		return
 	err, res = _gui_entry(PATH1, PATH2, False)
-	print(err)
 	res.append([PATH1.split("/")[-1], PATH2.split("/")[-1]])
 	
 	return err, res
