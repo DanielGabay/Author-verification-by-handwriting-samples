@@ -57,7 +57,7 @@ def gui_entry_folder():
 		pair_list = get_folder_pairs_files(CURRENT_FOLDER, EXEL_FILE)
 		for pair in pair_list:
 			if not KEEP_FOLDER_COMPARING:   #break point from JS
-				return
+				return ""
 			err, res = _gui_entry(pair[0], pair[1], False)
 			eel.set_pair_result(err, res)()
 		return ""		
