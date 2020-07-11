@@ -55,6 +55,8 @@ def gui_entry_folder():
 
 	try:
 		pair_list = get_folder_pairs_files(CURRENT_FOLDER, EXEL_FILE)
+		if len(pair_list) == 0:
+			return "Folder is empty/files are not compatible"
 		for pair in pair_list:
 			if not KEEP_FOLDER_COMPARING:   #break point from JS
 				return ""
