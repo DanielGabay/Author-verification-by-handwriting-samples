@@ -215,6 +215,8 @@ function uploadFolder() {
 			text: 'Select the folder that contains the files to compare',
 			confirmButtonText: 'Upload Folder',
 			allowOutsideClick: false,
+			allowEscapeKey: false,
+			allowEnterKey: false,
 			preConfirm: () => {
 				return new Promise((resolve) => {
 					eel.pyGetFolderPath()(function (result) {
@@ -240,6 +242,8 @@ function uploadFolder() {
 			confirmButtonText: 'Upload excel',
 			cancelButtonText: 'Continue without excel',
 			allowOutsideClick: false,
+			allowEscapeKey: false,
+			allowEnterKey: false,
 			preConfirm: () => {
 				return new Promise((resolve) => {
 					eel.pyGetexcelFilePath()(function (excelFile) {
@@ -261,9 +265,9 @@ function uploadFolder() {
 
 		}
 	]).then(() => {
-		if (folderPath == "")
+		if (folderPath == "") {
 			return;
-		if (excelPath == "")
+		} if (excelPath == "") {
 			Swal.fire({
 				icon: 'info',
 				title: "No Excel file provided",
@@ -272,7 +276,7 @@ function uploadFolder() {
 				heightAuto: false,
 				timer: 2500
 			})
-		else if (excelPath != "") {
+		} else if (excelPath != "") {
 			addExelProgressEffect(excelPath);
 		}
 		const upload = DQ('#upload-2');
