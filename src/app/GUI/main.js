@@ -176,7 +176,6 @@ function compareFiles() {
 
 		title = getPairTitle(pair)
 		preds = resultToPreds(result)
-		preds = preds.map(Number);
 
 		updateResultsSubtitle("files");
 		insert_dropdown(pair, preds, err)
@@ -374,8 +373,6 @@ function compareFolder() {
 	})
 }
 
-
-
 function resetFolderUpload(evnt) {
 	const upload = evnt.currentTarget.closest('.upload');
 	updateAppState({
@@ -387,8 +384,8 @@ function resetFolderUpload(evnt) {
 	upload.querySelector('#compare-folder').classList.remove('active');
 	upload.querySelector('#stop-compare').classList.remove('active');
 	upload.querySelector('#progress-bar').classList.add('hide');
-	$('#progress-bar').removeAttr("data-total");
 	$('#progress-bar').progress('reset');
+	// $('#progress-bar').removeAttr("data-total");
 	// upload.querySelector('#save-results').classList.remove('active');
 	// $('#text').classList.remove('hide');
 	setTimeout(() => {
@@ -412,7 +409,10 @@ function updateAppState(options) {
 	if (action === 'reset') {
 		App.files = [];
 	}
+}
 
+function showProgressBar(){
+	$("#progress-bar").removeClass('hide');
 }
 
 /*** loader ***/
@@ -495,7 +495,8 @@ function getPairTitle(pair) {
 
 function resultToPreds(result) {
 	// ------Different preds------------------Same preds
-	return [(result[1][0] * 100).toFixed(2), (result[1][1] * 100).toFixed(2)]
+	preds = [(result[1][0] * 100).toFixed(2), (result[1][1] * 100).toFixed(2)]
+	return preds.map(Number);
 }
 
 function saveResults() {
@@ -550,27 +551,8 @@ function updateResultsSubtitle(title) {
 
 /* eel exposed functions to python */
 
-
-function unableProgressBar(length){
-	console.log(length + " in progress")
-$('#progress-bar').removeClass('hide');
-  $("#progress-bar").attr("data-total", length);
-
-  $('#progress-bar')
-  .progress({
-	  
-	  text: {
-		  active  : '{value} of {total} done',
-		  success : 'done {total} comparisons',
-		  total : String(length)
-		}
-	});
-	
-
-}
-
 eel.expose(set_pair_result);
-function set_pair_result(err, result,listLength) {
+function set_pair_result(err, result) {
 	/* file_names , res_proba
 	[ [1b.tiff,1.tiff], [0.1,0.9] ]
 	*/
@@ -578,16 +560,12 @@ function set_pair_result(err, result,listLength) {
 	let preds;
 
 	title = getPairTitle(pair)
-
 	preds = resultToPreds(result)
-	preds = preds.map(Number);
-
 	insert_dropdown(pair, preds, err)
 
 	if (isLoaderOn()) {
-
-		unableProgressBar(listLength);
 		hideLoader();
+		showProgressBar()
 		updateResultsSubtitle(FOLDER_NAME)
 		DQ('#stop-compare').classList.add('active');
 		DQ('#chart-container').classList.remove('hide');
@@ -597,7 +575,30 @@ function set_pair_result(err, result,listLength) {
 	$('#progress-bar').progress('increment');
 }
 
-
+eel.expose(set_progress_bar_total);
+function set_progress_bar_total(_total){
+	console.log(_total + " in progress")
+	pb_container = $('#folderProgressContainer')
+	// remove prev progress bar and create a new one 
+	// workaround because total attribute is not changed
+	pb_container.empty()
+	pb_container.append(`
+	<div class="ui indicating tiny progress hide" data-value="0" id="progress-bar">
+		<div class="bar"></div>
+		<div class="label">Comparisons status</div>
+	</div>
+	`)
+	pb = $('#progress-bar')
+	pb.attr("data-total", _total);
+	pb.progress('set total', _total)
+	pb.progress({
+		text: {
+			active: 'Done: {value}/{total}',
+			success: 'Done all {total} comparisons',
+			total: _total
+		}
+	});
+}
 
 /***  Display results chart ***/
 

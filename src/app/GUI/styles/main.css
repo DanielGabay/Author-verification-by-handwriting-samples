@@ -122,6 +122,11 @@ a {
     text-transform: uppercase;
 }
 
+#folderProgressContainer {
+   width: 80%;
+   margin: auto;
+}
+
 @keyframes revelar {
     0% {
         width: 0;

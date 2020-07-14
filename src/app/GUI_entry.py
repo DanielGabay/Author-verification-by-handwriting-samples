@@ -12,7 +12,7 @@ import time
 # globals
 PATH1 = ""
 PATH2 = ""
-EXEL_FILE =""
+EXCEL_FILE =""
 CURRENT_FOLDER = ""
 KEEP_FOLDER_COMPARING = True
 
@@ -47,22 +47,23 @@ def gui_entry_files():
 @eel.expose
 def gui_entry_folder():
 	global CURRENT_FOLDER
-	global EXEL_FILE
+	global EXCEL_FILE
 	global KEEP_FOLDER_COMPARING
 	KEEP_FOLDER_COMPARING = True
 	if CURRENT_FOLDER == "":
 		return "FOLDER_NOT_SELECTED"
 
 	try:
-		pair_list = get_folder_pairs_files(CURRENT_FOLDER, EXEL_FILE)
+		pair_list = get_folder_pairs_files(CURRENT_FOLDER, EXCEL_FILE)
 		if len(pair_list) == 0:
 			return "Folder is empty/files are not compatible"
+		eel.set_progress_bar_total(len(pair_list))
 		for pair in pair_list:
 			if not KEEP_FOLDER_COMPARING:   #break point from JS
 				return ""
 			err, res = _gui_entry(pair[0], pair[1], False)
-			eel.set_pair_result(err, res,len(pair_list))()
-		EXEL_FILE = ""
+			eel.set_pair_result(err, res)()
+		EXCEL_FILE = ""
 		CURRENT_FOLDER = ""
 		return ""		
 	except Exception as e:
@@ -70,14 +71,14 @@ def gui_entry_folder():
 
 @eel.expose
 def pyGetexcelFilePath():
-	global EXEL_FILE
+	global EXCEL_FILE
 	root = Tk()
 	root.withdraw()
 	root.wm_attributes('-topmost', 1)
 	f = ""
 	f = filedialog.askopenfilename(parent=root,title="Upload an Excel File" ,filetypes=[("Excel files", "*.xlsx")])
 	if f is not "":
-		EXEL_FILE = f
+		EXCEL_FILE = f
 		return f.split("/")[-1]
 	return "E"
 
