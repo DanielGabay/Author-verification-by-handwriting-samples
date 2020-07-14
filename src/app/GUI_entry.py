@@ -55,11 +55,13 @@ def gui_entry_folder():
 
 	try:
 		pair_list = get_folder_pairs_files(CURRENT_FOLDER, EXEL_FILE)
-		for pair in pair_list:
+		for index, pair in enumerate(pair_list):
 			if not KEEP_FOLDER_COMPARING:   #break point from JS
 				return ""
 			err, res = _gui_entry(pair[0], pair[1], False)
-			eel.set_pair_result(err, res)()
+			eel.set_pair_result(err, res,len(pair_list))()
+		EXEL_FILE = ""
+		CURRENT_FOLDER = ""
 		return ""		
 	except Exception as e:
 		return str(e)

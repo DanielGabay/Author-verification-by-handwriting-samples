@@ -59,6 +59,10 @@ a {
     color: inherit;
 }
 
+#progress-bar {
+    margin-top: 7px;
+}
+
 .main-grid {
     flex-grow: 1;
     display: grid;

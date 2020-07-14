@@ -37,24 +37,26 @@
                         <span class="load">&nbsp;selection</span>
                     </p>
                 </header>
-                <div class="body" id="trigger-file-1">
-                    <i class="massive file big icon pointer-none" aria-hidden="true"></i>
-                    <p class="pointer-none"><strong>Click</strong> to browse files</p>
-                </div>
-                <footer>
-                    <div class="divider">
-                        <span>
+                <div id="container">
+                    <div class="body" id="trigger-file-1">
+                        <i class="massive file big icon pointer-none" aria-hidden="true"></i>
+                        <p class="pointer-none"><strong>Click</strong> to browse files</p>
+                    </div>
+                    <footer>
+                        <div class="divider">
+                            <span>
                             <AR>Loaded</AR>
                         </span>
-                    </div>
-                    <div class="list-files">
-                        <!--   template   -->
-                    </div>
-                    <div class="controls">
-                        <button class="reset"><i class="undo icon"></i>New Selection</button>
-                        <button id="compare">Compare</button>
-                    </div>
-                </footer>
+                        </div>
+                        <div class="list-files">
+                            <!--   template   -->
+                        </div>
+                        <div class="controls">
+                            <button class="reset"><i class="undo icon"></i>New Selection</button>
+                            <button id="compare">Compare</button>
+                        </div>
+                    </footer>
+                </div>
             </div>
         </div>
 
@@ -84,6 +86,10 @@
                         <button id="reset-folder" class="reset"><i class="undo icon"></i>New Selection</button>
                         <button id="stop-compare">STOP</button>
                         <button id="compare-folder">Compare</button>
+                    </div>
+                    <div class="ui indicating tiny progress hide" data-value="0" id="progress-bar">
+                        <div class="bar"></div>
+                        <div class="label">Comparisons status</div>
                     </div>
                 </footer>
             </div>

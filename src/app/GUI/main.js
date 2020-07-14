@@ -169,6 +169,7 @@ function renderSelectedFiles(fileNames = []) {
 function compareFiles() {
 	showLoader();
 	eel.gui_entry_files()(function (list) {
+		console.log(list);
 		hideLoader();
 		const [err, result] = list
 		let pair = result[0]; // the names of the files
@@ -342,7 +343,6 @@ function addLoadedHtml(icon, objectName) {
 			   </div>`;
 }
 
-
 function compareFolder() {
 	disableButtons();
 	showLoader();
@@ -382,6 +382,9 @@ function resetFolderUpload(evnt) {
 	upload.querySelector('.reset').classList.remove('active');
 	upload.querySelector('#compare-folder').classList.remove('active');
 	upload.querySelector('#stop-compare').classList.remove('active');
+	upload.querySelector('#progress-bar').classList.add('hide');
+	$('#progress-bar').removeAttr("data-total");
+	$('#progress-bar').progress('reset');
 	// upload.querySelector('#save-results').classList.remove('active');
 	// $('#text').classList.remove('hide');
 	setTimeout(() => {
@@ -543,9 +546,27 @@ function updateResultsSubtitle(title) {
 
 /* eel exposed functions to python */
 
-eel.expose(set_pair_result);
 
-function set_pair_result(err, result) {
+function unableProgressBar(length){
+	console.log(length + " in progress")
+$('#progress-bar').removeClass('hide');
+  $("#progress-bar").attr("data-total", length);
+
+  $('#progress-bar')
+  .progress({
+	  
+	  text: {
+		  active  : '{value} of {total} done',
+		  success : 'done {total} comparisons',
+		  total : String(length)
+		}
+	});
+	
+
+}
+
+eel.expose(set_pair_result);
+function set_pair_result(err, result,listLength) {
 	/* file_names , res_proba
 	[ [1b.tiff,1.tiff], [0.1,0.9] ]
 	*/
@@ -560,12 +581,16 @@ function set_pair_result(err, result) {
 	insert_dropdown(pair, preds, err)
 
 	if (isLoaderOn()) {
+
+		unableProgressBar(listLength);
 		hideLoader();
 		updateResultsSubtitle(FOLDER_NAME)
 		DQ('#stop-compare').classList.add('active');
 		DQ('#chart-container').classList.remove('hide');
 		createChart(pair, preds, err)
 	}
+
+	$('#progress-bar').progress('increment');
 }
 
 
