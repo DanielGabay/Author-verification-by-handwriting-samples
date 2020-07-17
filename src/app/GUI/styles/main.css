@@ -67,6 +67,7 @@ a {
     flex-grow: 1;
     display: grid;
     grid-gap: var(--spaces);
+    grid-auto-rows: 1fr 1fr;
     grid-auto-columns: 1fr 2fr;
     grid-template-areas: "upload-1 chart-container " "upload-2 chart-container";
     margin: var(--spaces);
@@ -123,8 +124,8 @@ a {
 }
 
 #folderProgressContainer {
-   width: 80%;
-   margin: auto;
+    width: 80%;
+    margin: auto;
 }
 
 @keyframes revelar {

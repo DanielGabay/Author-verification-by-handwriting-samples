@@ -152,6 +152,7 @@ function renderSelectedFiles(fileNames = []) {
 	upload.querySelector('footer').classList.add('hasFiles');
 	upload.querySelector('#compare').classList.add('active');
 	upload.querySelector('.reset').classList.add('active');
+	upload.querySelector('.upload-files').classList.add('show');
 
 	setTimeout(() => {
 		upload.querySelector('.list-files').innerHTML = template;
@@ -193,6 +194,7 @@ function resetFilesUpload(evnt) {
 	upload.querySelector('footer').classList.remove('hasFiles');
 	upload.querySelector('.reset').classList.remove('active');
 	upload.querySelector('#compare').classList.remove('active');
+	upload.querySelector('.upload-files').classList.remove('show');
 	setTimeout(() => {
 		upload.querySelector('.body').classList.remove('hidden');
 	}, 500);
@@ -383,7 +385,7 @@ function resetFolderUpload(evnt) {
 	upload.querySelector('.reset').classList.remove('active');
 	upload.querySelector('#compare-folder').classList.remove('active');
 	upload.querySelector('#stop-compare').classList.remove('active');
-	upload.querySelector('#progress-bar').classList.add('hide');
+	upload.querySelector('#folderProgressContainer').innerHTML = "";
 	$('#progress-bar').progress('reset');
 	// $('#progress-bar').removeAttr("data-total");
 	// upload.querySelector('#save-results').classList.remove('active');
