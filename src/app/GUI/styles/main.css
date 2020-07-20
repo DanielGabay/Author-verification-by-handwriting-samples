@@ -1,12 +1,12 @@
-@import './reset.css';
-@import './variables.css';
-@import './header.css';
-@import './card.css';
-@import './uploads.css';
-@import './footer.css';
-@import './loader.css';
-@import './chart.css';
-@import './info.css';
+@import "./reset.css";
+@import "./variables.css";
+@import "./header.css";
+@import "./card.css";
+@import "./uploads.css";
+@import "./footer.css";
+@import "./loader.css";
+@import "./chart.css";
+@import "./info.css";
 * {
     box-sizing: border-box;
 }
@@ -21,8 +21,9 @@ body {
 body {
     font-family: "Roboto", sans-serif;
     background: linear-gradient(to top, #4f6072, #8699aa);
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
     overflow: hidden;
 }
 
@@ -108,8 +109,8 @@ a {
     transform: translate(-50%, -50%);
     overflow: hidden;
     text-align: center;
-    border-bottom: 5px solid #1F1E1A;
-    box-shadow: 0px 2px 0px rgba(207, 137, 16, .5);
+    border-bottom: 5px solid #1f1e1a;
+    box-shadow: 0px 2px 0px rgba(207, 137, 16, 0.5);
     animation: revelar 2s forwards linear;
 }
 
@@ -118,8 +119,8 @@ a {
     padding: 0;
     font-family: verdana;
     font-size: 30px;
-    color: #1F1E1A;
-    text-shadow: 5px 5px 5px rgba(207, 137, 16, .5);
+    color: #1f1e1a;
+    text-shadow: 5px 5px 5px rgba(207, 137, 16, 0.5);
     text-transform: uppercase;
 }
 
@@ -144,11 +145,11 @@ a {
     80% {
         width: 500px;
         height: 80px;
-        box-shadow: 0px 2px 0px rgba(207, 137, 16, .5);
+        box-shadow: 0px 2px 0px rgba(207, 137, 16, 0.5);
     }
     100% {
         width: 500px;
         height: 80px;
-        box-shadow: 0px 7px 0px rgba(207, 137, 16, .5);
+        box-shadow: 0px 7px 0px rgba(207, 137, 16, 0.5);
     }
 }

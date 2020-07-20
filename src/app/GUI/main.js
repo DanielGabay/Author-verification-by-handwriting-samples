@@ -10,7 +10,6 @@ let dropDownArray = []
 let FOLDER_NAME = "";
 
 /***  init functions ***/
-
 initApp();
 
 function initApp() {
@@ -170,7 +169,6 @@ function renderSelectedFiles(fileNames = []) {
 function compareFiles() {
 	showLoader();
 	eel.gui_entry_files()(function (list) {
-		console.log(list);
 		hideLoader();
 		const [err, result] = list
 		let pair = result[0]; // the names of the files
@@ -569,17 +567,15 @@ function set_pair_result(err, result) {
 		hideLoader();
 		showProgressBar()
 		updateResultsSubtitle(FOLDER_NAME)
-		DQ('#stop-compare').classList.add('active');
+	DQ('#stop-compare').classList.add('active');
 		DQ('#chart-container').classList.remove('hide');
 		createChart(pair, preds, err)
 	}
-
 	$('#progress-bar').progress('increment');
 }
 
 eel.expose(set_progress_bar_total);
 function set_progress_bar_total(_total){
-	console.log(_total + " in progress")
 	pb_container = $('#folderProgressContainer')
 	// remove prev progress bar and create a new one 
 	// workaround because total attribute is not changed
@@ -612,7 +608,7 @@ function createChart(title, scoresPercents, err) {
 		.getPropertyValue('--secondary-color');
 	const quaternaryColor = getComputedStyle(document.documentElement)
 		.getPropertyValue('--quaternary-color');
-
+	
 	// remove last graph and creates a new graph container
 	d3chart = $('#d3chartContainer')
 	d3chart.empty();
@@ -622,7 +618,6 @@ function createChart(title, scoresPercents, err) {
 		d3chart.append(`<br/><h2 id="error-result"> ${errTitle}</h2>`);
 	}
 	d3chart.append('<svg id="d3ChartSvg" viewBox="0 0 400 220"></svg>');
-
 
 	$('#result-title')
 		.transition('pulse')
@@ -672,7 +667,6 @@ function createChart(title, scoresPercents, err) {
 		.append('g')
 		.attr('transform', `translate(${margin.left} ${margin.top})`);
 
-
 	// DEFAULT CIRCLE
 	// circle used as a background for the colored donut chart
 	// add a group to center the circle in the canvas (this to rotate the circle from the center)
@@ -695,7 +689,6 @@ function createChart(title, scoresPercents, err) {
 		// this to compute the circumference of the shape
 		.attr('stroke-dasharray', radius * 3.14 * 4)
 		.attr('stroke-dashoffset', radius * 3.14 * 4);
-
 
 	// COLORED CIRCLES
 	// pie function to compute the arcs

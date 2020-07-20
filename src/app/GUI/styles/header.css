@@ -1,24 +1,25 @@
 ._header {
-	height: 66px;
-	line-height: 66px;
-	color: #fff;
-	background-color: var(--primary-color);
-	display: flex;
-	padding: 0 10px;
-	justify-content: space-between;
-	box-shadow: 0 3px 20px 0px rgba(116, 116, 116, 0.6);
+    --height: 50px;
+    height: var(--height);
+    line-height: var(--height);
+    color: #fff;
+    background-color: var(--primary-color);
+    display: flex;
+    padding: 0 10px;
+    justify-content: space-between;
+    box-shadow: 0 3px 20px 0px rgba(116, 116, 116, 0.6);
 }
 
 ._header__logo {
-	font-weight: 700;
-	padding: 0 25px;
-	float: left;
+    font-weight: 700;
+    padding: 0 25px;
+    float: left;
 }
 
 /* MENU */
 ._header .menu a {
-	padding: 0 10px;
+    padding: 0 10px;
 }
 ._header .menu a:hover {
-	color: #c5cae9;
+    color: #c5cae9;
 }
